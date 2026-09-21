@@ -65,3 +65,22 @@ copyright.db
 
 # Desktop shortcuts
 *.lnk
+
+# Visual Studio IDE cache (any module)
+.vs/
+ipch/
+
+# Archives — may contain build artifacts or private release packages
+*.rar
+*.zip
+*.7z
+
+# MSVC build intermediates (outside x64/ as well)
+*.tlog
+*.lastbuildstate
+*.recipe
+*.iobj
+*.ipdb
+
+# Private release / restricted assets — kept out by the **/x64/ rule above.
+# Do NOT add narrow exceptions here: anything under x64/ must stay untracked.

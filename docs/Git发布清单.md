@@ -357,3 +357,29 @@ git commit -m "清理IDE缓存，添加WinUI源码和文档，完善.gitignore"
 |------|------|------|
 | 6 个 Delphi `.res`（`CardRegistration`、`D-encryption`、`SymbolTool`、`UnrealDbg`） | 仍跟踪 | Delphi 编译资源，二进制但无敏感内容；这些工具的 `.dpr` 依赖它，保留可让旧工具直接编译 |
 | `Common/Ring0/ia32-doc/**/*.disabled`（8 个） | 仍跟踪 | 上游 ia32-doc 自带的禁用清单，属第三方内容，保留原样 |
+
+### 8.5 最终 `.gitignore` 规则集（发布后生效）
+
+以下规则已在实际发布的 `.gitignore` 中生效，是防止后续误提交的最后一道防线：
+
+| 规则 | 覆盖对象 |
+|------|---------|
+| `**/x64/` | ★ **构建输出与受限发布资产整体**（最关键的一条） |
+| `*.dll` `*.exe` `*.sys` `*.cat` `*.pdb` `*.lib` `*.exp` `*.obj` | 编译产物、驱动、符号 |
+| `*.cer` `*.aes` `copyright.db` | 证书、加密数据、版权数据库 |
+| `*.log` `/_artifacts/` | 运行日志、临时工件 |
+| `**/__history/` `*.~*` `*.identcache` `*.dproj.local` `*.groupproj.local` | Delphi 备份与 IDE 缓存 |
+| `*.vcxproj.user` `*.aps` `*.suo` `.vs/` `ipch/` | Visual Studio 用户配置与 IDE 缓存 |
+| `*.rar` `*.zip` `*.7z` | **归档文件** —— 防止私有发布包被复制到 `x64/` 之外后误提交 |
+| `*.tlog` `*.lastbuildstate` `*.recipe` `*.iobj` `*.ipdb` | MSVC 构建中间文件（`x64/` 之外的情况） |
+| `*.lnk` | 桌面快捷方式（含机器相关内容） |
+
+**验证方式**（应输出为空）：
+
+```bash
+# 已跟踪但会被 ignore 规则匹配的文件（正常应为空）
+git ls-files -i -c --exclude-standard
+```
+
+> ⚠️ 维护提醒：**不要**为 `x64/` 下的任何文件添加 `!` 例外规则。
+> 该目录整体属于受限范围，任何"放行个别文件"的写法都会重新打开泄露通道。
