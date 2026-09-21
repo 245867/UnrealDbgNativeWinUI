@@ -16,6 +16,11 @@
 - [二、核心特性](#二核心特性)
 - [三、系统架构](#三系统架构)
 - [四、工作原理](#四工作原理)
+  - [4.1 硬件虚拟化层（VT-x）](#41-硬件虚拟化层vt-x)
+  - [4.2 调试子系统桥接](#42-调试子系统桥接)
+  - [4.3 IOCTL 通信协议](#43-ioctl-通信协议)
+  - [4.4 驱动事务状态机](#44-驱动事务状态机)
+  - [4.5 端到端调用流程](#45-端到端调用流程)
 - [五、系统要求](#五系统要求)
 - [六、目录结构](#六目录结构)
 - [七、编译指南](#七编译指南)
@@ -145,20 +150,80 @@ Windows 的调试能力由内核的 `Dbgk*`（调试子系统）接口提供，�
 
 驱动加载遵循严格的事务化状态机，保证失败可追溯、可回滚：
 
-```
-精确版本检查
-    → 服务身份 / 二进制路径检查
-    → VT_Driver 核心就绪
-    → Win10 / Win11 桥接驱动就绪
-    → 打开 \\.\UnrealDbg 设备
-    → IOCTL 符号握手
-    → Ready
+```mermaid
+stateDiagram-v2
+    [*] --> S1
+    state "① 精确版本检查（Build + UBR）" as S1
+    state "② 服务身份 / 二进制路径检查" as S2
+    state "③ VT_Driver 核心就绪" as S3
+    state "④ Win10 / Win11 桥接驱动就绪" as S4
+    state "⑤ 打开 UnrealDbg 设备句柄" as S5
+    state "⑥ IOCTL 符号握手" as S6
+    state "✓ Ready（会话可用）" as S7
+    state "✗ 拒绝加载 ERROR_NOT_SUPPORTED" as X
+    state "↩ 回滚（仅补偿本次创建的服务）" as R
+
+    S1 --> S2 : 版本受支持
+    S1 --> X : 版本未列入支持表
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S6
+    S6 --> S7
+
+    S2 --> R : 失败
+    S3 --> R : 失败
+    S4 --> R : 失败
+    S5 --> R : 失败
+    S6 --> R : 失败
+
+    S7 --> [*]
+    X --> [*]
+    R --> [*]
 ```
 
 任一阶段失败均记录：**阶段名、Win32 错误码、系统原文、失败原因、解决建议**。
 
 - 桥接阶段失败时，**仅补偿本次创建的服务**，不影响已有实例；
 - 若 VT 核心已进入 VMX 状态，程序**不会未经验证地强制卸载**，而是明确提示需要重启恢复，避免系统不稳定。
+
+> 第 ⑤ 步打开的是设备 `\\.\UnrealDbg`；第 ⑥ 步的符号握手用于校验前后端协议版本与符号表一致性。
+
+### 4.5 端到端调用流程
+
+下图示意一次调试会话从启动、断点触发到结束的完整链路（其中 Ring 0 与 Ring -1 的协作为本项目的核心设计）：
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI as WinUI 3 前端<br/>（Ring 3）
+    participant DLL as UnrealDbgDll.dll<br/>（后端编排层）
+    participant HK as Hook64.dll<br/>（注入目标进程）
+    participant BR as DbgkSysWin10/11.sys<br/>（调试子系统桥接）
+    participant VT as VT_Driver.sys<br/>（VT-x 核心 · Ring -1）
+    participant TG as 目标进程 / 被调试对象
+
+    UI->>DLL: 启动调试（选定目标进程）
+    DLL->>BR: DeviceIoControl（加载会话）
+    BR->>VT: 内核接口调用
+    VT->>VT: 执行 VMXON，进入 VMX 根模式
+    DLL->>HK: 创建并注入挂钩模块
+    HK->>TG: 挂钩目标进程关键例程
+    TG-->>VT: 断点 / 调试事件 → 触发 VM-Exit
+    VT-->>BR: 上报调试事件
+    BR-->>DLL: 完成 IRP，返回事件数据
+    HK--)DLL: 经通道回传运行时信息
+    DLL-->>UI: 刷新日志面板与状态视图
+    UI->>DLL: 设置 / 删除断点
+    DLL->>BR: DeviceIoControl（V2 指令）
+    BR->>VT: 下发断点请求
+    VT->>TG: 经 EPT 生效，无需修改 Guest 内存
+    UI->>DLL: 结束调试
+    DLL->>BR: DeviceIoControl（卸载会话）
+    BR->>VT: 退出 VMX 根模式
+```
+
+> 说明：图中 V2 指令要求设备句柄具备 `FILE_READ_DATA | FILE_WRITE_DATA` 权限；`HK--)DLL` 的虚线表示挂钩模块主动回传的事件通道。
 
 ---
 
