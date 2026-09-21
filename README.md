@@ -319,9 +319,10 @@ UnrealDbg/
 ├── docs/                          # 项目文档
 │   ├── 项目架构与开发指南.md
 │   ├── Windows支持与发布策略.md
-│   └── 签名工具Hook原理分析.md
+│   ├── 签名工具Hook原理分析.md
+│   └── Git发布清单.md
 ├── tests/windows/                 # 测试脚本与兼容性矩阵
-└── x64/                           # 编译输出目录
+└── x64/                           # 编译输出目录（构建后生成，不纳入版本控制）
     ├── Debug/  Release/           #   运行目录（bin / Config / Symbols / Log）
     └── WinUI/                     #   WinUI 前端构建输出
 ```
