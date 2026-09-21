@@ -15,7 +15,7 @@ typedef struct _SET_DBG_BREAKPOINT {
 
 typedef struct _PROCESS_INFO {
 	HANDLE ProcessHandle;
-	BOOL isCreate;  //ÊÇÍ¨¹ı´´½¨µ÷ÊÔ
+	BOOL isCreate;  //æ˜¯é€šè¿‡åˆ›å»ºè°ƒè¯•
 } PROCESS_INFO, * PPROCESS_INFO;
 
 
@@ -107,10 +107,10 @@ typedef NTSTATUS(NTAPI* PFN_NTDEBUGCONTINUE)(
 );
 
 
-extern DWORD g_dwNumberOfProcessors;  //Âß¼­´¦ÀíÆ÷ÊıÁ¿
-extern LONG g_debug_condition_detected;  //¼ÇÂ¼ÊÇTFµ¥²½Ö´ĞĞ£¬»¹ÊÇdrx¶Ïµã
-extern DWORD g_target_pid;  //Ä¿±ê½ø³ÌµÄpid
-extern ULONG64 g_target_cr3; //Ä¿±ê½ø³ÌµÄcr3
+extern DWORD g_dwNumberOfProcessors;  //é€»è¾‘å¤„ç†å™¨æ•°é‡
+extern LONG g_debug_condition_detected;  //è®°å½•æ˜¯TFå•æ­¥æ‰§è¡Œï¼Œè¿˜æ˜¯drxæ–­ç‚¹
+extern DWORD g_target_pid;  //ç›®æ ‡è¿›ç¨‹çš„pid
+extern ULONG64 g_target_cr3; //ç›®æ ‡è¿›ç¨‹çš„cr3
 extern vectorExt<BREAKPOINT_RECORD> BreakpointList;
 extern vectorExt<VT_BREAK_POINT> INT3BreakpointList;
 extern HANDLE g_hGeneralDriverDevice;

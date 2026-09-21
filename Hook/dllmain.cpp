@@ -4,9 +4,9 @@
 #include "Log/Log.h"
 
 #ifdef _WIN64
-Logger logger("Hook64.log");
+Logger logger("Log\\Hook64.log");
 #else
-Logger logger("Hook.log");
+Logger logger("Log\\Hook.log");
 #endif // _WIN64
 
 BOOL WINAPI DllMain(
@@ -22,6 +22,8 @@ BOOL WINAPI DllMain(
 	{
 	case DLL_PROCESS_ATTACH:
 	{
+		DisableThreadLibraryCalls(hinstDLL);
+		logger.Log("[INFO] Hook DLL å·²é™„åŠ ï¼šæ¨¡å—=%p pid=%lu", hinstDLL, GetCurrentProcessId());
 		InitGlobalVariables();
 		InitFunction();
 		SetupHook();
@@ -41,6 +43,7 @@ BOOL WINAPI DllMain(
 	case DLL_PROCESS_DETACH:
 	{
 		// Perform any necessary cleanup.
+		logger.Log("[INFO] Hook DLL å·²åˆ†ç¦»ï¼šä¿ç•™å‚æ•°=%p", lpReserved);
 		UnHook();
 		break;
 	}
@@ -51,6 +54,7 @@ BOOL WINAPI DllMain(
 
 void SetupHook()
 {
+	logger.Log("[INFO] SetupHook å¼€å§‹");
 	if (InitializeDevice())
 	{
 		Hook_NtDebugActiveProcess();
@@ -66,16 +70,18 @@ void SetupHook()
 		Hook_ReadProcessMemory();
 		Hook_VirtualProtectEx();
 
-		logger.Log("³õÊ¼»¯³É¹¦£¬¹³×Ó°²×°Íê±Ï");
+		logger.Log("[INFO] Hook è®¾å¤‡åˆå§‹åŒ–æˆåŠŸï¼ŒAPI é’©å­å®‰è£…å®Œæˆ");
 	}
 	else
 	{
-		logger.Log("³õÊ¼»¯Éè±¸Ê§°Ü");
+		logger.LogError("Hook åˆå§‹åŒ–é©±åŠ¨è®¾å¤‡ï¼šInitializeDevice", GetLastError());
 	}
+	logger.Log("[INFO] SetupHook ç»“æŸ");
 }
 
 void UnHook()
 {
+	logger.Log("[INFO] UnHook å¼€å§‹");
 	UnHook_DebugActiveProcess();
 	UnHook_NtDebugActiveProcess();
 	UnHook_DbgUiIssueRemoteBreakin();
@@ -90,33 +96,39 @@ void UnHook()
 	UnHook_WriteProcessMemory();
 	UnHook_ReadProcessMemory();
 	UnHook_VirtualProtectEx();
+	logger.Log("[INFO] UnHook ç»“æŸ");
 }
 
-//³õÊ¼»¯Éè±¸
+//åˆå§‹åŒ–è®¾å¤‡
 BOOL InitializeDevice()
 {
 	g_hGeneralDriverDevice = CreateDeviceHandle();
 	if (g_hGeneralDriverDevice == INVALID_HANDLE_VALUE)
 	{
-		logger.Log("Á¬½ÓÇı¶¯Ê§°Ü error: %d", GetLastError());
+		logger.LogError("Hook æ‰“å¼€é©±åŠ¨è®¾å¤‡ï¼šCreateFile", GetLastError());
 		return FALSE;
 	}
 	else
 	{
+		logger.Log("[INFO] Hook å·²è¿æ¥ \\\\.\\UnrealDbgï¼šå¥æŸ„=%p", g_hGeneralDriverDevice);
 		return TRUE;
 	}
 }
 
-//Á¬½ÓÇı¶¯
+//è¿æ¥é©±åŠ¨
 HANDLE CreateDeviceHandle()
 {
-	DWORD error = 0;
-	return CreateFile(SYMBOLICLINK, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE handle = CreateFile(SYMBOLICLINK, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (handle == INVALID_HANDLE_VALUE)
+	{
+		logger.LogError("Hook æ‰“å¼€é©±åŠ¨è®¾å¤‡ï¼šCreateFile", GetLastError());
+	}
+	return handle;
 }
 
 PVOID MyGetProcAddress(HMODULE modBase, TCHAR* modName, LPCSTR lpProcName)
 {
-	HANDLE hFile, hFileMap;  //ÎÄ¼ş¾ä±úºÍÄÚ´æÓ³ÉäÎÄ¼ş¾ä±ú
+	HANDLE hFile, hFileMap;  //æ–‡ä»¶å¥æŸ„å’Œå†…å­˜æ˜ å°„æ–‡ä»¶å¥æŸ„
 	WIN32_FIND_DATAW find = { 0 };
 	DWORD fileAttrib;
 	PVOID mod_base;
@@ -139,7 +151,7 @@ PVOID MyGetProcAddress(HMODULE modBase, TCHAR* modName, LPCSTR lpProcName)
 	//	return NULL;
 	//}
 
-	//·µ»ØÖµÎªNULL£¬ÔòÎÄ¼ş²»´æÔÚ£¬ÍË³ö
+	//è¿”å›å€¼ä¸ºNULLï¼Œåˆ™æ–‡ä»¶ä¸å­˜åœ¨ï¼Œé€€å‡º
 	if (FindFirstFile(modName, &find) == NULL)
 	{
 		return NULL;
@@ -153,7 +165,7 @@ PVOID MyGetProcAddress(HMODULE modBase, TCHAR* modName, LPCSTR lpProcName)
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
 		//error = GetLastError();
-		//outDebug((TCHAR*)_T("[MyGetProcAddress] ´ò¿ªÎÄ¼şÊ§°Ü£¡(error:%d)"), error);
+		//outDebug((TCHAR*)_T("[MyGetProcAddress] æ‰“å¼€æ–‡ä»¶å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 		return NULL;
 	}
 	hFileMap = CreateFileMapping(hFile, 0, PAGE_READONLY, 0, 0, 0);
@@ -171,16 +183,16 @@ PVOID MyGetProcAddress(HMODULE modBase, TCHAR* modName, LPCSTR lpProcName)
 	}
 
 	IMAGE_DOS_HEADER* pDosHeader = (IMAGE_DOS_HEADER*)mod_base;
-	IMAGE_NT_HEADERS32* pNtHeader = (IMAGE_NT_HEADERS32*)((BYTE*)mod_base + pDosHeader->e_lfanew);  //µÃµ½NTÍ·Ê×Ö·
-	IMAGE_OPTIONAL_HEADER32 pOptHeader = ((IMAGE_NT_HEADERS32*)pNtHeader)->OptionalHeader;  //OptionalÍ·Ê×Ö·
-	IMAGE_EXPORT_DIRECTORY* pExportDesc = (IMAGE_EXPORT_DIRECTORY*)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pOptHeader.DataDirectory[0].VirtualAddress/*µ¼³ö±íRVA*/, 0);
+	IMAGE_NT_HEADERS32* pNtHeader = (IMAGE_NT_HEADERS32*)((BYTE*)mod_base + pDosHeader->e_lfanew);  //å¾—åˆ°NTå¤´é¦–å€
+	IMAGE_OPTIONAL_HEADER32 pOptHeader = ((IMAGE_NT_HEADERS32*)pNtHeader)->OptionalHeader;  //Optionalå¤´é¦–å€
+	IMAGE_EXPORT_DIRECTORY* pExportDesc = (IMAGE_EXPORT_DIRECTORY*)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pOptHeader.DataDirectory[0].VirtualAddress/*å¯¼å‡ºè¡¨RVA*/, 0);
 
-	//µ¼³öÃû³Æ±í
-	PDWORD NameTable = (PDWORD)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pExportDesc->AddressOfNames, 0); //Ã¿¸öDWORD´ú±íÒ»¸öº¯ÊıÃûRVA
-	//µ¼³öÃû³ÆĞòºÅ±í
-	PWORD OrdinalTable = (PWORD)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pExportDesc->AddressOfNameOrdinals, 0); //Ã¿¸öWORD´ú±íÒ»¸öº¯ÊıĞòºÅ
-	//µ¼³öº¯ÊıµØÖ·±í
-	PDWORD AddressTable = (PDWORD)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pExportDesc->AddressOfFunctions, 0); //Ã¿¸öDWORD´ú±íÒ»¸öº¯ÊıRVA
+	//å¯¼å‡ºåç§°è¡¨
+	PDWORD NameTable = (PDWORD)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pExportDesc->AddressOfNames, 0); //æ¯ä¸ªDWORDä»£è¡¨ä¸€ä¸ªå‡½æ•°åRVA
+	//å¯¼å‡ºåç§°åºå·è¡¨
+	PWORD OrdinalTable = (PWORD)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pExportDesc->AddressOfNameOrdinals, 0); //æ¯ä¸ªWORDä»£è¡¨ä¸€ä¸ªå‡½æ•°åºå·
+	//å¯¼å‡ºå‡½æ•°åœ°å€è¡¨
+	PDWORD AddressTable = (PDWORD)ImageRvaToVa((PIMAGE_NT_HEADERS)pNtHeader, mod_base, pExportDesc->AddressOfFunctions, 0); //æ¯ä¸ªDWORDä»£è¡¨ä¸€ä¸ªå‡½æ•°RVA
 
 	for (int i = 0; i < pExportDesc->NumberOfNames; i++)
 	{
@@ -204,8 +216,8 @@ HMODULE GetProcessModuleHandle(_In_ HANDLE hProcess, _In_ TCHAR* modName, _Out_ 
 	DWORD lpcbNeeded = 0;
 	HMODULE hMod = NULL;
 
-	//Ã¶¾ÙÄ£¿éÂ·¾¶Ãû
-	if (EnumProcessModulesEx(hProcess, NULL, 0, &lpcbNeeded, LIST_MODULES_ALL))  //ÏÈ»ñÈ¡´óĞ¡
+	//æšä¸¾æ¨¡å—è·¯å¾„å
+	if (EnumProcessModulesEx(hProcess, NULL, 0, &lpcbNeeded, LIST_MODULES_ALL))  //å…ˆè·å–å¤§å°
 	{
 		HMODULE* lphModule = (HMODULE*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, lpcbNeeded);
 		if (lphModule)
@@ -256,23 +268,23 @@ int Power()
 				tp.Privileges[0].Attributes = 0;
 			}
 
-			//ÌáÉı½ø³ÌÈ¨ÏŞ
+			//æå‡è¿›ç¨‹æƒé™
 			if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL))
 			{
 				error = GetLastError();
-				outDebug((TCHAR*)_T("ÌáÈ¨Ê§°Ü£¡(error:%d)"), error);
+				outDebug((TCHAR*)_T("ææƒå¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 			}
 		}
 		else
 		{
 			error = GetLastError();
-			outDebug((TCHAR*)_T("LookupPrivilegeValueÊ§°Ü£¡(error:%d)"), error);
+			outDebug((TCHAR*)_T("LookupPrivilegeValueå¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 		}
 	}
 	else
 	{
 		error = GetLastError();
-		outDebug((TCHAR*)_T("OpenProcessTokenÊ§°Ü£¡(error:%d)"), error);
+		outDebug((TCHAR*)_T("OpenProcessTokenå¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 	}
 
 	return 0;

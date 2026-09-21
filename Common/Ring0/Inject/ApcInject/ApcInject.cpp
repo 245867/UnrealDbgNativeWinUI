@@ -1,4 +1,4 @@
-#include <ntifs.h>
+Ôªø#include <ntifs.h>
 #include <ntstrsafe.h>
 #include "../../../Common/Ring0/SymbolicAccess/Utils/Log.h"
 #include "../../../Common/Ring0/PE/PE_struct.h"
@@ -75,7 +75,7 @@ NTSTATUS BBLookupProcessThread(IN PEPROCESS pProcess, OUT PETHREAD* ppThread)
 
     if (!pInfo)
     {
-        outLog("BBLookupProcessThread ∑÷≈‰ƒ⁄¥Ê ß∞‹");
+        outLog("BBLookupProcessThread ÂàÜÈÖçÂÜÖÂ≠òÂ§±Ë¥•");
         return STATUS_NO_MEMORY;
     }
 
@@ -138,7 +138,7 @@ NTSTATUS BBLookupProcessThread(IN PEPROCESS pProcess, OUT PETHREAD* ppThread)
     }
     else
     {
-        outLog("≤È’“ƒø±Íœﬂ≥Ã ß∞‹");
+        outLog("Êü•ÊâæÁõÆÊ†áÁ∫øÁ®ãÂ§±Ë¥•");
     }
 
     if (pBuf)
@@ -170,18 +170,18 @@ NTSTATUS BBApcInject(IN PINJECT_BUFFER pUserBuf, IN PEPROCESS pProcess, IN ULONG
 
     if (NT_SUCCESS(status))
     {
-        //µ˜”√LdrLoadDll
+        //Ë∞ÉÁî®LdrLoadDll
         status = BBQueueUserApc(pThread, pUserBuf->code, NULL, NULL, NULL, TRUE);
 
         // Wait for completion
         if (NT_SUCCESS(status))
         {
-            outLog("BBApcInject ◊¢»Î≥…π¶");
+            outLog("BBApcInject Ê≥®ÂÖ•ÊàêÂäü");
         }
     }
     else
     {
-        outLog("BBApcInject ◊¢»Î ß∞‹");
+        outLog("BBApcInject Ê≥®ÂÖ•Â§±Ë¥•");
     }
 
     if (pThread)
@@ -190,7 +190,7 @@ NTSTATUS BBApcInject(IN PINJECT_BUFFER pUserBuf, IN PEPROCESS pProcess, IN ULONG
     return status;
 }
 
-// π”√apc◊¢»Î‘∂≥Ãœﬂ≥Ã
+//‰ΩøÁî®apcÊ≥®ÂÖ•ËøúÁ®ãÁ∫øÁ®ã
 NTSTATUS BBApcInject2(IN PVOID pUserFunc, IN PEPROCESS pProcess, IN ULONG initRVA, IN PCWCHAR InitArg)
 {
     NTSTATUS status = STATUS_SUCCESS;
@@ -201,18 +201,18 @@ NTSTATUS BBApcInject2(IN PVOID pUserFunc, IN PEPROCESS pProcess, IN ULONG initRV
 
     if (NT_SUCCESS(status))
     {
-        //µ˜”√LdrLoadDll
+        //Ë∞ÉÁî®LdrLoadDll
         status = BBQueueUserApc(pThread, pUserFunc, NULL, NULL, NULL, TRUE);
 
         // Wait for completion
         if (NT_SUCCESS(status))
         {
-            outLog("BBApcInject ◊¢»Î≥…π¶");
+            outLog("BBApcInject Ê≥®ÂÖ•ÊàêÂäü");
         }
     }
     else
     {
-        outLog("BBApcInject ◊¢»Î ß∞‹");
+        outLog("BBApcInject Ê≥®ÂÖ•Â§±Ë¥•");
     }
 
     if (pThread)
@@ -247,7 +247,7 @@ PVOID BBGetUserModule(IN PEPROCESS pProcess, IN PUNICODE_STRING ModuleName, IN B
             PPEB32 pPeb32 = (PPEB32)PsGetProcessWow64Process(pProcess);
             if (pPeb32 == NULL)
             {
-                outLog("ªÒ»°Wow64Ω¯≥ÃµƒPEB ß∞‹");
+                outLog("Ëé∑ÂèñWow64ËøõÁ®ãÁöÑPEBÂ§±Ë¥•");
                 return NULL;
             }
 
@@ -260,7 +260,7 @@ PVOID BBGetUserModule(IN PEPROCESS pProcess, IN PUNICODE_STRING ModuleName, IN B
             // Still no loader
             if (!pPeb32->Ldr)
             {
-                outLog("Ω¯≥ÃµƒldrŒ™ø’");
+                outLog("ËøõÁ®ãÁöÑldr‰∏∫Á©∫");
                 return NULL;
             }
 
@@ -283,7 +283,7 @@ PVOID BBGetUserModule(IN PEPROCESS pProcess, IN PUNICODE_STRING ModuleName, IN B
             PPEB pPeb = PsGetProcessPeb(pProcess);
             if (!pPeb)
             {
-                outLog("ªÒ»°Ω¯≥ÃPEB ß∞‹");
+                outLog("Ëé∑ÂèñËøõÁ®ãPEBÂ§±Ë¥•");
                 return NULL;
             }
 
@@ -296,7 +296,7 @@ PVOID BBGetUserModule(IN PEPROCESS pProcess, IN PUNICODE_STRING ModuleName, IN B
             // Still no loader
             if (!pPeb->Ldr)
             {
-                outLog("Ω¯≥ÃldrŒ™ø’");
+                outLog("ËøõÁ®ãldr‰∏∫Á©∫");
                 return NULL;
             }
 
@@ -313,7 +313,7 @@ PVOID BBGetUserModule(IN PEPROCESS pProcess, IN PUNICODE_STRING ModuleName, IN B
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        outLog("BBGetUserModule Exception, Code: 0x%X\n", GetExceptionCode());
+        outLog("BBGetUserModule ÂºÇÂ∏∏ÔºõÂºÇÂ∏∏Á†ÅÔºö0x%X\n", GetExceptionCode());
     }
 
     return NULL;
@@ -628,7 +628,7 @@ NTSTATUS BBResolveImagePath(
     ASSERT(pProcess != NULL && path != NULL && resolved != NULL);
     if (pProcess == NULL || path == NULL || resolved == NULL)
     {
-        outLog("BBResolveImagePath ≤Œ ˝Œﬁ–ß");
+        outLog("BBResolveImagePath ÂèÇÊï∞Êó†Êïà");
         return STATUS_INVALID_PARAMETER;
     }
 
@@ -1032,7 +1032,7 @@ PVOID GetKernelBase(OUT PULONG pSize)
     status = ZwQuerySystemInformation(SystemModuleInformation, 0, bytes, &bytes);
     if (bytes == 0)
     {
-        outLog("ªÒ»°ƒ£øÈ¥Û–° ß∞‹");
+        outLog("Ëé∑ÂèñÊ®°ÂùóÂ§ßÂ∞èÂ§±Ë¥•");
         return NULL;
     }
 
@@ -1266,17 +1266,17 @@ NTSTATUS BBExecuteInNewThread(
             }
             else if (!NT_SUCCESS(status))
             {
-                outLog("≤È—Øœﬂ≥Ãª˘±æ–≈œ¢ ß∞‹: 0x%X", status);
+                outLog("Êü•ËØ¢Á∫øÁ®ãÂü∫Êú¨‰ø°ÊÅØÂ§±Ë¥•: 0x%X", status);
             }
         }
         else
         {
-            outLog("ZwWaitForSingleObject ß∞‹: 0x%X", status);
+            outLog("ZwWaitForSingleObjectÂ§±Ë¥•: 0x%X", status);
         }
     }
     else
     {
-        outLog("ZwCreateThreadEx ß∞‹: 0x%X", status);
+        outLog("ZwCreateThreadExÂ§±Ë¥•: 0x%X", status);
     }
 
     if (hThread)
@@ -1383,7 +1383,7 @@ NTSTATUS BBResolveSxS(
 
     if (pQueryName == NULL)
     {
-        outLog("RtlDosApplyFileIsolationRedirection_Ustr  ß∞‹");
+        outLog("RtlDosApplyFileIsolationRedirection_Ustr Â§±Ë¥•");
         return STATUS_NOT_FOUND;
     }
 
@@ -1441,7 +1441,7 @@ NTSTATUS BBResolveSxS(
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        outLog("BBResolveSxS±¿¿£ Exception Code: 0x%X", GetExceptionCode());
+        outLog("BBResolveSxS Â¥©Ê∫ÉÔºõÂºÇÂ∏∏Á†ÅÔºö0x%X", GetExceptionCode());
         return STATUS_UNHANDLED_EXCEPTION;
     }
 }
@@ -1603,7 +1603,7 @@ NTSTATUS ApcCreateRemoteThread(HANDLE ProcessHandle, PVOID pUserFunc)
 
         //if (!pNtdll)
         //{
-        //    outLog("ªÒ»°ntdllƒ£øÈª˘÷∑ ß∞‹");
+        //    outLog("Ëé∑ÂèñntdllÊ®°ÂùóÂü∫ÂùÄÂ§±Ë¥•");
         //    status = STATUS_NOT_FOUND;
         //}
 
@@ -1612,7 +1612,7 @@ NTSTATUS ApcCreateRemoteThread(HANDLE ProcessHandle, PVOID pUserFunc)
         //    DbgUserBreakPoint = BBGetModuleExport(pNtdll, "DbgUserBreakPoint", pProcess, NULL);
         //    if (!DbgUserBreakPoint)
         //    {
-        //        outLog("ªÒ»°DbgUserBreakPoint∫Ø ˝µÿ÷∑ ß∞‹");
+        //        outLog("Ëé∑ÂèñDbgUserBreakPointÂáΩÊï∞Âú∞ÂùÄÂ§±Ë¥•");
         //        status = STATUS_NOT_FOUND;
         //    }
         //}
@@ -1657,7 +1657,7 @@ NTSTATUS BBQueueUserApc(
 
     if (pInjectApc == NULL)
     {
-        outLog("¥¥Ω®APC∂‘œÛ ß∞‹");
+        outLog("ÂàõÂª∫APCÂØπË±°Â§±Ë¥•");
         return STATUS_NO_MEMORY;
     }
 
@@ -1689,7 +1689,7 @@ NTSTATUS BBQueueUserApc(
     }
     else
     {
-        outLog("≤Â»ÎAPC ß∞‹");
+        outLog("ÊèíÂÖ•APCÂ§±Ë¥•");
 
         ExFreePoolWithTag(pInjectApc, BB_POOL_TAG);
 

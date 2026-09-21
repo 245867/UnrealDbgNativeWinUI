@@ -113,6 +113,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <ForcedIncludeFiles>$(ProjectDir)..\Common\Ring0\SymbolicAccess\Utils\LegacyLog.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
   </PropertyGroup>
@@ -122,12 +131,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <EnableInf2cat>false</EnableInf2cat>
-    <IncludePath>E:\Projects\VS\repos\UnrealDbg\Common;$(SolutionDir)Common\Ring0;$(VC_IncludePath);$(IncludePath)</IncludePath>
+    <IncludePath>..\Common;..\Common\Ring0;$(VC_IncludePath);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <EnableInf2cat>false</EnableInf2cat>
-    <IncludePath>..\Common;$(SolutionDir)Common\Ring0;$(VC_IncludePath);$(IncludePath)</IncludePath>
+    <IncludePath>..\Common;..\Common\Ring0;$(VC_IncludePath);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
@@ -146,21 +155,23 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_NO_CRT_STDIO_INLINE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(SolutionDir)Common\Ring0\SymbolicAccessKM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\Common\Ring0\SymbolicAccessKM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
-      <AdditionalDependencies>$(SolutionDir)Common\Ring0\SymbolicAccessKM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\Common\Ring0\SymbolicAccessKM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;_NO_CRT_STDIO_INLINE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -168,6 +179,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Ring0\Inject\ApcInject\ApcInject.cpp" />
+    <ClCompile Include="..\Common\Ring0\SymbolicAccess\LogFile.cpp" />
     <ClCompile Include="..\Common\Ring0\String\StringHandler.cpp" />
     <ClCompile Include="DbgkApi\DbgkApi.cpp" />
     <ClCompile Include="DebugBreak\DebugBreak.cpp" />
@@ -197,8 +209,8 @@
     <ClInclude Include="DbgkApi\DbgkApi.h" />
     <ClInclude Include="DebugBreak\DebugBreak.h" />
     <ClInclude Include="Driver.h" />
-    <ClInclude Include="E:\Projects\VS\repos\UnrealDbg\Common\Shared\IOCTLs.h" />
-    <ClInclude Include="E:\Projects\VS\repos\UnrealDbg\Common\Shared\SharedStruct.h" />
+    <ClInclude Include="..\Common\Shared\IOCTLs.h" />
+    <ClInclude Include="..\Common\Shared\SharedStruct.h" />
     <ClInclude Include="Encrypt\Blowfish\Blowfish.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Hooks\EptHook\EptHook.h" />

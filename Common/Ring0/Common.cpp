@@ -1,4 +1,4 @@
-#include <ntifs.h>
+ï»¿#include <ntifs.h>
 #include <intrin.h>
 #include "Common.h"
 
@@ -7,7 +7,7 @@ namespace Common
 	bool isIntel = false;
 	bool isAMD = false;
 
-	//È·ÈÏCPUĞÍºÅ
+	//ç¡®è®¤CPUå‹å·
 	void ConfirmCPUVendor()
 	{
 		int cpui[4];		// EAX, EBX, ECX, EDX
@@ -26,7 +26,7 @@ namespace Common
 		}
 	}
 
-	//¼ì²âIntel CPUÊÇ·ñÖ§³ÖVTĞéÄâ»¯¼¼Êõ
+	//æ£€æµ‹Intel CPUæ˜¯å¦æ”¯æŒVTè™šæ‹ŸåŒ–æŠ€æœ¯
 	BOOLEAN CheckVTSupported()
 	{
 		int cpui[4];		// EAX, EBX, ECX, EDX
@@ -41,7 +41,7 @@ namespace Common
 		return FALSE;
 	}
 
-	//¼ì²âÖ÷°åVTÊÇ·ñÒÑÆôÓÃ
+	//æ£€æµ‹ä¸»æ¿VTæ˜¯å¦å·²å¯ç”¨
 	BOOLEAN CheckVTEnabled()
 	{
 		ULONG_PTR msr;

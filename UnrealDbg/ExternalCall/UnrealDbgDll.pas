@@ -1,4 +1,4 @@
-unit UnrealDbgDll;
+锘縰nit UnrealDbgDll;
 
 interface
 
@@ -34,7 +34,7 @@ begin
   LoadSymbol := LoadLibrary('UnrealDbgDll.dll');
 {$ENDIF}
   if LoadSymbol = 0 then begin
-    MessageBox(0,'没有找到 UnrealDbgDll.dll','错误信息:',MB_ICONERROR);
+    MessageBoxW(0,'娌℃湁鎵惧埌 UnrealDbgDll.dll','閿欒淇℃伅:',MB_ICONERROR);
     ExitProcess(0);
   end;
   Unreal_Initialize := GetProcAddress(LoadSymbol,'Initialize');

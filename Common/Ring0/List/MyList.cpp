@@ -1,10 +1,10 @@
-#include <ntifs.h>
+ï»¿#include <ntifs.h>
 #include "MyList.h"
 
 
 VOID InitializeList(MY_LIST* list, PFAST_MUTEX FastMutex)
 {
-    //³õÊ¼»¯»¥³âËø
+    //åˆå§‹åŒ–äº’æ–¥é”
     ExInitializeFastMutex(FastMutex);
     InitializeListHead(&list->ListHead);
     list->Count = 0;

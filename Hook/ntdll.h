@@ -226,7 +226,7 @@ __pragma(clang diagnostic pop)
 
     typedef struct _SYSTEM_MODULE_INFORMATION
     {
-        ULONG			uCount;  //已加载的模块数量
+        ULONG			uCount;  //宸插姞杞界殑妯″潡鏁伴噺
         SYSTEM_MODULE	aSM[];
     } SYSTEM_MODULE_INFORMATION, * PSYSTEM_MODULE_INFORMATION;
 

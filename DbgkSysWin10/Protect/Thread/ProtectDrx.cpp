@@ -1,4 +1,4 @@
-#include "../../Driver.h"
+ï»¿#include "../../Driver.h"
 #include "../../ntos/inc/mmtypes.h"
 #include "../../ntos/inc/ntdbg.h"
 #include "../../ntos/inc/ketypes.h"
@@ -17,7 +17,7 @@
 #include "../../DbgkApi/DbgkApi.h"
 #include "ProtectDrx.h"
 
-//32Î»½ø³Ìµ÷ÓÃÕâ¸öº¯Êý»ñÈ¡Context
+//32ä½è¿›ç¨‹è°ƒç”¨è¿™ä¸ªå‡½æ•°èŽ·å–Context
 NTSTATUS NtQueryInformationThread(
 	_In_       HANDLE ThreadHandle,
 	_In_       THREADINFOCLASS ThreadInformationClass,
@@ -34,8 +34,8 @@ NTSTATUS NtQueryInformationThread(
 	{
 		if (ThreadInformationClass == ThreadWow64Context)
 		{
-			// ÅÐ¶Ïµ±Ç°½ø³ÌÊÇ·ñÊÇÓÎÏ·µÄ½ø³Ì
-			// Èç¹ûÊÇÓÎÏ·½ø³ÌÔò½«shadow drxÀïµÄÄÚÈÝ·µ»Ø
+			// åˆ¤æ–­å½“å‰è¿›ç¨‹æ˜¯å¦æ˜¯æ¸¸æˆçš„è¿›ç¨‹
+			// å¦‚æžœæ˜¯æ¸¸æˆè¿›ç¨‹åˆ™å°†shadow drxé‡Œçš„å†…å®¹è¿”å›ž
 			if (IsDebugTargetProcess((_EPROCESS*)PsGetCurrentProcess(), &DebugProcess))
 			{
 				if (DebugProcess->wow64Context.initializated)
@@ -55,8 +55,8 @@ NTSTATUS NtQueryInformationThread(
 	return Status;
 }
 
-//64Î»½ø³Ìµ÷ÓÃ´Ëº¯Êý»ñÈ¡Context
-NTSTATUS NtGetContextThread(_In_ HANDLE hThread, _Inout_ PCONTEXT ThreadContext/*´Ë²ÎÊýÊÇÓÃ»§²ãÌá¹©µÄ»º³åÇø*/)
+//64ä½è¿›ç¨‹è°ƒç”¨æ­¤å‡½æ•°èŽ·å–Context
+NTSTATUS NtGetContextThread(_In_ HANDLE hThread, _Inout_ PCONTEXT ThreadContext/*æ­¤å‚æ•°æ˜¯ç”¨æˆ·å±‚æä¾›çš„ç¼“å†²åŒº*/)
 {
 	PDEBUG_PROCESS DebugProcess;
 
@@ -64,9 +64,9 @@ NTSTATUS NtGetContextThread(_In_ HANDLE hThread, _Inout_ PCONTEXT ThreadContext/
 
 	if (NT_SUCCESS(Status))
 	{
-		// ÒÔÏÂÊÇ´¦ÀípubgµÄÓ²¼þ¶ÏµãÕ¼¿ÓµÄÇé¿ö
-		// ÅÐ¶Ïµ±Ç°½ø³ÌÊÇ·ñÊÇ±»µ÷ÊÔµÄ½ø³Ì
-		// Èç¹ûÊÇ±»µ÷ÊÔµÄ½ø³ÌÔò½«shadow drxÀïµÄÄÚÈÝ·µ»Ø
+		// ä»¥ä¸‹æ˜¯å¤„ç†pubgçš„ç¡¬ä»¶æ–­ç‚¹å å‘çš„æƒ…å†µ
+		// åˆ¤æ–­å½“å‰è¿›ç¨‹æ˜¯å¦æ˜¯è¢«è°ƒè¯•çš„è¿›ç¨‹
+		// å¦‚æžœæ˜¯è¢«è°ƒè¯•çš„è¿›ç¨‹åˆ™å°†shadow drxé‡Œçš„å†…å®¹è¿”å›ž
 		if (IsDebugTargetProcess((_EPROCESS*)PsGetCurrentProcess(), &DebugProcess))
 		{
 			ExAcquireFastMutex(&DebugProcess->Mutex);
@@ -74,7 +74,7 @@ NTSTATUS NtGetContextThread(_In_ HANDLE hThread, _Inout_ PCONTEXT ThreadContext/
 			{
 				//ThreadContext->EFlags = DebugProcess->Context.EFlags;
 				ThreadContext->EFlags = 0x229;
-				DbgPrint("DebugProcess->Context.EFlags: %x\n", ThreadContext->EFlags);
+				DbgPrint("è°ƒè¯•è¿›ç¨‹ä¸Šä¸‹æ–‡ EFlagsï¼š%x\n", ThreadContext->EFlags);
 			}			
 			ExReleaseFastMutex(&DebugProcess->Mutex);			
 
@@ -82,14 +82,14 @@ NTSTATUS NtGetContextThread(_In_ HANDLE hThread, _Inout_ PCONTEXT ThreadContext/
 			//{
 			//	eflags.TF = 0;
 			//	ThreadContext->EFlags = eflags.flags;
-			//	DbgPrint("Òþ²ØTFÎ».\n");
+			//	DbgPrint("éšè—TFä½.\n");
 			//}
 
 			//if (eflags.RF)
 			//{
 			//	eflags.RF = 0;
 			//	ThreadContext->EFlags = eflags.flags;
-			//	DbgPrint("Òþ²ØRFÎ».\n");
+			//	DbgPrint("éšè—RFä½.\n");
 			//}
 		}
 	}
@@ -99,21 +99,21 @@ NTSTATUS NtGetContextThread(_In_ HANDLE hThread, _Inout_ PCONTEXT ThreadContext/
 NTSTATUS
 NtSetContextThread(
 	__in HANDLE ThreadHandle,
-	__in PCONTEXT ThreadContext  /*´Ë²ÎÊýÊÇÓÃ»§²ãÌá¹©µÄ»º³åÇø*/
+	__in PCONTEXT ThreadContext  /*æ­¤å‚æ•°æ˜¯ç”¨æˆ·å±‚æä¾›çš„ç¼“å†²åŒº*/
 )
 {
 	NTSTATUS Status = STATUS_SUCCESS;
 	PDEBUG_PROCESS DebugProcess;
-	// ÒÔÏÂÊÇ´¦ÀípubgµÄÓ²¼þ¶ÏµãÕ¼¿ÓµÄÇé¿ö
-	// ÅÐ¶Ïµ±Ç°½ø³ÌÊÇ·ñÊÇ±»µ÷ÊÔµÄ½ø³Ì
-	// Èç¹ûÊÇ±»µ÷ÊÔµÄ½ø³ÌÔòÉèÖÃshadow drxÀïµÄÄÚÈÝ
+	// ä»¥ä¸‹æ˜¯å¤„ç†pubgçš„ç¡¬ä»¶æ–­ç‚¹å å‘çš„æƒ…å†µ
+	// åˆ¤æ–­å½“å‰è¿›ç¨‹æ˜¯å¦æ˜¯è¢«è°ƒè¯•çš„è¿›ç¨‹
+	// å¦‚æžœæ˜¯è¢«è°ƒè¯•çš„è¿›ç¨‹åˆ™è®¾ç½®shadow drxé‡Œçš„å†…å®¹
 	if (IsDebugTargetProcess((_EPROCESS*)PsGetCurrentProcess(), &DebugProcess))
 	{
 		ExAcquireFastMutex(&DebugProcess->Mutex);
 		DebugProcess->Context.EFlags = ThreadContext->EFlags;
 		DebugProcess->Context.initializated = TRUE;
 		ExReleaseFastMutex(&DebugProcess->Mutex);
-		DbgPrint("[set]ThreadContext->EFlags: %x\n", ThreadContext->EFlags);
+		DbgPrint("[è®¾ç½®]çº¿ç¨‹ä¸Šä¸‹æ–‡ EFlagsï¼š%x\n", ThreadContext->EFlags);
 		//return Status;
 	}
 	return Original_NtSetContextThread(ThreadHandle, ThreadContext);

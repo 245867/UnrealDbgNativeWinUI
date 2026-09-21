@@ -6,12 +6,12 @@
 #include <ntifs.h>
 #include <intrin.h>
 #include <Shared/SharedStruct.h>
-#include "../../Common/Ring0/ia32-doc/out/ia32.hpp"
-#include "../../Common/Ring0/SymbolicAccess/Utils/Log.h"
-#include "../../Common/Ring0/SymbolicAccess/ModuleExtender/ModuleExtenderFactory.h"
-#include "../../Common/Ring0/String/StringHandler.h"
-#include "../../Common/Ring0/Spinlock/spinlock.h"
-#include "../../Common/Ring0/Comms/SerialPort.h"
+#include "../Common/Ring0/ia32-doc/out/ia32.hpp"
+#include "../Common/Ring0/SymbolicAccess/Utils/Log.h"
+#include "../Common/Ring0/SymbolicAccess/ModuleExtender/ModuleExtenderFactory.h"
+#include "../Common/Ring0/String/StringHandler.h"
+#include "../Common/Ring0/Spinlock/spinlock.h"
+#include "../Common/Ring0/Comms/SerialPort.h"
 
 #define IOCTL_POOL_MANAGER_ALLOCATE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x900, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 

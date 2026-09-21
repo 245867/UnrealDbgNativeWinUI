@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _INVALID_EPT_H
 #define _INVALID_EPT_H
@@ -9,9 +9,9 @@ struct __invept_descriptor
 	unsigned __int64 reserved;
 };
 
-//Ë¢ĞÂÈ«²¿µÄÂß¼­´¦ÀíÆ÷
+//åˆ·æ–°å…¨éƒ¨çš„é€»è¾‘å¤„ç†å™¨
 void invept_all_contexts_func();
-//Ë¢ĞÂÖ¸¶¨µÄÂß¼­´¦ÀíÆ÷µÄeptp
+//åˆ·æ–°æŒ‡å®šçš„é€»è¾‘å¤„ç†å™¨çš„eptp
 void invept_single_context_func(unsigned __int64 ept_pointer);
 
 #endif // !_INVALID_EPT_H

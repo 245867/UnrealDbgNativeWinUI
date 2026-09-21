@@ -27,12 +27,12 @@ BOOL WINAPI NewGetThreadContext(
     _Inout_ LPCONTEXT lpContext
 );
 
-//Ìí¼Ó¶Ïµã
+//æ·»åŠ æ–­ç‚¹
 bool AddBreakpoint(PVOID setAddress, unsigned __int64 command, int length);
 bool RemoveBreakpoint();
 
-//ÎÒÃÇÓ¦¸Ã½«µØÖ·Ö±½Ó´«¸øvt
-//²¢ÔÚvtÀïĞŞ¸Äept pteÒ³±íÊôĞÔ
+//æˆ‘ä»¬åº”è¯¥å°†åœ°å€ç›´æ¥ä¼ ç»™vt
+//å¹¶åœ¨vté‡Œä¿®æ”¹ept pteé¡µè¡¨å±æ€§
 bool SetBreakpoint(PVOID lpBaseAddress, unsigned __int64 command, int length);
 
 

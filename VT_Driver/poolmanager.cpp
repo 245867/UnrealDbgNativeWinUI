@@ -1,4 +1,4 @@
-#include "Driver.h"
+﻿#include "Driver.h"
 #include "poolmanager.h"
 #include "Globals.h"
 #include "mtrr.h"
@@ -10,7 +10,7 @@ namespace pool_manager
 {
     /// <summary>
     /// Allocate pools and add them to pool table
-    /// ����ز��������ӵ��ر���
+    /// 分配池并将其添加到池表中
     /// </summary>
     /// <param name="size">Size of pool</param>
     /// <param name="count">Number of pools to allocate</param>
@@ -23,7 +23,7 @@ namespace pool_manager
             __pool_table* single_pool = ::allocate_pool<__pool_table>();
             if (single_pool == nullptr)
             {
-                LogError("Memory allocation failed");
+                LogError("内存分配失败；原因：非分页内存池不足；解决方案：释放资源或降低预分配数量后重试。");
                 return false;
             }
             RtlSecureZeroMemory(single_pool, sizeof(__pool_table));
@@ -32,13 +32,13 @@ namespace pool_manager
 
             if (single_pool->address == nullptr)
             {
-                LogError("Memory allocation failed");
+                LogError("内存分配失败；原因：非分页内存池不足；解决方案：释放资源或降低预分配数量后重试。");
                 return false;
             }
             RtlSecureZeroMemory(single_pool->address, size);
 
             single_pool->intention = intention;
-            single_pool->is_busy = false;  //���ڴ��ʶΪδʹ��
+            single_pool->is_busy = false;  //将内存标识为未使用
             single_pool->size = size;
 
             InsertTailList(g_vmm_context.pool_manager->list_of_allocated_pools, &(single_pool->pool_list));
@@ -75,7 +75,7 @@ namespace pool_manager
     }
 
     /// <summary>
-    /// ������������ĳ�
+    /// 分配所有请求的池
     /// </summary>
     /// <returns></returns>
     bool perform_allocation()
@@ -84,7 +84,7 @@ namespace pool_manager
 
         if (g_vmm_context.pool_manager->is_request_for_allocation_recived == false)
         {
-            LogInfo("No pending allocations");
+            LogInfo("当前没有待处理的内存分配请求。");
             return status;
         }
 
@@ -101,7 +101,7 @@ namespace pool_manager
 
                 if (status == false)
                 {
-                    LogError("Pool manager allocate and add to pool table failed");
+                    LogError("内存池管理器分配并登记失败；原因：内存池不足；解决方案：释放资源后重试。");
                     break;
                 }
 
@@ -109,7 +109,7 @@ namespace pool_manager
                 g_vmm_context.pool_manager->allocation_requests->count[i] = 0;
                 g_vmm_context.pool_manager->allocation_requests->intention[i] = INTENTION_NONE;
 
-                LogInfo("Allocation successful");
+                LogInfo("内存池分配成功。");
             }
         }
 
@@ -120,7 +120,7 @@ namespace pool_manager
 
     /// <summary>
     /// Initalize pool manager struct and preallocate pools
-    /// ��ʼ���ع������ṹ��Ԥ�����
+    /// 初始化池管理器结构并预分配池
     /// </summary>
     /// <returns> status </returns>
     bool initialize()
@@ -128,7 +128,7 @@ namespace pool_manager
         g_vmm_context.pool_manager = ::allocate_pool<__pool_manager>();
         if (g_vmm_context.pool_manager == nullptr)
         {
-            LogError("Pool manager allocation failed");
+            LogError("内存池管理器结构分配失败；原因：非分页内存池不足；解决方案：释放资源后重试。");
             return false;
         }
         RtlSecureZeroMemory(g_vmm_context.pool_manager, sizeof(__pool_manager));
@@ -136,7 +136,7 @@ namespace pool_manager
         g_vmm_context.pool_manager->allocation_requests = ::allocate_pool<__request_new_allocation>();
         if (g_vmm_context.pool_manager->allocation_requests == nullptr)
         {
-            LogError("Allacation requests allocation failed");
+            LogError("分配请求表分配失败；原因：非分页内存池不足；解决方案：释放资源后重试。");
             return false;
         }
         RtlSecureZeroMemory(g_vmm_context.pool_manager->allocation_requests, sizeof(__request_new_allocation));
@@ -144,7 +144,7 @@ namespace pool_manager
         g_vmm_context.pool_manager->list_of_allocated_pools = ::allocate_pool<LIST_ENTRY>();
         if (g_vmm_context.pool_manager->list_of_allocated_pools == nullptr)
         {
-            LogError("List of allocated pools allocation failed");
+            LogError("已分配内存池链表分配失败；原因：非分页内存池不足；解决方案：释放资源后重试。");
             return false;
         }
         RtlSecureZeroMemory(g_vmm_context.pool_manager->list_of_allocated_pools, sizeof(LIST_ENTRY));
@@ -155,25 +155,25 @@ namespace pool_manager
 
         if (request_allocation(sizeof(__ept_dynamic_split), buffer_count, INTENTION_SPLIT_PML2) == false)
         {
-            LogError("Pool mangaer request allocation Failed");
+            LogError("内存池管理器提交分配请求失败；原因：请求表已满或内存参数无效；解决方案：减少预分配数量并重试。");
             return false;
         }
 
         if (request_allocation(sizeof(__ept_hooked_page_info), buffer_count, INTENTION_TRACK_HOOKED_PAGES) == false)
         {
-            LogError("Pool mangaer request allocation Failed");
+            LogError("内存池管理器提交分配请求失败；原因：请求表已满或内存参数无效；解决方案：减少预分配数量并重试。");
             return false;
         }
 
         if (request_allocation(100, buffer_count, INTENTION_EXEC_TRAMPOLINE) == false)
         {
-            LogError("Pool mangaer request allocation Failed");
+            LogError("内存池管理器提交分配请求失败；原因：请求表已满或内存参数无效；解决方案：减少预分配数量并重试。");
             return false;
         }
 
         if (request_allocation(sizeof(__ept_hooked_function_info), buffer_count, INTENTION_TRACK_HOOKED_FUNCTIONS) == false)
         {
-            LogError("Pool mangaer request allocation Failed");
+            LogError("内存池管理器提交分配请求失败；原因：请求表已满或内存参数无效；解决方案：减少预分配数量并重试。");
             return false;
         }
 
@@ -181,7 +181,7 @@ namespace pool_manager
     }
     /// <summary>
     /// Free all allocted pools
-    /// �ͷ������ѷ���ĳ�
+    /// 释放所有已分配的池
     /// </summary>
     void uninitialize()
     {
@@ -251,12 +251,12 @@ namespace pool_manager
     {
         switch (intention)
         {
-        case INTENTION_NONE:   return "None";
-        case INTENTION_TRACK_HOOKED_PAGES:   return "Track Hooked Pages";
-        case INTENTION_EXEC_TRAMPOLINE: return "Trampoline";
-        case INTENTION_SPLIT_PML2: return "Split Pml2";
-        case INTENTION_TRACK_HOOKED_FUNCTIONS: return "Trace Hooked Functions";
-        default:      return "Unknown";
+        case INTENTION_NONE:   return "无用途";
+        case INTENTION_TRACK_HOOKED_PAGES:   return "跟踪已挂钩页面";
+        case INTENTION_EXEC_TRAMPOLINE: return "执行跳板";
+        case INTENTION_SPLIT_PML2: return "拆分 PML2";
+        case INTENTION_TRACK_HOOKED_FUNCTIONS: return "跟踪已挂钩函数";
+        default:      return "未知用途";
         }
     }
 
@@ -269,7 +269,7 @@ namespace pool_manager
 
         spinlock::lock(&g_vmm_context.pool_manager->lock_for_reading_pool);
 
-        DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "-----------------------------------POOL MANAGER DUMP-----------------------------------\r\n");
+        DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "-----------------------------------内存池管理器转储-----------------------------------\r\n");
 
         while (g_vmm_context.pool_manager->list_of_allocated_pools != current->Flink)
         {
@@ -278,12 +278,12 @@ namespace pool_manager
             // Get the head of the record
             __pool_table* pool_table = (__pool_table*)CONTAINING_RECORD(current, __pool_table, pool_list);
 
-            LogDump("Address: 0x%X    Size: %llu    Intention: %s    Is Busy: %s    Recycled: %s",
+            LogDump("地址：0x%X    大小：%llu    用途：%s    使用中：%s    已回收：%s",
                 pool_table->address, pool_table->size, intention_to_string(pool_table->intention), pool_table->is_busy ? "Yes" : "No",
                 pool_table->recycled ? "Yes" : "No");
         }
 
-        DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "-----------------------------------POOL MANAGER DUMP-----------------------------------\r\n");
+        DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "-----------------------------------内存池管理器转储-----------------------------------\r\n");
 
         spinlock::unlock(&g_vmm_context.pool_manager->lock_for_reading_pool);
     }

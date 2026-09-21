@@ -1,4 +1,4 @@
-unit KeyVerification;
+ï»¿unit KeyVerification;
 
 interface
 
@@ -7,12 +7,12 @@ uses IdHTTP, System.SysUtils, System.Classes, System.JSON, System.DateUtils, IdH
 
 type
 
-  //Éí·İÑéÖ¤
+  //èº«ä»½éªŒè¯
   TAuthentication = class
   private
-    m_appkey: string;  //Èí¼şÃØÔ¿
-    m_token: string;  //µÇÂ¼·µ»ØµÄtokenÁîÅÆ
-    m_cdkey: string;  //µÇÂ¼ÃÜÔ¿
+    m_appkey: string;  //è½¯ä»¶ç§˜é’¥
+    m_token: string;  //ç™»å½•è¿”å›çš„tokenä»¤ç‰Œ
+    m_cdkey: string;  //ç™»å½•å¯†é’¥
   public
     constructor Create;
     destructor Destroy; override;

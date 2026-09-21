@@ -5,16 +5,16 @@
 BOOL InjectCode(HANDLE hProcess);
 
 
-//у╙ЁЩ╧Ёвс
+//Ф▒≤И≥╓И▓╘Е╜░
 void RemoveHook(DWORD dwPid);
 
-//╩ж╦╢╧Ёвс
+//Ф│╒Е╓█И▓╘Е╜░
 void RestoreHook(DWORD dwPid);
 
-//у╙ЁЩ╧Ёвс
+//Ф▒≤И≥╓И▓╘Е╜░
 void RemoveKiUserApcDispatcherHook(DWORD dwPid);
 
-//╩ж╦╢╧Ёвс
+//Ф│╒Е╓█И▓╘Е╜░
 void RestoreKiUserApcDispatcherHook(DWORD dwPid);
 
 

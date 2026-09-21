@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _DBGKAPI_H
 #define _DBGKAPI_H
 
-#define DBGK_EXCEPTIONPORT_MASK           7   //Òì³£¶Ë¿Ú
+#define DBGK_EXCEPTIONPORT_MASK           7   //å¼‚å¸¸ç«¯å£
 
 //
 // NtCreateDebugObject Flags
@@ -16,7 +16,7 @@ NTSTATUS DbgkInitialize();
 
 VOID DbgkUnInitialize();
 
-//µ÷ÊÔÆ÷ÔËĞĞºó Îªµ÷ÊÔÆ÷´´½¨µ÷ÊÔ¶ÔÏó
+//è°ƒè¯•å™¨è¿è¡Œå ä¸ºè°ƒè¯•å™¨åˆ›å»ºè°ƒè¯•å¯¹è±¡
 EXTERN_C
 NTSTATUS NtCreateDebugObject(OUT PHANDLE DebugHandle,
 	IN ACCESS_MASK DesiredAccess,
@@ -145,13 +145,13 @@ DbgkMapViewOfSection(IN _EPROCESS* Process,
 	IN ULONG SectionOffset,
 	IN ULONG_PTR ViewSize);
 
-//DLLĞ¶ÔØ
+//DLLå¸è½½
 EXTERN_C
 VOID
 DbgkUnMapViewOfSection(IN _EPROCESS* Process, IN PVOID BaseAddress);
 //
 //
-////ÉèÖÃµ÷ÊÔ¶ÔÏó
+////è®¾ç½®è°ƒè¯•å¯¹è±¡
 //BOOLEAN SetDebugTargetProcess(_EPROCESS* Process, PDEBUG_OBJECT DebugObject);
 //
 
@@ -168,7 +168,7 @@ VOID DeleteDebugProcess(PDEBUG_OBJECT DebugObject);
 
 POBJECT_TYPE GetDebugObjectType(UNICODE_STRING Name);
 
-//ÅĞ¶ÏÄ¿±ê½ø³ÌÊÇ·ñÊÇ±»µ÷ÊÔµÄ½ø³Ì
+//åˆ¤æ–­ç›®æ ‡è¿›ç¨‹æ˜¯å¦æ˜¯è¢«è°ƒè¯•çš„è¿›ç¨‹
 BOOLEAN IsDebugTargetProcess(IN _EPROCESS* Process,
 	OUT PDEBUG_PROCESS* DebugProcess);
 

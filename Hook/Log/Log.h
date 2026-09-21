@@ -4,7 +4,7 @@
 
 int outDebug(const TCHAR* _Format, ...);
 
-//报告严重错误
+//鎶ュ憡涓ラ噸閿欒
 void ReportSeriousError(LPCSTR lpText);
 
 #endif // !_LOG_H

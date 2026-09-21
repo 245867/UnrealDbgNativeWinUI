@@ -1,4 +1,4 @@
-unit EventHandlerThread;
+ï»¿unit EventHandlerThread;
 
 interface
 
@@ -16,7 +16,7 @@ type
   private
     FLock: TRTLCriticalSection;
   public
-    {*********************************Ïß³ÌÀà·½·¨*********************************}
+    {*********************************çº¿ç¨‹ç±»æ–¹æ³•*********************************}
     procedure Lock;
     procedure UnLock;
     constructor Create(bFlag: Boolean);
@@ -44,7 +44,7 @@ uses Log, Main;
 constructor TEventHandlerThread.Create(bFlag: Boolean);
 begin
   try
-    inherited Create(bFlag);  //False´´½¨Ïß³ÌºóÁ¢¼´Ö´ĞĞ
+    inherited Create(bFlag);  //Falseåˆ›å»ºçº¿ç¨‹åç«‹å³æ‰§è¡Œ
     InitializeCriticalSection(FLock);
     m_MsgQueue := TExtQueue.Create;
   except on e:Exception do
@@ -83,14 +83,14 @@ var
   MsgRcd: TMsgRcd;
 begin
   try
-    m_Open := True;  //±êÊ¶Ïß³ÌÒÑ¾­Ö´ĞĞ
+    m_Open := True;  //æ ‡è¯†çº¿ç¨‹å·²ç»æ‰§è¡Œ
 
-    //Ë«whileÑ­»·¿ÉÒÔÍêÃÀµÄ½â¾öÒÔÏÂ³ÌĞòÉè¼ÆÎÊÌâ
-    //1.µ±Ã»ÓĞÊı¾İµ½À´Ê±Ïß³ÌÒ»Ö±ÔÚ¿Õ×ªÕ¼ÓÃcpu×ÊÔ´
-    //2.¼ÓSleepÑÓ³Ù Èç¹ûÓĞ¶àÌõÊı¾İĞèÒª´¦ÀíÊ± Ã¿´Î¶¼ĞèÒªµÈºò
+    //åŒwhileå¾ªç¯å¯ä»¥å®Œç¾çš„è§£å†³ä»¥ä¸‹ç¨‹åºè®¾è®¡é—®é¢˜
+    //1.å½“æ²¡æœ‰æ•°æ®åˆ°æ¥æ—¶çº¿ç¨‹ä¸€ç›´åœ¨ç©ºè½¬å ç”¨cpuèµ„æº
+    //2.åŠ Sleepå»¶è¿Ÿ å¦‚æœæœ‰å¤šæ¡æ•°æ®éœ€è¦å¤„ç†æ—¶ æ¯æ¬¡éƒ½éœ€è¦ç­‰å€™
     while IsOpen do begin
       while GetMsg(@MsgRcd) do begin
-        DispatchMsg(MsgRcd);         //ÏûÏ¢·Ö·¢
+        DispatchMsg(MsgRcd);         //æ¶ˆæ¯åˆ†å‘
       end;
       Sleep(100);
     end;
@@ -99,7 +99,7 @@ begin
   end;
 end;
 
-//´ÓÏûÏ¢¶ÓÁĞÖĞÈ¡³öÏûÏ¢
+//ä»æ¶ˆæ¯é˜Ÿåˆ—ä¸­å–å‡ºæ¶ˆæ¯
 function TEventHandlerThread.GetMsg(pMsgRcd: pTMsgRcd): Boolean;
 var
   TmpMsgRcd: pTMsgRcd;
@@ -128,7 +128,7 @@ begin
   end;
 end;
 
-//½«ÏûÏ¢²åÈëÏûÏ¢¶ÓÁĞ
+//å°†æ¶ˆæ¯æ’å…¥æ¶ˆæ¯é˜Ÿåˆ—
 procedure TEventHandlerThread.SendMsg(MsgRcd: TMsgRcd);
 var
   pMsgRcd: pTMsgRcd;
@@ -148,7 +148,7 @@ begin
   end;
 end;
 
-//ÅÉÇ²ÏûÏ¢
+//æ´¾é£æ¶ˆæ¯
 procedure TEventHandlerThread.DispatchMsg(MsgRcd: TMsgRcd);
 begin
   try

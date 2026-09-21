@@ -1,4 +1,4 @@
-#include "Driver.h"
+ï»¿#include "Driver.h"
 #include "ntos/inc/mmtypes.h"
 #include "ntos/inc/ntdbg.h"
 #include "ntos/inc/ketypes.h"
@@ -16,20 +16,20 @@
 #include "DbgkApi/DbgkApi.h"
 
 
-PULONG_PTR PspProcessSequenceNumber;               //½ø³ÌĞòÁĞºÅ
-_EPROCESS* DbgkTargetProcess;                      //µ÷ÊÔÄ¿±ê
-_EPROCESS* ProtectProcessEp;                       //±»±£»¤µÄ½ø³Ì
-POBJECT_TYPE* DbgkDebugObjectType;                    //µ÷ÊÔ¶ÔÏóÀàĞÍ
-POBJECT_TYPE          Hvm_DbgkDebugObjectType;                //×Ô½¨µÄµ÷ÊÔ¶ÔÏóÀàĞÍ
+PULONG_PTR PspProcessSequenceNumber;               //è¿›ç¨‹åºåˆ—å·
+_EPROCESS* DbgkTargetProcess;                      //è°ƒè¯•ç›®æ ‡
+_EPROCESS* ProtectProcessEp;                       //è¢«ä¿æŠ¤çš„è¿›ç¨‹
+POBJECT_TYPE* DbgkDebugObjectType;                    //è°ƒè¯•å¯¹è±¡ç±»å‹
+POBJECT_TYPE          Hvm_DbgkDebugObjectType;                //è‡ªå»ºçš„è°ƒè¯•å¯¹è±¡ç±»å‹
 POBJECT_TYPE* ObTypeIndexTable;
-FAST_MUTEX            DbgkpProcessDebugPortMutex;             //½ø³Ìµ÷ÊÔ¶Ë¿Ú»¥³âËø
+FAST_MUTEX            DbgkpProcessDebugPortMutex;             //è¿›ç¨‹è°ƒè¯•ç«¯å£äº’æ–¥é”
 FAST_MUTEX            LongFlagsMutex;
 PRKEVENT* DbgkErrorPortRegisteredEvent;
 PDBGKP_ERROR_PORT     DbgkpErrorPort;
 EX_PUSH_LOCK          DbgkpErrorPortLock;
 _EPROCESS** DbgkpErrorProcess;
-BOOLEAN               IsDbgk;                                 //ÊÇ·ñµ÷ÊÔ
-ULONG                 Ssdtbase;                               //SSDT»ùÖ·
+BOOLEAN               IsDbgk;                                 //æ˜¯å¦è°ƒè¯•
+ULONG                 Ssdtbase;                               //SSDTåŸºå€
 PVOID                 PspSystemDllBase;
 PBOOLEAN              PsImageNotifyEnabled;
 EPROCESS_QUOTA_BLOCK  PspDefaultQuotaBlock;
@@ -68,24 +68,24 @@ PULONG_PTR            KeEnabledXStateFeatures;
 
 UNICODE_STRING PsNtDllPathName = RTL_CONSTANT_STRING(L"\\SystemRoot\\System32\\ntdll.dll");
 
-BOOLEAN               g_IsInitGlobalVariable;                 //³õÊ¼»¯È«¾Ö±äÁ¿
-PEX_PUSH_LOCK         PspActiveProcessLock;                   //»î¶¯½ø³ÌÁĞ±íËø
-PLIST_ENTRY           PsActiveProcessHead;                    //»î¶¯½ø³ÌÁĞ±í
+BOOLEAN               g_IsInitGlobalVariable;                 //åˆå§‹åŒ–å…¨å±€å˜é‡
+PEX_PUSH_LOCK         PspActiveProcessLock;                   //æ´»åŠ¨è¿›ç¨‹åˆ—è¡¨é”
+PLIST_ENTRY           PsActiveProcessHead;                    //æ´»åŠ¨è¿›ç¨‹åˆ—è¡¨
 LARGE_INTEGER* PspShortTime;
-PEX_CALLBACK          PspCreateThreadNotifyRoutine;           //Ïß³ÌÍ¨Öª»Øµ÷º¯ÊıµÄÊı×é
-PEX_CALLBACK          PspCreateProcessNotifyRoutine;          //½ø³ÌÍ¨Öª»Øµ÷º¯ÊıµÄÊı×é
+PEX_CALLBACK          PspCreateThreadNotifyRoutine;           //çº¿ç¨‹é€šçŸ¥å›è°ƒå‡½æ•°çš„æ•°ç»„
+PEX_CALLBACK          PspCreateProcessNotifyRoutine;          //è¿›ç¨‹é€šçŸ¥å›è°ƒå‡½æ•°çš„æ•°ç»„
 PULONG                PspNotifyEnableMask;
 PULONG                PerfGlobalGroupMask;
 PVOID* PspSystemDlls;
 PVOID                 g_obProcessHandle;
-_EPROCESS* g_ProtectTargetProcess;                 //ĞèÒª±£»¤µÄÄ¿±ê½ø³Ì
-PROTECTOBJ            g_ProtectFileObjList;                   //±£»¤µÄÎÄ¼ş¶ÔÏóÁĞ±í
-PROTECTOBJ            g_ProtectWndObjList;                    //±£»¤µÄ´°¿Ú¶ÔÏóÁĞ±í
-DEBUGGER_TABLE        g_DebuggerList;                         //µ÷ÊÔÆ÷¶ÔÏó
-DEBUG_PROCESS_TABLE   g_DebugProcessList;                     //±»µ÷ÊÔµÄ½ø³ÌÁĞ±í
-_EPROCESS*            g_SelfProcess;                          //ÎÒÃÇ×Ô¼ºµÄ½ø³Ì
-BREAKPOINT_TABLE      g_BreakpointList;                       //¶ÏµãÁĞ±í
-VIRTUAL_HANDLE_TABLE  g_VirtualHandleList;                    //ĞéÄâ¾ä±úÁĞ±í
+_EPROCESS* g_ProtectTargetProcess;                 //éœ€è¦ä¿æŠ¤çš„ç›®æ ‡è¿›ç¨‹
+PROTECTOBJ            g_ProtectFileObjList;                   //ä¿æŠ¤çš„æ–‡ä»¶å¯¹è±¡åˆ—è¡¨
+PROTECTOBJ            g_ProtectWndObjList;                    //ä¿æŠ¤çš„çª—å£å¯¹è±¡åˆ—è¡¨
+DEBUGGER_TABLE        g_DebuggerList;                         //è°ƒè¯•å™¨å¯¹è±¡
+DEBUG_PROCESS_TABLE   g_DebugProcessList;                     //è¢«è°ƒè¯•çš„è¿›ç¨‹åˆ—è¡¨
+_EPROCESS*            g_SelfProcess;                          //æˆ‘ä»¬è‡ªå·±çš„è¿›ç¨‹
+BREAKPOINT_TABLE      g_BreakpointList;                       //æ–­ç‚¹åˆ—è¡¨
+VIRTUAL_HANDLE_TABLE  g_VirtualHandleList;                    //è™šæ‹Ÿå¥æŸ„åˆ—è¡¨
 LONG                  g_TL_Game_pid;
 
 
@@ -95,19 +95,19 @@ LONG                  g_TL_Game_pid;
 
 
 
-/**************************** º¯ÊıÖ¸Õë ****************************/
+/**************************** å‡½æ•°æŒ‡é’ˆ ****************************/
 
-PFN_OBDUPLICATEOBJECT ObDuplicateObject;  //¸´ÖÆ¶ÔÏó
+PFN_OBDUPLICATEOBJECT ObDuplicateObject;  //å¤åˆ¶å¯¹è±¡
 PFN_KERESUMETHREAD KeResumeThread;
 PFN_KESUSPENDTHREAD KeSuspendThread;
 PFN_KEFORCERESUMETHREAD KeForceResumeThread;
 PFN_KEFREEZEALLTHREADS KeFreezeAllThreads;
 PFN_KETHAWALLTHREADS KeThawAllThreads;
-PFN_PSGETNEXTPROCESSTHREAD PsGetNextProcessThread; //»ñÈ¡½ø³ÌµÄÏÂÒ»¸öÏß³Ì
-PFN_PSQUITNEXTPROCESSTHREAD PsQuitNextProcessThread; //Ïß³Ì¶ÔÏó½â³ıÒıÓÃ
-PFN_MMGETFILENAMEFORADDRESS MmGetFileNameForAddress; //Í¨¹ıµØÖ·»ñÈ¡Ãû³ÆĞÅÏ¢
-PFN_MMGETFILENAMEFORSECTION MmGetFileNameForSection; //Í¨¹ı½Ú¶ÔÏó»ñÈ¡Ãû³ÆĞÅÏ¢
-PFN_LPCREQUESTWAITREPLYPORTEX LpcRequestWaitReplyPortEx; //ÇëÇó¶Ë¿Ú
+PFN_PSGETNEXTPROCESSTHREAD PsGetNextProcessThread; //è·å–è¿›ç¨‹çš„ä¸‹ä¸€ä¸ªçº¿ç¨‹
+PFN_PSQUITNEXTPROCESSTHREAD PsQuitNextProcessThread; //çº¿ç¨‹å¯¹è±¡è§£é™¤å¼•ç”¨
+PFN_MMGETFILENAMEFORADDRESS MmGetFileNameForAddress; //é€šè¿‡åœ°å€è·å–åç§°ä¿¡æ¯
+PFN_MMGETFILENAMEFORSECTION MmGetFileNameForSection; //é€šè¿‡èŠ‚å¯¹è±¡è·å–åç§°ä¿¡æ¯
+PFN_LPCREQUESTWAITREPLYPORTEX LpcRequestWaitReplyPortEx; //è¯·æ±‚ç«¯å£
 PFN_KECONTEXTFROMKFRAMES KeContextFromKframes;
 PFN_KECONTEXTTOKFRAMES KeContextToKframes;
 PFN_KICHECKFORATLTHUNK KiCheckForAtlThunk;
@@ -115,7 +115,7 @@ PFN_KISEGSSTOTRAPFRAME KiSegSsToTrapFrame;
 PFN_KIESPTOTRAPFRAME KiEspToTrapFrame;
 PFN_KIDEBUGROUTINE KiDebugRoutine;
 PFN_RTLDISPATCHEXCEPTION RtlDispatchException;
-PFN_PSCALLIMAGENOTIFYROUTINES PsCallImageNotifyRoutines;  //µ÷ÓÃÓ³Ïñ»Øµ÷Àı³Ì
+PFN_PSCALLIMAGENOTIFYROUTINES PsCallImageNotifyRoutines;  //è°ƒç”¨æ˜ åƒå›è°ƒä¾‹ç¨‹
 PFN_OBGETPROCESSHANDLECOUNT ObGetProcessHandleCount;
 PFN_PSGETPROCESSSESSIONID PsGetProcessSessionId;
 PFN_OBISLUIDDEVICEMAPSENABLED ObIsLUIDDeviceMapsEnabled;
@@ -312,7 +312,7 @@ PFN_SEPDELETEACCESSSTATE SepDeleteAccessState;
 
 
 
-//È«¾Ö±äÁ¿
+//å…¨å±€å˜é‡
 PVOID PspLoaderInitRoutine;
 unsigned __int64 game_cr3;
 

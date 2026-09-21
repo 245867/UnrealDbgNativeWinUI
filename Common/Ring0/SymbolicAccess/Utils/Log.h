@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 #include <string_view>
 
 enum __log_type
@@ -21,10 +21,14 @@ namespace symbolic_access
 #endif
 }
 
-#undef DEBUG
-#ifdef DEBUG
+// Symbol/driver diagnostics must remain available in release builds too.
+// The previous header undef'd DEBUG and consequently compiled every
+// LogError/LogInfo/outLog call out of the release drivers, making Win11
+// compatibility failures impossible to diagnose.  A caller can explicitly
+// opt out for a size-constrained build, but normal builds keep the records.
+#if !defined(SYMBOLIC_ACCESS_DISABLE_LOGGING)
 
-//VT host¿Ô≤ªƒ‹ π”√WindowsµƒDbgPrint
+//VT hostÈáå‰∏çËÉΩ‰ΩøÁî®WindowsÁöÑDbgPrint
 
 #define LogError(format, ...) \
     symbolic_access::LogPrint(LOG_TYPE_ERROR," [%s:%d] " format , __func__, __LINE__, __VA_ARGS__)
@@ -46,4 +50,4 @@ namespace symbolic_access
 #define LogInfo(format, ...)
 #define outLog(format, ...)
 
-#endif // DEBUG
+#endif // !SYMBOLIC_ACCESS_DISABLE_LOGGING

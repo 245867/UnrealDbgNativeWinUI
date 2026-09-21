@@ -1,20 +1,20 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _INIT_SYMBOLIC_H
 #define _INIT_SYMBOLIC_H
 
-VOID InitSymbolsTable(IN PUSER_DATA userData, IN PIRP pIrp);
+NTSTATUS InitSymbolsTable(IN PUSER_DATA userData, IN PIRP pIrp);
 
 BOOLEAN InitNtoskrnlSymbolsTable();
 BOOLEAN InitWin32kbaseSymbolsTable();
 BOOLEAN InitWin32kfullSymbolsTable();
 
-//½«ÄÚºË½á¹¹µÄÆ«ÒÆ·¢ËÍ¸øvt host
+//å°†å†…æ ¸ç»“æ„çš„åç§»å‘é€ç»™vt host
 bool DispatchOffsetToHost();
 
-//Dump¶ÔÏóÆ«ÒÆºÍº¯ÊıÖ¸Õë
+//Dumpå¯¹è±¡åç§»å’Œå‡½æ•°æŒ‡é’ˆ
 void DumpOffsetAndFuncPtr();
 
-void CheckFunctionPointers();
+BOOLEAN CheckFunctionPointers();
 
 #endif // !_INIT_SYMBOLIC_H

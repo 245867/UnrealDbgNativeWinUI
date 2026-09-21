@@ -1,4 +1,4 @@
-#include "../Driver.h"
+ï»¿#include "../Driver.h"
 #include "../ntos/inc/ntosdef.h"
 #include "../ntos/inc/ketypes.h"
 #include "../ntos/inc/amd64.h"
@@ -56,7 +56,7 @@ NTSTATUS DbgkInitialize()
     //ObjectTypeInitializer.DefaultNonPagedPoolCharge = sizeof(DEBUG_OBJECT);    
     ObjectTypeInitializer.DefaultPagedPoolCharge = 0;
     ObjectTypeInitializer.DefaultNonPagedPoolCharge = 0;
-    ObjectTypeInitializer.CloseProcedure = DbgkpCloseObject;  //×¢²á»Øµ÷º¯Êı
+    ObjectTypeInitializer.CloseProcedure = DbgkpCloseObject;  //æ³¨å†Œå›è°ƒå‡½æ•°
     ObjectTypeInitializer.DeleteProcedure = NULL;
 
     //Hvm_DbgkDebugObjectType = *DbgkDebugObjectType;
@@ -148,8 +148,8 @@ Return Value:
     // Loop over all processes and remove the debug port from any that still have it.
     // Debug port propagation was disabled by setting the delete pending flag above so we only have to do this
     // once. No more refs can appear now.
-    // Ñ­»·±éÀúËùÓĞ½ø³Ì£¬²¢É¾³ıÈÔÈ»¾ßÓĞµ÷ÊÔ¶Ë¿ÚµÄ½ø³Ì¡£Í¨¹ıÉèÖÃÉ¾³ı´ı¶¨±êÖ¾½ûÓÃÁËµ÷ÊÔ¶Ë¿Ú´«²¥£¬Òò´ËÎÒÃÇÖ»ĞèÖ´ĞĞÒ»´Î´Ë²Ù×÷¡£
-    // ÏÖÔÚ²»ÔÙ»á³öÏÖ¸ü¶àÒıÓÃ¡£
+    // å¾ªç¯éå†æ‰€æœ‰è¿›ç¨‹ï¼Œå¹¶åˆ é™¤ä»ç„¶å…·æœ‰è°ƒè¯•ç«¯å£çš„è¿›ç¨‹ã€‚é€šè¿‡è®¾ç½®åˆ é™¤å¾…å®šæ ‡å¿—ç¦ç”¨äº†è°ƒè¯•ç«¯å£ä¼ æ’­ï¼Œå› æ­¤æˆ‘ä»¬åªéœ€æ‰§è¡Œä¸€æ¬¡æ­¤æ“ä½œã€‚
+    // ç°åœ¨ä¸å†ä¼šå‡ºç°æ›´å¤šå¼•ç”¨ã€‚
     //
     for (Process = PsGetNextProcess(NULL);
         Process != NULL;
@@ -184,13 +184,13 @@ Return Value:
 
             if (Deref)
             {
-                DbgkpMarkProcessPeb(Process);  //ÇåÀí½ø³ÌµÄpeb½á¹¹
+                DbgkpMarkProcessPeb(Process);  //æ¸…ç†è¿›ç¨‹çš„pebç»“æ„
                 //
                 // If the caller wanted process deletion on debugger dying (old interface) then kill off the process.
                 //
                 if (DebugObject->Flags & DEBUG_OBJECT_KILL_ON_CLOSE)
                 {
-                    DbgPrint("½áÊø½ø³Ì");
+                    DbgPrint("ç»“æŸè¿›ç¨‹");
                     PsTerminateProcess(Process, STATUS_DEBUGGER_INACTIVE);
                 }
                 ObDereferenceObject(DebugObject);
@@ -207,7 +207,7 @@ Return Value:
         DbgkpWakeTarget(DebugEvent);
     }
 
-    DbgPrint("ÒÆ³ıµ÷ÊÔ¶ÔÏó");
+    DbgPrint("ç§»é™¤è°ƒè¯•å¯¹è±¡");
     DeleteDebugProcess(DebugObject);
 }
 
@@ -222,7 +222,7 @@ VOID DbgkUnInitialize()
 
 POBJECT_TYPE GetDebugObjectType(UNICODE_STRING Name)
 {
-    //TypeIndexÏÂ±ê´Ó2¿ªÊ¼´æ´¢µÄ²ÅÊÇÓĞĞ§Ö¸Õë
+    //TypeIndexä¸‹æ ‡ä»2å¼€å§‹å­˜å‚¨çš„æ‰æ˜¯æœ‰æ•ˆæŒ‡é’ˆ
     for (DWORD TypeIndex = 2; ObTypeIndexTable[TypeIndex] != NULL; TypeIndex++)
     {
         if (RtlEqualUnicodeString(&ObTypeIndexTable[TypeIndex]->Name, &Name, FALSE))
@@ -233,7 +233,7 @@ POBJECT_TYPE GetDebugObjectType(UNICODE_STRING Name)
     return NULL;
 }
 
-//µ÷ÊÔÆ÷ÔËĞĞºó Îªµ÷ÊÔÆ÷´´½¨µ÷ÊÔ¶ÔÏó
+//è°ƒè¯•å™¨è¿è¡Œå ä¸ºè°ƒè¯•å™¨åˆ›å»ºè°ƒè¯•å¯¹è±¡
 EXTERN_C
 NTSTATUS NtCreateDebugObject(OUT PHANDLE DebugHandle,
     IN ACCESS_MASK DesiredAccess,
@@ -266,7 +266,7 @@ NTSTATUS NtCreateDebugObject(OUT PHANDLE DebugHandle,
     if (Flags & ~DBGK_ALL_FLAGS) return STATUS_INVALID_PARAMETER;
 
     /* Create the Object */
-    //¸ù¾İµ÷ÊÔÀàĞÍ´´½¨µ÷ÊÔ¶ÔÏó
+    //æ ¹æ®è°ƒè¯•ç±»å‹åˆ›å»ºè°ƒè¯•å¯¹è±¡
     Status = ObCreateObject(PreviousMode,
         Hvm_DbgkDebugObjectType,
         ObjectAttributes,
@@ -290,7 +290,7 @@ NTSTATUS NtCreateDebugObject(OUT PHANDLE DebugHandle,
             FALSE);
 
         /* Set the Flags */
-        if (Flags & DBGK_KILL_PROCESS_ON_EXIT) //ÍË³öÊ±ÖÕÖ¹½ø³Ì
+        if (Flags & DBGK_KILL_PROCESS_ON_EXIT) //é€€å‡ºæ—¶ç»ˆæ­¢è¿›ç¨‹
         {
             DebugObject->Flags = DEBUG_OBJECT_KILL_ON_CLOSE;
         }
@@ -323,7 +323,7 @@ NTSTATUS NtCreateDebugObject(OUT PHANDLE DebugHandle,
     }
 
     /* Return Status */
-    DBGKTRACE(DBGK_OBJECT_DEBUG, "Handle: %p DebugObject: %p\n",
+    DBGKTRACE(DBGK_OBJECT_DEBUG, "å¥æŸ„ï¼š%pï¼›è°ƒè¯•å¯¹è±¡ï¼š%p\n",
         hDebug, DebugObject);
     return Status;
 }
@@ -481,7 +481,7 @@ VOID InsertDebugProcessList(PDEBUG_PROCESS debug_process)
 //    delete g_DebuggerList;
 //}
 
-//ÊÍ·ÅÁĞ±í
+//é‡Šæ”¾åˆ—è¡¨
 VOID ReleaseDebugProcessList()
 {
     PLIST_ENTRY ListHead, NextEntry;
@@ -507,11 +507,11 @@ VOID ReleaseDebugProcessList()
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        LogError("ÊÍ·Åµ÷ÊÔ½ø³ÌÁĞ±í±ÀÀ£!");
+        LogError("é‡Šæ”¾è°ƒè¯•è¿›ç¨‹åˆ—è¡¨å´©æºƒ!");
     }
 }
 
-//ÒÆ³ıÔªËØ
+//ç§»é™¤å…ƒç´ 
 VOID DeleteDebugProcess(PDEBUG_OBJECT DebugObject)
 {
     PLIST_ENTRY ListHead, NextEntry;
@@ -542,7 +542,7 @@ VOID DeleteDebugProcess(PDEBUG_OBJECT DebugObject)
     ExReleaseFastMutex(&g_DebugProcessList.Mutex);
 }
 
-//ÉèÖÃµ÷ÊÔ¶ÔÏó
+//è®¾ç½®è°ƒè¯•å¯¹è±¡
 BOOLEAN SetDebugTargetProcess(_EPROCESS* Process, PDEBUG_OBJECT DebugObject)
 {
     BOOLEAN result = FALSE;    
@@ -559,7 +559,7 @@ BOOLEAN SetDebugTargetProcess(_EPROCESS* Process, PDEBUG_OBJECT DebugObject)
     return result;
 }
 
-//ÅĞ¶ÏÄ¿±ê½ø³ÌÊÇ·ñÊÇ±»µ÷ÊÔµÄ½ø³Ì
+//åˆ¤æ–­ç›®æ ‡è¿›ç¨‹æ˜¯å¦æ˜¯è¢«è°ƒè¯•çš„è¿›ç¨‹
 BOOLEAN IsDebugTargetProcess(IN _EPROCESS* Process,
     OUT PDEBUG_PROCESS* DebugProcess)
 {
@@ -631,7 +631,7 @@ BOOLEAN IsDebugTargetProcess(IN _EPROCESS* Process,
 //
 //    if (IsDebugTargetProcess(*(_EPROCESS**)ptr_Process, &DebugProcess))
 //    {
-//        outToFile("apex´´½¨ÁËÏß³Ì");
+//        outToFile("apexåˆ›å»ºäº†çº¿ç¨‹");
 //        Port = DebugProcess->DebugObject;
 //    }
 //    else
@@ -640,7 +640,7 @@ BOOLEAN IsDebugTargetProcess(IN _EPROCESS* Process,
 //        Port = *(PDEBUG_OBJECT*)ptr_DebugPort;
 //    }    
 //
-//    s.id = 0xd7b32a726e23dbc2;  //DbgkCreateThread ¾­16Î»md5¹şÏ£ÕªÒª
+//    s.id = 0xd7b32a726e23dbc2;  //DbgkCreateThread ç»16ä½md5å“ˆå¸Œæ‘˜è¦
 //    s.DebugPort = (size_t)Port;
 //    Original_DbgkCreateThread(Thread);
 //}
@@ -663,7 +663,7 @@ VOID PspExitThread(_In_ NTSTATUS ExitStatus)
         Port = *(PDEBUG_OBJECT*)ptr_DebugPort;
     }
 
-    s.id = 0xfbbd6252520ea3d5;  //PspExitThread ¾­16Î»md5¹şÏ£ÕªÒª
+    s.id = 0xfbbd6252520ea3d5;  //PspExitThread ç»16ä½md5å“ˆå¸Œæ‘˜è¦
     s.DebugPort = (size_t)Port;
     Original_PspExitThread(ExitStatus);
 }
@@ -702,7 +702,7 @@ VOID DbgkCreateThread(IN PETHREAD Thread)
 
     size_t ptr_Flags = (size_t)Process + eprocess_offset::Flags;
 
-    //½«ImageNotifyDoneºÍCreateReportedÖÃÎ»
+    //å°†ImageNotifyDoneå’ŒCreateReportedç½®ä½
     OldFlags.Flags = InterlockedOr((volatile LONG*)ptr_Flags, 0x400001u);
 
     if (!(OldFlags.ImageNotifyDone) && (*PspNotifyEnableMask & 1 || *PerfGlobalGroupMask & 4))
@@ -739,7 +739,7 @@ VOID DbgkCreateThread(IN PETHREAD Thread)
         {
             ImageFileName = NULL;
         }
-        PsCallImageNotifyRoutines(ImageFileName, Process, &ImageInfoEx, FileObject);   //Í¨ÖªÄ£¿é»Øµ÷
+        PsCallImageNotifyRoutines(ImageFileName, Process, &ImageInfoEx, FileObject);   //é€šçŸ¥æ¨¡å—å›è°ƒ
         if (ImageFileName)
         {
             ExFreePool(ImageFileName);
@@ -747,7 +747,7 @@ VOID DbgkCreateThread(IN PETHREAD Thread)
 
         ObDereferenceObject(FileObject);
 
-        //×¢Òâ: Win10ÊÇ i < 6
+        //æ³¨æ„: Win10æ˜¯ i < 6
         //Win11 i < 7
         for (int i = 0; i < PsSystemDllTotalTypes; i++)
         {
@@ -778,14 +778,14 @@ VOID DbgkCreateThread(IN PETHREAD Thread)
                 ImageInfoEx.ImageInfo.ImageSectionNumber = 0;
 
                 SystemDllData = CONTAINING_RECORD(DllInfo, PSP_SYSTEM_DLL_DATA, DllInfo);
-                Section = PspReferenceSystemDll(&SystemDllData->SystemDll);  //¿ìËÙÒıÓÃ¶ÔÏó
+                Section = PspReferenceSystemDll(&SystemDllData->SystemDll);  //å¿«é€Ÿå¼•ç”¨å¯¹è±¡
                 ControlArea = MiSectionControlArea(Section);
                 FileObject = (PFILE_OBJECT)MiReferenceControlAreaFile(ControlArea);
                 if (Section)
                 {
                     ObFastDereferenceObject(&SystemDllData->SystemDll.DllSection, Section);
                 }
-                PsCallImageNotifyRoutines(&DllInfo->DllPath, Process, &ImageInfoEx, FileObject);  //Í¨ÖªÄ£¿é»Øµ÷
+                PsCallImageNotifyRoutines(&DllInfo->DllPath, Process, &ImageInfoEx, FileObject);  //é€šçŸ¥æ¨¡å—å›è°ƒ
                 ObDereferenceObject(FileObject);
             }
         }
@@ -804,7 +804,7 @@ VOID DbgkCreateThread(IN PETHREAD Thread)
 
     if (!DebugPort) return;
 
-    //¼ì²é±¨¸æÊÇ·ñÒÑ¾­´´½¨
+    //æ£€æŸ¥æŠ¥å‘Šæ˜¯å¦å·²ç»åˆ›å»º
     if (!(OldFlags.CreateReported))
     {
         /* Setup the information structure for the new thread */
@@ -900,7 +900,7 @@ NTSTATUS DbgkpQueueMessage(IN _EPROCESS* Process,
 
     PAGED_CODE();
     DBGKTRACE(DBGK_MESSAGE_DEBUG,
-        "Process: %p Thread: %p Message: %p Flags: %lx\n",
+        "è¿›ç¨‹ï¼š%pï¼›çº¿ç¨‹ï¼š%pï¼›æ¶ˆæ¯ï¼š%pï¼›æ ‡å¿—ï¼š%lx\n",
         Process, Thread, Message, Flags);
 
     //DbgBreakPoint();
@@ -1007,9 +1007,9 @@ NTSTATUS DbgkpQueueMessage(IN _EPROCESS* Process,
         if (!(DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING))
         {
             /* Add the event into the object's list */
-            DBGKTRACE(DBGK_MESSAGE_DEBUG, "Inserting: %p %d\n",
+            DBGKTRACE(DBGK_MESSAGE_DEBUG, "æ­£åœ¨æ’å…¥è°ƒè¯•äº‹ä»¶ï¼š%pï¼›API ç¼–å·ï¼š%d\n",
                 DebugEvent, Message->ApiNumber);
-            InsertTailList(&DebugObject->EventList, &DebugEvent->EventList);  //½«µ÷ÊÔÊÂ¼ş²åÈëµ½ÊÂ¼ş¶ÓÁĞ
+            InsertTailList(&DebugObject->EventList, &DebugEvent->EventList);  //å°†è°ƒè¯•äº‹ä»¶æ’å…¥åˆ°äº‹ä»¶é˜Ÿåˆ—
 
             /* Check if we have to signal it */
             if (!NewEvent)
@@ -1072,12 +1072,12 @@ NTSTATUS DbgkpQueueMessage(IN _EPROCESS* Process,
     }
 
     /* Return status */
-    DBGKTRACE(DBGK_MESSAGE_DEBUG, "Status: %lx\n", Status);
+    DBGKTRACE(DBGK_MESSAGE_DEBUG, "çŠ¶æ€ï¼š%lx\n", Status);
     return Status;
 }
 
 
-//×ª·¢Òì³£
+//è½¬å‘å¼‚å¸¸
 BOOLEAN
 DbgkForwardException(IN PEXCEPTION_RECORD ExceptionRecord,
     IN BOOLEAN IsUseDebugPort,
@@ -1095,7 +1095,7 @@ DbgkForwardException(IN PEXCEPTION_RECORD ExceptionRecord,
 
     PAGED_CODE();
     DBGKTRACE(DBGK_EXCEPTION_DEBUG,
-        "ExceptionRecord: %p Port: %u\n", ExceptionRecord, IsUseDebugPort);
+        "å¼‚å¸¸è®°å½•ï¼š%pï¼›ç«¯å£æ ‡å¿—ï¼š%u\n", ExceptionRecord, IsUseDebugPort);
 
     /* Setup the API Message */
 
@@ -1109,25 +1109,25 @@ DbgkForwardException(IN PEXCEPTION_RECORD ExceptionRecord,
     }
 
     /* Check if this is to be sent on the debug port */
-    if (IsUseDebugPort)  //ÊÇ·ñ½«Òì³£×ª·¢µ½µ÷ÊÔ¶Ë¿Ú
+    if (IsUseDebugPort)  //æ˜¯å¦å°†å¼‚å¸¸è½¬å‘åˆ°è°ƒè¯•ç«¯å£
     {
         /* Use the debug port, unless the thread is being hidden */
-        //outLog(("×ª·¢Òì³£........\n"));
+        //outLog(("è½¬å‘å¼‚å¸¸........\n"));
         if (IsDebugTargetProcess(Process, &DebugProcess))
         {
             Port = DebugProcess->DebugObject;
-            outLog("DbgkDebugObject: %llX", DebugProcess->DebugObject);
+            outLog("Dbgk è°ƒè¯•å¯¹è±¡å¥æŸ„ï¼š%llX", DebugProcess->DebugObject);
         }
         else
         {
             size_t ptr_DebugPort = (size_t)Process + eprocess_offset::DebugPort;
             Port = *(PDEBUG_OBJECT*)ptr_DebugPort;
-            //outLog(("×ßÕâÀïÁË........\n"));
+            //outLog(("èµ°è¿™é‡Œäº†........\n"));
         }
     }
     else
     {
-        //·ñÔò£¬Ê¹ÓÃÒì³£¶Ë¿Ú
+        //å¦åˆ™ï¼Œä½¿ç”¨å¼‚å¸¸ç«¯å£
         /* Otherwise, use the exception port */
         ApiMessage.h.u2.ZeroInit = LPC_EXCEPTION;
         UseLpc = TRUE;
@@ -1147,12 +1147,12 @@ DbgkForwardException(IN PEXCEPTION_RECORD ExceptionRecord,
             return FALSE;
         }
 
-        //¹ıÂËÄ¿±ê³ÌĞò´¥·¢µÄµ¥²½Òì³£
-        //Í¨¹ı¼ì²éB0-B3µÄÌõ¼ş£¬ÒòÎªÎÒÃÇ²»»áÈ¥ÉèÖÃdr0-dr3µÄ¼Ä´æÆ÷    
+        //è¿‡æ»¤ç›®æ ‡ç¨‹åºè§¦å‘çš„å•æ­¥å¼‚å¸¸
+        //é€šè¿‡æ£€æŸ¥B0-B3çš„æ¡ä»¶ï¼Œå› ä¸ºæˆ‘ä»¬ä¸ä¼šå»è®¾ç½®dr0-dr3çš„å¯„å­˜å™¨    
         if ((ExceptionRecord->ExceptionCode == STATUS_SINGLE_STEP) ||
             (ExceptionRecord->ExceptionCode == STATUS_WX86_SINGLE_STEP))
         {
-            DbgPrint("#DBÒì³£µØÖ·: %p\n", ExceptionRecord->ExceptionAddress);
+            DbgPrint("#DBå¼‚å¸¸åœ°å€: %p\n", ExceptionRecord->ExceptionAddress);
             _ETHREAD* Thread = (_ETHREAD*)PsGetCurrentThread();
             size_t kthread_base = (size_t)Thread + ethread_offset::Tcb;
             size_t ptr_TrapFrame = kthread_base + kthread_offset::TrapFrame;
@@ -1160,12 +1160,12 @@ DbgkForwardException(IN PEXCEPTION_RECORD ExceptionRecord,
 
             Dr6 dr6;
             dr6.flags = TrapFrame->Dr6;
-            if (dr6.BS == 0)  //ÅĞ¶ÏÊÇ·ñÊÇtfµ¥²½Ö´ĞĞ
+            if (dr6.BS == 0)  //åˆ¤æ–­æ˜¯å¦æ˜¯tfå•æ­¥æ‰§è¡Œ
             {
-                //ÔÚvtÖĞÍ¨¹ıÏòguest×¢Èë#DBÒì³£²¢²»»áĞŞ¸Ädr6¼Ä´æÆ÷
+                //åœ¨vtä¸­é€šè¿‡å‘guestæ³¨å…¥#DBå¼‚å¸¸å¹¶ä¸ä¼šä¿®æ”¹dr6å¯„å­˜å™¨
                 if (dr6.B0 || dr6.B1 || dr6.B2 || dr6.B3)
                 {
-                    //½«#DBÒì³£Å×¸ø±»µ÷ÊÔÕß
+                    //å°†#DBå¼‚å¸¸æŠ›ç»™è¢«è°ƒè¯•è€…
                     return FALSE;
                 }
             }
@@ -1214,7 +1214,7 @@ DbgkForwardException(IN PEXCEPTION_RECORD ExceptionRecord,
             return NT_SUCCESS(Status);
         }
 
-        //µ÷ÊÔÆ÷Î´ÄÜÕıÈ·´¦ÀíSTATUS_SINGLE_STEPÒì³££¬¿ÉÄÜÊÇÒòÎª¼àÊÓ¶ÏµãÒÑ¾­±»È¡Ïû
+        //è°ƒè¯•å™¨æœªèƒ½æ­£ç¡®å¤„ç†STATUS_SINGLE_STEPå¼‚å¸¸ï¼Œå¯èƒ½æ˜¯å› ä¸ºç›‘è§†æ–­ç‚¹å·²ç»è¢«å–æ¶ˆ
         if ((ExceptionRecord->ExceptionCode == STATUS_SINGLE_STEP) ||
             (ExceptionRecord->ExceptionCode == STATUS_WX86_SINGLE_STEP))
         {
@@ -1381,7 +1381,7 @@ Return Value:
     if (NT_SUCCESS(Status)) {
         Status = DbgkClearProcessDebugObject(Process, DebugObject);
         DeleteDebugProcess(DebugObject);
-        DbgPrint("DbgkClearProcessDebugObject Status: %x", Status);
+        DbgPrint("æ¸…ç† Dbgk è°ƒè¯•å¯¹è±¡å®Œæˆï¼›NTSTATUS=0x%xï¼›å¦‚å¤±è´¥ï¼Œè¯·æ£€æŸ¥å¯¹è±¡çŠ¶æ€å’Œç¬¦å·è¡¨ã€‚", Status);
         ObDereferenceObject(DebugObject);
     }
 
@@ -1406,7 +1406,7 @@ NTSTATUS DbgkpSetProcessDebugObject(IN _EPROCESS* Process,
     PDEBUG_PROCESS DebugProcess;
 
     PAGED_CODE();
-    DBGKTRACE(DBGK_PROCESS_DEBUG, "Process: %p DebugObject: %p\n",
+    DBGKTRACE(DBGK_PROCESS_DEBUG, "è¿›ç¨‹ï¼š%pï¼›è°ƒè¯•å¯¹è±¡ï¼š%p\n",
         Process, DebugObject);
 
     //DbgBreakPoint();
@@ -1444,7 +1444,7 @@ NTSTATUS DbgkpSetProcessDebugObject(IN _EPROCESS* Process,
             if (Port)
             {
                 /* Set failure */
-                // ²»¿ÕÔòËµÃ÷ÒÑ¾­ÉèÖÃÁË
+                // ä¸ç©ºåˆ™è¯´æ˜å·²ç»è®¾ç½®äº†
                 Status = STATUS_PORT_ALREADY_SET;
                 break;
             }
@@ -1531,7 +1531,7 @@ NTSTATUS DbgkpSetProcessDebugObject(IN _EPROCESS* Process,
         /* Get the debug event and go to the next entry */
         DebugEvent = CONTAINING_RECORD(NextEntry, DEBUG_EVENT, EventList);
         NextEntry = NextEntry->Flink;
-        DBGKTRACE(DBGK_PROCESS_DEBUG, "DebugEvent: %p Flags: %lx TH: %p/%p\n",
+        DBGKTRACE(DBGK_PROCESS_DEBUG, "è°ƒè¯•äº‹ä»¶ï¼š%pï¼›æ ‡å¿—ï¼š%lxï¼›çº¿ç¨‹ï¼š%p/%p\n",
             DebugEvent, DebugEvent->Flags,
             DebugEvent->BackoutThread, CurrentThread);
 
@@ -1541,7 +1541,7 @@ NTSTATUS DbgkpSetProcessDebugObject(IN _EPROCESS* Process,
         {
             /* Get the event's thread */
             EventThread = DebugEvent->Thread;
-            DBGKTRACE(DBGK_PROCESS_DEBUG, "EventThread: %p MsgStatus: %lx\n",
+            DBGKTRACE(DBGK_PROCESS_DEBUG, "äº‹ä»¶çº¿ç¨‹ï¼š%pï¼›æ¶ˆæ¯çŠ¶æ€ï¼š%lx\n",
                 EventThread, MsgStatus);
 
             /* Check if the status is success */
@@ -1620,7 +1620,7 @@ NTSTATUS DbgkpSetProcessDebugObject(IN _EPROCESS* Process,
     return Status;
 }
 
-//¸½¼Óµ÷ÊÔ½ø³Ì
+//é™„åŠ è°ƒè¯•è¿›ç¨‹
 EXTERN_C
 NTSTATUS NtDebugActiveProcess(IN HANDLE ProcessHandle,
     IN HANDLE DebugHandle)
@@ -1631,7 +1631,7 @@ NTSTATUS NtDebugActiveProcess(IN HANDLE ProcessHandle,
     PDEBUG_OBJECT DebugObject; // [rsp+68h] [rbp+20h]
 
     PAGED_CODE();
-    DBGKTRACE(DBGK_PROCESS_DEBUG, "Process: %p Handle: %p\n",
+    DBGKTRACE(DBGK_PROCESS_DEBUG, "è¿›ç¨‹ï¼š%pï¼›å¥æŸ„ï¼š%p\n",
         ProcessHandle, DebugHandle);
 
     Status = ObReferenceObjectByHandle(ProcessHandle,
@@ -1706,7 +1706,7 @@ NTSTATUS NtDebugActiveProcess(IN HANDLE ProcessHandle,
 //    WaitStateChange->AppClientId = DebugEvent->ClientId;
 //
 //    /* Now check which kind of event this was */
-//    outLog("ÊÂ¼ş: %d", DebugEvent->ApiMsg.ApiNumber);
+//    outLog("äº‹ä»¶: %d", DebugEvent->ApiMsg.ApiNumber);
 //    switch (DebugEvent->ApiMsg.ApiNumber)
 //    {
 //        /* New process */
@@ -1812,7 +1812,7 @@ NTSTATUS NtDebugActiveProcess(IN HANDLE ProcessHandle,
 //}
 
 //
-////»ñµÃ¾ä±ú
+////è·å¾—å¥æŸ„
 //VOID
 //NTAPI
 //DbgkpOpenHandles(IN PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
@@ -1914,7 +1914,7 @@ NTSTATUS NtDebugActiveProcess(IN HANDLE ProcessHandle,
 //    }
 //}
 
-//È¡³öµ÷ÊÔÊÂ¼ş
+//å–å‡ºè°ƒè¯•äº‹ä»¶
 EXTERN_C
 NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
     IN BOOLEAN Alertable,
@@ -1937,7 +1937,7 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
     //DbgBreakPoint();
 
     PAGED_CODE();
-    DBGKTRACE(DBGK_OBJECT_DEBUG, "Handle: %p\n", DebugHandle);
+    DBGKTRACE(DBGK_OBJECT_DEBUG, "å¥æŸ„ï¼š%p\n", DebugHandle);
 
     /* Clear the initial wait state change structure and the timeout */
     RtlZeroMemory(&WaitStateChange, sizeof(WaitStateChange));
@@ -1980,13 +1980,13 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
     if (Timeout) KeQuerySystemTime(&StartTime);
 
     /* Get the debug object */
-    Status = ObReferenceObjectByHandle(DebugHandle,   //¸ù¾İ¾ä±úÒıÓÃµ÷ÊÔ¶ÔÏó
+    Status = ObReferenceObjectByHandle(DebugHandle,   //æ ¹æ®å¥æŸ„å¼•ç”¨è°ƒè¯•å¯¹è±¡
         DEBUG_READ_EVENT,
         Hvm_DbgkDebugObjectType,
         PreviousMode,
         (PVOID*)&DebugObject,
         NULL);
-    if (!NT_SUCCESS(Status)) return Status;  //»ñÈ¡µ÷ÊÔ¶ÔÏóÊ§°Ü ÔòÍË³ö
+    if (!NT_SUCCESS(Status)) return Status;  //è·å–è°ƒè¯•å¯¹è±¡å¤±è´¥ åˆ™é€€å‡º
 
     /* Clear process and thread */
     Process = NULL;
@@ -1995,7 +1995,7 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
     /* Wait on the debug object given to us */
     while (TRUE)
     {
-        Status = KeWaitForSingleObject(&DebugObject->EventsPresent,  //µÈ´ıµ÷ÊÔÊÂ¼ş
+        Status = KeWaitForSingleObject(&DebugObject->EventsPresent,  //ç­‰å¾…è°ƒè¯•äº‹ä»¶
             Executive,
             PreviousMode,
             Alertable,
@@ -2007,15 +2007,15 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
             (Status == STATUS_USER_APC))
         {
             /* Break out the wait */
-            break;  //Ê§°Ü »òÕßµÈ´ı³¬Ê± ÔòÍË³ö
+            break;  //å¤±è´¥ æˆ–è€…ç­‰å¾…è¶…æ—¶ åˆ™é€€å‡º
         }
 
         /* Lock the object */
         GotEvent = FALSE;
-        ExAcquireFastMutex(&DebugObject->Mutex);  //¼ÓËø
+        ExAcquireFastMutex(&DebugObject->Mutex);  //åŠ é”
 
         /* Check if a debugger is connected */
-        if (DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING)  //¼ì²éµ÷ÊÔÆ÷ÊÇ·ñÒÑÁ¬½Ó
+        if (DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING)  //æ£€æŸ¥è°ƒè¯•å™¨æ˜¯å¦å·²è¿æ¥
         {
             /* Not connected */
             Status = STATUS_DEBUGGER_INACTIVE;
@@ -2031,7 +2031,7 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
                 DebugEvent = CONTAINING_RECORD(NextEntry,
                     DEBUG_EVENT,
                     EventList);
-                DBGKTRACE(DBGK_PROCESS_DEBUG, "DebugEvent: %p Flags: %lx\n",
+                DBGKTRACE(DBGK_PROCESS_DEBUG, "è°ƒè¯•äº‹ä»¶ï¼š%pï¼›æ ‡å¿—ï¼š%lx\n",
                     DebugEvent, DebugEvent->Flags);
 
                 /* Check flags */
@@ -2098,7 +2098,7 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
         }
 
         /* Release the mutex */
-        ExReleaseFastMutex(&DebugObject->Mutex);  //½âËø
+        ExReleaseFastMutex(&DebugObject->Mutex);  //è§£é”
         if (!NT_SUCCESS(Status)) break;
 
         /* Check if we got an event */
@@ -2126,15 +2126,15 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
         else
         {
             /* Open the handles and dereference the objects */
-            DbgkpOpenHandles(&WaitStateChange, Process, Thread);  //»ñµÃ½øÏß³Ì¾ä±ú·µ»Ø¸øRing3
-            ObDereferenceObject(Process);  //ÊÍ·Å½ø³Ì¶ÔÏó
-            ObDereferenceObject(Thread);   //ÊÍ·ÅÏß³Ì¶ÔÏó
+            DbgkpOpenHandles(&WaitStateChange, Process, Thread);  //è·å¾—è¿›çº¿ç¨‹å¥æŸ„è¿”å›ç»™Ring3
+            ObDereferenceObject(Process);  //é‡Šæ”¾è¿›ç¨‹å¯¹è±¡
+            ObDereferenceObject(Thread);   //é‡Šæ”¾çº¿ç¨‹å¯¹è±¡
             break;
         }
     }
 
     /* We're done, dereference the object */
-    ObDereferenceObject(DebugObject);  //ÊÍ·Åµ÷ÊÔ¶ÔÏó
+    ObDereferenceObject(DebugObject);  //é‡Šæ”¾è°ƒè¯•å¯¹è±¡
 
     /* Protect write with SEH */
     _SEH2_TRY
@@ -2153,7 +2153,7 @@ NTSTATUS NtWaitForDebugEvent(IN HANDLE DebugHandle,
     return Status;
 }
 
-//¼ÌĞøÔËĞĞ±»ÔİÍ£µÄÏß³Ì
+//ç»§ç»­è¿è¡Œè¢«æš‚åœçš„çº¿ç¨‹
 EXTERN_C
 NTSTATUS
 NtDebugContinue(
@@ -2190,7 +2190,7 @@ NtDebugContinue(
 
     PreviousMode = KeGetPreviousMode();
 
-    //Èç¹ûÊÇÓÃ»§Ä£Ê½´«½øÀ´µÄ²ÎÊıĞèÒªÌ½²âÊÇ·ñ¿É¶ÁĞ´
+    //å¦‚æœæ˜¯ç”¨æˆ·æ¨¡å¼ä¼ è¿›æ¥çš„å‚æ•°éœ€è¦æ¢æµ‹æ˜¯å¦å¯è¯»å†™
     __try
     {
         if (PreviousMode != KernelMode)
@@ -2200,7 +2200,7 @@ NtDebugContinue(
         Clid = *ClientId;        
 
     }
-    __except (ExSystemExceptionFilter())  // Èç¹ûÏÈÇ°µÄÄ£Ê½ÊÇÄÚºËÄ£Ê½£¬Ôò²»´¦ÀíÒì³£
+    __except (ExSystemExceptionFilter())  // å¦‚æœå…ˆå‰çš„æ¨¡å¼æ˜¯å†…æ ¸æ¨¡å¼ï¼Œåˆ™ä¸å¤„ç†å¼‚å¸¸
     {
         return GetExceptionCode();
     }
@@ -2251,7 +2251,7 @@ NtDebugContinue(
             {
                 if ((DebugEvent->ClientId.UniqueThread == Clid.UniqueThread) && (DebugEvent->Flags & DEBUG_EVENT_READ))
                 {
-                    RemoveEntryList(Entry);  //ÒÆ³ı×ÔÉí
+                    RemoveEntryList(Entry);  //ç§»é™¤è‡ªèº«
                     FoundDebugEvent = DebugEvent;
                     GotEvent = TRUE;
                 }
@@ -2288,7 +2288,7 @@ NtDebugContinue(
     return Status;
 }
 
-//DLL¼ÓÔØ
+//DLLåŠ è½½
 EXTERN_C
 VOID
 DbgkMapViewOfSection(IN _EPROCESS* Process,
@@ -2393,7 +2393,7 @@ DbgkMapViewOfSection(IN _EPROCESS* Process,
     }
 }
 
-//DLLĞ¶ÔØ
+//DLLå¸è½½
 EXTERN_C
 VOID
 DbgkUnMapViewOfSection(IN _EPROCESS* Process, IN PVOID BaseAddress)

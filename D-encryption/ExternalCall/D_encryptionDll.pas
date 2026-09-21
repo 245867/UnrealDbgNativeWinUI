@@ -1,4 +1,4 @@
-unit D_encryptionDll;
+ï»¿unit D_encryptionDll;
 
 interface
 
@@ -7,7 +7,7 @@ uses Winapi.Windows;
 type
   TD_encryption_EncryptDataToFile = procedure(data: string; filename: string; userKey: string);
 
-  //·µ»ØµÄÊÇ×Ö½ÚÊı°üº¬½áÎ²µÄ¿Õ×Ö·û
+  //è¿”å›çš„æ˜¯å­—èŠ‚æ•°åŒ…å«ç»“å°¾çš„ç©ºå­—ç¬¦
   TD_encryption_DecryptDataFromFile = function(filename: string; userKey: string; decryptedData: Pointer): Integer;
 
 var
@@ -25,7 +25,7 @@ begin
   D_encryption_mod := LoadLibrary('D-encryption.dll');
 {$ENDIF}
   if D_encryption_mod = 0 then begin
-    MessageBox(0,'Ã»ÓĞÕÒµ½ D-encryption.dll','´íÎóĞÅÏ¢:',MB_ICONERROR);
+    MessageBoxW(0,'æ²¡æœ‰æ‰¾åˆ° D-encryption.dll','é”™è¯¯ä¿¡æ¯:',MB_ICONERROR);
     ExitProcess(0);
   end;
   D_encryption_EncryptDataToFile := GetProcAddress(D_encryption_mod,'EncryptDataToFile');

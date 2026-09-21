@@ -4,7 +4,7 @@
 #include "DispatchData.h"
 
 
-//ÅÉÇ²Êı¾İµ½Çı¶¯
+//æ´¾é£æ•°æ®åˆ°é©±åŠ¨
 BOOL DispatchDataToDriver(DWORD dwIoControlCode,
     PUSER_DATA userData,
     PVOID lpOutBuffer,
@@ -37,7 +37,7 @@ BOOL SendUserDataToDriver(DWORD dwIoControlCode,
     BOOL bRet;
     std::string encodeData;
     USER_DATA userData = { 0 };
-    userData.uSize = size;  //¼ÇÂ¼Ã÷ÎÄ³¤¶È
+    userData.uSize = size;  //è®°å½•æ˜æ–‡é•¿åº¦
     if (source)
     {
         encodeData = EncryptData((const char*)source, size, KEY);

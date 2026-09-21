@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the Process Hacker project - https://processhacker.sourceforge.io/
  *
  * You can redistribute this file and/or modify it under the terms of the 
@@ -107,8 +107,8 @@ RtlAssert(
 #define RTL_ASSERTMSG(msg, exp) \
     ((!(exp)) ? (RtlAssert((PVOID)#exp, (PVOID)__FILE__, __LINE__, msg), FALSE) : TRUE)
 #define RTL_SOFT_ASSERT(_exp) \
-    ((!(_exp)) ? (DbgPrint("%s(%d): Soft assertion failed\n   Expression: %s\n", __FILE__, __LINE__, #_exp), FALSE) : TRUE)
+    ((!(_exp)) ? (DbgPrint("%s(%d)：软断言失败\n   条件表达式：%s\n", __FILE__, __LINE__, #_exp), FALSE) : TRUE)
 #define RTL_SOFT_ASSERTMSG(_msg, _exp) \
-    ((!(_exp)) ? (DbgPrint("%s(%d): Soft assertion failed\n   Expression: %s\n   Message: %s\n", __FILE__, __LINE__, #_exp, (_msg)), FALSE) : TRUE)
+    ((!(_exp)) ? (DbgPrint("%s(%d)：软断言失败\n   条件表达式：%s\n   附加信息：%s\n", __FILE__, __LINE__, #_exp, (_msg)), FALSE) : TRUE)
 
 #endif

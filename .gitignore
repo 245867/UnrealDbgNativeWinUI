@@ -32,3 +32,36 @@
 *.app
 /D-encryptiondll/.vs
 /VT_Driver/x64
+
+# Visual Studio/WDK build outputs and runtime diagnostics
+**/x64/
+*.pdb
+*.exp
+*.cer
+*.log
+/_artifacts/
+
+# Driver files
+*.sys
+*.cat
+
+# Delphi IDE auto-backup
+**/__history/
+*.~*
+
+# Delphi IDE cache
+*.identcache
+*.dproj.local
+*.groupproj.local
+
+# Visual Studio user config
+*.vcxproj.user
+*.aps
+*.suo
+
+# Encrypted / copyright data
+*.aes
+copyright.db
+
+# Desktop shortcuts
+*.lnk

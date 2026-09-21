@@ -24,11 +24,12 @@
 #include "../Common/Encrypt/Blowfish/Blowfish.h"
 #include "../Common/Shared/SharedStruct.h"
 #include "../Common/Shared/IOCTLs.h"
+#include "../Common/Shared/WindowsBuildSupport.h"
 #include "../Common/Logger/Logger.h"
 
 BOOL InitSymbolsTable(ULONG64 key);
 
-//º”‘ÿ∑˚∫≈±Ì
+//Âä†ËΩΩÁ¨¶Âè∑Ë°®
 BOOL LoadSymbolsTable(ULONG64 key);
 
 extern Logger logger;

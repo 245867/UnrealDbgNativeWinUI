@@ -5,7 +5,7 @@
 
 void ApcCallRemoteFunc(HANDLE hProcess);
 
-//Í¨¹ýÇý¶¯×¢ÈëapcÏß³Ìµ½Ä¿±ê½ø³Ì
+//é€šè¿‡é©±åŠ¨æ³¨å…¥apcçº¿ç¨‹åˆ°ç›®æ ‡è¿›ç¨‹
 BOOL _ApcCallRemoteFunc(HANDLE hProcess);
 
 #endif // !_APC_INJECT_H

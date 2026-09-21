@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _VMEXIT_HANDLER_H
 #define _VMEXIT_HANDLER_H
@@ -297,14 +297,14 @@ unsigned __int64 return_rip_for_vmxoff();
 EXTERN_C
 bool vmexit_handler(guest_context* guest_registers, PFXSAVE64 fxsave);
 
-//µ÷ÕûripÖ¸ÏòÏÂÒ»ÌõÖ¸Áî
+//è°ƒæ•´ripæŒ‡å‘ä¸‹ä¸€æ¡æŒ‡ä»¤
 void adjust_rip(__vcpu* vcpu);
 
 void skip_instruction();
 
 void dispatch_vm_exit(__vcpu* vcpu);
 
-//»Ö¸´guest×´Ì¬
+//æ¢å¤guestçŠ¶æ€
 void RestoreGuest();
 
 #endif // !_VMEXIT_HANDLER_H

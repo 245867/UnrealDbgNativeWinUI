@@ -2,14 +2,14 @@
 #include "HookCallSet/functionSet.h"
 #include "Globals.h"
 
-DWORD g_dwNumberOfProcessors;  //Âß¼­´¦ÀíÆ÷ÊıÁ¿
-LONG g_debug_condition_detected;  //¼ÇÂ¼ÊÇTFµ¥²½Ö´ĞĞ£¬»¹ÊÇdrx¶Ïµã
-DWORD g_target_pid;  //Ä¿±ê½ø³ÌµÄpid
-ULONG64 g_target_cr3; //Ä¿±ê½ø³ÌµÄcr3
+DWORD g_dwNumberOfProcessors;  //é€»è¾‘å¤„ç†å™¨æ•°é‡
+LONG g_debug_condition_detected;  //è®°å½•æ˜¯TFå•æ­¥æ‰§è¡Œï¼Œè¿˜æ˜¯drxæ–­ç‚¹
+DWORD g_target_pid;  //ç›®æ ‡è¿›ç¨‹çš„pid
+ULONG64 g_target_cr3; //ç›®æ ‡è¿›ç¨‹çš„cr3
 vectorExt<BREAKPOINT_RECORD> BreakpointList;
 vectorExt<VT_BREAK_POINT> INT3BreakpointList;
 HANDLE g_hGeneralDriverDevice = INVALID_HANDLE_VALUE;
-BOOL g_first_breakpoint = FALSE;  //ÊÇ·ñÊÇµÚÒ»´Î¶Ïµã
+BOOL g_first_breakpoint = FALSE;  //æ˜¯å¦æ˜¯ç¬¬ä¸€æ¬¡æ–­ç‚¹
 PROCESS_INFO g_process_info = { 0 };
 SET_DBG_BREAKPOINT g_SetDbgBreakPoint = { 0 };
 
@@ -17,10 +17,10 @@ PFN_LDRINITIALIZETHUNK LdrInitializeThunk;
 PVOID BaseThreadInitThunk;
 PVOID KiUserApcDispatcher;
 
-//×¢ÒâÊÂÏî: µ±ÎÒÃÇhook ÏµÍ³µÄº¯Êı×ªµ½ÎÒÃÇ×Ô¶¨ÒåµÄº¯ÊıÀïÊ±
-//ÎÒÃÇ×Ô¶¨ÒåµÄº¯ÊıËù²ÉÓÃµÄµ÷ÓÃÔ¼¶¨±ØĞëÉèÖÃÎª__stdcall
-//ÒòÎªÈç¹û½«hookÏîÄ¿±àÒëÎª32Î»dllÊ±ÊÇĞèÒªÑÏ¸ñµÄº¯Êıµ÷ÓÃÔ¼¶¨µÄ
-//·ñÔò¿ÉÄÜ»áµ¼ÖÂÕ»²»Æ½ºâ
+//æ³¨æ„äº‹é¡¹: å½“æˆ‘ä»¬hook ç³»ç»Ÿçš„å‡½æ•°è½¬åˆ°æˆ‘ä»¬è‡ªå®šä¹‰çš„å‡½æ•°é‡Œæ—¶
+//æˆ‘ä»¬è‡ªå®šä¹‰çš„å‡½æ•°æ‰€é‡‡ç”¨çš„è°ƒç”¨çº¦å®šå¿…é¡»è®¾ç½®ä¸º__stdcall
+//å› ä¸ºå¦‚æœå°†hooké¡¹ç›®ç¼–è¯‘ä¸º32ä½dllæ—¶æ˜¯éœ€è¦ä¸¥æ ¼çš„å‡½æ•°è°ƒç”¨çº¦å®šçš„
+//å¦åˆ™å¯èƒ½ä¼šå¯¼è‡´æ ˆä¸å¹³è¡¡
 PFN_DEBUGACTIVEPROCESS Sys_DebugActiveProcess;
 PFN_NTDEBUGACTIVEPROCESS Sys_NtDebugActiveProcess;
 PFN_DBGUIISSUEREMOTEBREAKIN Sys_DbgUiIssueRemoteBreakin;

@@ -3,7 +3,7 @@
 #ifndef _DISPATCHDATA_H
 #define _DISPATCHDATA_H
 
-//ÅÉÇ²Êı¾İµ½Çı¶¯
+//æ´¾é£æ•°æ®åˆ°é©±åŠ¨
 BOOL DispatchDataToDriver(DWORD dwIoControlCode,
     PUSER_DATA userData,
     PVOID lpOutBuffer,

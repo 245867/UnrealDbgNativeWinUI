@@ -27,7 +27,7 @@
 void SetupHook();
 void UnHook();
 
-//³õÊ¼»¯Éè±¸
+//åˆå§‹åŒ–è®¾å¤‡
 BOOL InitializeDevice();
 
 PVOID GetRoutinePointer(TCHAR* modName, LPCSTR lpProcName);
@@ -38,7 +38,7 @@ void InitGlobalVariables();
 
 HMODULE GetProcessModuleHandle(_In_ HANDLE hProcess, _In_ TCHAR* modName, _Out_ TCHAR* outMod);
 
-//Á¬½ÓÇı¶¯
+//è¿æ¥é©±åŠ¨
 HANDLE CreateDeviceHandle();
 
 extern Logger logger;

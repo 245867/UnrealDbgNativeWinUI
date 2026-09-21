@@ -9,7 +9,10 @@ template <typename T>
 inline T allocate_pool(unsigned __int64 size)
 {
     PVOID pAddr = ExAllocatePoolWithTag(NonPagedPool, size, NPPM_TAG);
-    RtlSecureZeroMemory(pAddr, size);
+    if (pAddr != nullptr)
+    {
+        RtlSecureZeroMemory(pAddr, size);
+    }
     return (T)pAddr;
 }
 
@@ -17,7 +20,10 @@ template <typename T>
 inline T* allocate_pool()
 {
     PVOID pAddr = ExAllocatePoolWithTag(NonPagedPool, sizeof(T), NPPM_TAG);
-    RtlSecureZeroMemory(pAddr, sizeof(T));
+    if (pAddr != nullptr)
+    {
+        RtlSecureZeroMemory(pAddr, sizeof(T));
+    }
     return (T*)pAddr;
 }
 

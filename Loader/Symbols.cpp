@@ -6,7 +6,7 @@ std::wstring g_szPdbPath;
 CStatusCallback callback;
 
 
-// ·â×°Ä¿Â¼´´½¨µÄº¯Êı
+// å°è£…ç›®å½•åˆ›å»ºçš„å‡½æ•°
 bool CreateDirectoryIfNotExists(const TCHAR* dir) {
 	if (CreateDirectory(dir, NULL) || GetLastError() == ERROR_ALREADY_EXISTS) {
 		return true;
@@ -110,14 +110,14 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 	std::ifstream File(szModulePath, std::ios::binary | std::ios::ate);
 	if (!File.good())
 	{
-		Common::ReportSeriousError("%s[%d] ´ò¿ªÎÄ¼şÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] æ‰“å¼€æ–‡ä»¶å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
 	auto FileSize = File.tellg();
 	if (!FileSize)
 	{
-		Common::ReportSeriousError("%s[%d] »ñÈ¡ÎÄ¼ş´óĞ¡Ê§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] è·å–æ–‡ä»¶å¤§å°å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
@@ -128,7 +128,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 		File.close();
 
-		Common::ReportSeriousError("%s[%d] ·ÖÅäÄÚ´æÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] åˆ†é…å†…å­˜å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
@@ -158,7 +158,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 	{
 		delete[] pRawData;
 
-		Common::ReportSeriousError("%s[%d] »ñÈ¡MachineÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] è·å–Machineå¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
@@ -169,7 +169,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 		delete[] pRawData;
 
-		Common::ReportSeriousError("%s[%d] ·ÖÅäÄÚ´æÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] åˆ†é…å†…å­˜å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
@@ -202,7 +202,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 		delete[] pRawData;
 
-		Common::ReportSeriousError("%s[%d] »ñÈ¡DebugDirÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] è·å–DebugDirå¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
@@ -213,10 +213,10 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 		delete[] pRawData;
 
-		Common::ReportSeriousError("%s[%d] pdb_info->Signature²»Æ¥Åä! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] pdb_info->Signatureä¸åŒ¹é…! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
-	
+
 	g_szPdbPath = path;
 
 	if (g_szPdbPath[g_szPdbPath.length() - 1] != L'\\')
@@ -224,14 +224,14 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 		g_szPdbPath += L'\\';
 	}
 
-	// ´´½¨Ä¿Â¼
-	CreateDirectoryIfNotExists(g_szPdbPath.c_str());  //´´½¨baseDir	
+	// åˆ›å»ºç›®å½•
+	CreateDirectoryIfNotExists(g_szPdbPath.c_str());  //åˆ›å»ºbaseDir
 
 	size_t len = lstrlenA(pdb_info->PdbFileName);
 	wchar_t* PdbFileNameW = new(std::nothrow) wchar_t[len + 1]();
 	if (!PdbFileNameW)
 	{
-		Common::ReportSeriousError("%s[%d] ·ÖÅäÄÚ´æÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] åˆ†é…å†…å­˜å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
@@ -242,12 +242,12 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 		delete[] PdbFileNameW;
 
-		Common::ReportSeriousError("%s[%d] ×ª»»Unicode×Ö·û´®Ê§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] è½¬æ¢Unicodeå­—ç¬¦ä¸²å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return false;
 	}
 
 	g_szPdbPath += PdbFileNameW;
-	CreateDirectoryIfNotExists(g_szPdbPath.c_str()); //¶ş¼¶Ä¿Â¼
+	CreateDirectoryIfNotExists(g_szPdbPath.c_str()); //äºŒçº§ç›®å½•
 
 	delete[] PdbFileNameW;
 
@@ -260,7 +260,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 			delete[] pRawData;
 
-			Common::ReportSeriousError("%s[%d] »ñÈ¡GuidÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+			Common::ReportSeriousError("%s[%d] è·å–Guidå¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 			return false;
 		}
 
@@ -274,7 +274,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 			delete[] pRawData;
 
-			Common::ReportSeriousError("%s[%d] ×ª»»ANSI×Ö·û´®Ê§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+			Common::ReportSeriousError("%s[%d] è½¬æ¢ANSIå­—ç¬¦ä¸²å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 			return false;
 		}
 
@@ -293,14 +293,14 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 		std::map<std::wstring, std::wstring> config;
 		std::wstring filename = FileSystem::GetModuleDirectory(NULL) + _T("SymbolTool\\Config.ini");
 		//char szBuf[MAX_PATH] = { 0 };
-		//sprintf(szBuf, "·ûºÅ·şÎñÆ÷: %s\n", Common::wideStringToString(filename).c_str());
+		//sprintf(szBuf, "ç¬¦å·æœåŠ¡å™¨: %s\n", Common::wideStringToString(filename).c_str());
 		//OutputDebugStringA(szBuf);
-		config[L"·şÎñÆ÷"] = FileSystem::ReadIniValue(filename, L"·ûºÅ", L"·şÎñÆ÷");
+		config[L"æœåŠ¡å™¨"] = FileSystem::ReadIniValue(filename, L"ç¬¦å·", L"æœåŠ¡å™¨");
 
-		int selectSvr = 100; //Ä¬ÈÏÑ¡Ôñ¾µÏñ·şÎñÆ÷
-		if (config[L"·şÎñÆ÷"] != L"")
+		int selectSvr = 100; //é»˜è®¤é€‰æ‹©é•œåƒæœåŠ¡å™¨
+		if (config[L"æœåŠ¡å™¨"] != L"")
 		{
-			selectSvr = std::stoi(config[L"·şÎñÆ÷"]);
+			selectSvr = std::stoi(config[L"æœåŠ¡å™¨"]);
 		}
 
 		std::string url;
@@ -311,7 +311,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 		else if(selectSvr == 200)
 		{
 			url = "https://msdl.microsoft.com/download/symbols/";
-		}		
+		}
 		url += pdb_info->PdbFileName;
 		url += '/';
 		url += guid_filtered;
@@ -323,7 +323,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 		wchar_t* UrlW = new(std::nothrow) wchar_t[len + 1]();
 		if (!UrlW)
 		{
-			Common::ReportSeriousError("%s[%d] ·ÖÅäÄÚ´æÊ§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+			Common::ReportSeriousError("%s[%d] åˆ†é…å†…å­˜å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 			return false;
 		}
 
@@ -334,7 +334,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 			delete[] UrlW;
 
-			Common::ReportSeriousError("%s[%d] ×ª»»Unicode×Ö·û´®Ê§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+			Common::ReportSeriousError("%s[%d] è½¬æ¢Unicodeå­—ç¬¦ä¸²å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 			return false;
 		}
 
@@ -344,7 +344,7 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 		}
 		g_szPdbPath += Common::stringToWideString(guid_filtered);
 		g_szPdbPath += Common::stringToWideString(age);
-		CreateDirectoryIfNotExists(g_szPdbPath.c_str()); //Èı¼¶Ä¿Â¼
+		CreateDirectoryIfNotExists(g_szPdbPath.c_str()); //ä¸‰çº§ç›®å½•
 
 		if (g_szPdbPath[g_szPdbPath.length() - 1] != L'\\')
 		{
@@ -377,26 +377,26 @@ bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstrin
 
 		if (Redownload)
 		{
-			//²»ÄÜÓÃÓÚÏÂÔØ´óĞ¡³¬¹ı 4 GB µÄÎÄ¼ş
+			//ä¸èƒ½ç”¨äºä¸‹è½½å¤§å°è¶…è¿‡ 4 GB çš„æ–‡ä»¶
 			auto hr = URLDownloadToFileW(nullptr, UrlW, g_szPdbPath.c_str(), NULL, &callback);
 
 			if (hr != S_OK)
 			{
-				Common::ReportSeriousError("ÏÂÔØ·ûºÅ±íÊ§°Ü£¬ÏµÍ³ÎŞ·¨ÕÒµ½Ö¸¶¨µÄ×ÊÔ´! "
-					"Çë°´ÕÕËµÃ÷Êé²Ù×÷Ê¹ÓÃµÚÈı·½¹¤¾ß½øĞĞÏÂÔØ¡£(error: %d)", GetLastError());
+				Common::ReportSeriousError("ä¸‹è½½ç¬¦å·è¡¨å¤±è´¥ï¼Œç³»ç»Ÿæ— æ³•æ‰¾åˆ°æŒ‡å®šçš„èµ„æº! "
+					"è¯·æŒ‰ç…§è¯´æ˜ä¹¦æ“ä½œä½¿ç”¨ç¬¬ä¸‰æ–¹å·¥å…·è¿›è¡Œä¸‹è½½ã€‚(é”™è¯¯ç ï¼š%d)", GetLastError());
 				exit(0);
 			}
 			//char szBuf[MAX_PATH] = { 0 };
-			//sprintf(szBuf, "ÏÂÔØ·ûºÅ±í½áÊø: %d\n", hr);
+			//sprintf(szBuf, "ä¸‹è½½ç¬¦å·è¡¨ç»“æŸ: %d\n", hr);
 			//OutputDebugStringA(szBuf);
-		}		
+		}
 
 		delete[] UrlW;
 	}
 
 	VirtualFree(pLocalImageBase, 0, MEM_RELEASE);
 
-	delete[] pRawData;	
+	delete[] pRawData;
 
 	return true;
 }

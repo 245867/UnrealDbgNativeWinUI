@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<Transactions>
-    <Transaction>2024/10/13 09:03:17.000.656,E:\Projects\Delphi\D-encryption\D加密.dproj=E:\Projects\Delphi\D-encryption\D_encryption.dproj</Transaction>
-    <Transaction>2024/10/13 10:53:04.000.578,=E:\Projects\Delphi\D-encryption\Unit1.pas</Transaction>
-    <Transaction>2024/10/13 10:54:24.000.013,E:\Projects\Delphi\D-encryption\Unit1.pas=E:\Projects\Delphi\D-encryption\ExternalCall\D_encryption.pas</Transaction>
-    <Transaction>2024/10/13 11:25:46.000.224,=E:\Projects\Delphi\D-encryption\ExternalCall\D_encryptionDll.pas</Transaction>
-  </Transactions>
-</BorlandProject>

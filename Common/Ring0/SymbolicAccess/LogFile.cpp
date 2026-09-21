@@ -1,6 +1,6 @@
-#include <ntifs.h>
+ï»¿#include <ntifs.h>
 #include <ntstrsafe.h>
-#include "include/SymbolicAccess/Utils/Log.h"
+#include "Utils/Log.h"
 #include "LogFile.h"
 
 #define MAX_BUFFER_SIZE 256
@@ -8,180 +8,46 @@
 namespace LogFile
 {
     bool boLogInit;
-    //FAST_MUTEX Mutex;          //»¥³âËø
-    UNICODE_STRING logFilePath; // ÈÕÖ¾ÎÄ¼şÂ·¾¶
+    //FAST_MUTEX Mutex;          //äº’æ–¥é”
+    // Kernel-mode file logging used to write a fixed, globally writable path.
+    // It is intentionally retired: diagnostics are emitted through the
+    // versioned UTF-8 debugger protocol instead of doing file I/O from a
+    // privileged driver.
 
     NTSTATUS CreateLogsDirectory(PWCHAR path)
     {
-        OBJECT_ATTRIBUTES objectAttributes;
-        UNICODE_STRING directoryName;
-        IO_STATUS_BLOCK ioStatus;
-        HANDLE directoryHandle;
-        NTSTATUS status;
-
-        RtlInitUnicodeString(&directoryName, path);
-
-        InitializeObjectAttributes(&objectAttributes, &directoryName, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
-
-        status = ZwCreateFile(&directoryHandle, FILE_LIST_DIRECTORY | SYNCHRONIZE, &objectAttributes, &ioStatus, NULL, FILE_ATTRIBUTE_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, FILE_OPEN_IF, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT, NULL, 0);
-
-        if (!NT_SUCCESS(status))
-        {
-            return status;
-        }
-
-        ZwClose(directoryHandle);
-        return STATUS_SUCCESS;
+        UNREFERENCED_PARAMETER(path);
+        return STATUS_NOT_SUPPORTED;
     }
 
     NTSTATUS WriteLogToXmlFileW(PWCHAR logMessage)
     {
-        HANDLE fileHandle;
-        IO_STATUS_BLOCK ioStatus;
-        OBJECT_ATTRIBUTES objectAttributes;
-        NTSTATUS status;
-
-        InitializeObjectAttributes(&objectAttributes, &logFilePath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
-        status = ZwCreateFile(&fileHandle,
-            FILE_APPEND_DATA,
-            &objectAttributes,
-            &ioStatus,
-            NULL,
-            FILE_ATTRIBUTE_NORMAL,
-            NULL,
-            FILE_OPEN_IF,
-            FILE_SYNCHRONOUS_IO_NONALERT,
-            NULL,
-            0);
-        if (!NT_SUCCESS(status))
-        {
-            outLog("ZwCreateFileÈÕÖ¾ÎÄ¼şÊ§°Ü!");
-            return status;
-        }
-
-        status = ZwWriteFile(fileHandle, NULL, NULL, NULL, &ioStatus, logMessage, (ULONG)wcslen(logMessage) * sizeof(WCHAR), NULL, NULL);
-        if (!NT_SUCCESS(status))
-        {
-            outLog("ZwWriteFileÈÕÖ¾ÎÄ¼şÊ§°Ü!");
-            ZwClose(fileHandle);
-            return status;
-        }
-
-        ZwClose(fileHandle);
-        return STATUS_SUCCESS;
+        UNREFERENCED_PARAMETER(logMessage);
+        return STATUS_NOT_SUPPORTED;
     }
 
     NTSTATUS WriteLogToXmlFileA(PCHAR logMessage)
     {
-        HANDLE fileHandle;
-        IO_STATUS_BLOCK ioStatus;
-        OBJECT_ATTRIBUTES objectAttributes;
-        NTSTATUS status;
-
-        InitializeObjectAttributes(&objectAttributes, &logFilePath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
-        status = ZwCreateFile(&fileHandle,
-            FILE_APPEND_DATA,
-            &objectAttributes,
-            &ioStatus,
-            NULL,
-            FILE_ATTRIBUTE_NORMAL,
-            NULL,
-            FILE_OPEN_IF,
-            FILE_SYNCHRONOUS_IO_NONALERT,
-            NULL,
-            0);
-        if (!NT_SUCCESS(status))
-        {
-            outLog("ZwCreateFileÈÕÖ¾ÎÄ¼şÊ§°Ü!");
-            return status;
-        }
-
-        status = ZwWriteFile(fileHandle, NULL, NULL, NULL, &ioStatus, logMessage, (ULONG)strlen(logMessage), NULL, NULL);
-        if (!NT_SUCCESS(status))
-        {
-            outLog("ZwWriteFileÈÕÖ¾ÎÄ¼şÊ§°Ü!");
-            ZwClose(fileHandle);
-            return status;
-        }
-
-        ZwClose(fileHandle);
-        return STATUS_SUCCESS;
+        UNREFERENCED_PARAMETER(logMessage);
+        return STATUS_NOT_SUPPORTED;
     }
 
     NTSTATUS LogDriverMessageW(PWCHAR message)
     {
-        NTSTATUS status;
-        LARGE_INTEGER systemTime;
-        TIME_FIELDS timeFields;
-        WCHAR logMessage[256];
-
-        // »ñÈ¡µ±Ç°ÏµÍ³Ê±¼ä
-        KeQuerySystemTime(&systemTime);
-        ExSystemTimeToLocalTime(&systemTime, &systemTime);
-        RtlTimeToTimeFields(&systemTime, &timeFields);
-
-        // ¸ñÊ½»¯´øÓĞÈÕÆÚµÄÈÕÖ¾ĞÅÏ¢ÎªXML¸ñÊ½
-        RtlStringCchPrintfW(logMessage, 
-        	sizeof(logMessage), 
-        	L"<LogEntry Date=\"%04u-%02u-%02u\" Time=\"%02u:%02u:%02u.%03u\">%s</LogEntry>\n", 
-        	timeFields.Year, 
-        	timeFields.Month, 
-        	timeFields.Day, 
-        	timeFields.Hour, 
-        	timeFields.Minute, 
-        	timeFields.Second, 
-        	timeFields.Milliseconds, 
-        	message);
-
-        // Ğ´ÈëÈÕÖ¾ĞÅÏ¢µ½XMLÎÄ¼ş
-        status = WriteLogToXmlFileW(logMessage);
-        if (!NT_SUCCESS(status))
-        {
-            return status;
-        }
-
-        return STATUS_SUCCESS;
+        UNREFERENCED_PARAMETER(message);
+        return STATUS_NOT_SUPPORTED;
     }
 
     NTSTATUS LogDriverMessageA(PCHAR message)
     {
-        NTSTATUS status;
-        LARGE_INTEGER systemTime;
-        TIME_FIELDS timeFields;
-        CHAR logMessage[256];
-
-        // »ñÈ¡µ±Ç°ÏµÍ³Ê±¼ä
-        KeQuerySystemTime(&systemTime);
-        ExSystemTimeToLocalTime(&systemTime, &systemTime);
-        RtlTimeToTimeFields(&systemTime, &timeFields);
-
-        // ¸ñÊ½»¯´øÓĞÈÕÆÚµÄÈÕÖ¾ĞÅÏ¢ÎªXML¸ñÊ½
-        RtlStringCchPrintfA(logMessage,
-            sizeof(logMessage),
-            "<LogEntry Date=\"%04u-%02u-%02u\" Time=\"%02u:%02u:%02u.%03u\">%s</LogEntry>\n",
-            timeFields.Year,
-            timeFields.Month,
-            timeFields.Day,
-            timeFields.Hour,
-            timeFields.Minute,
-            timeFields.Second,
-            timeFields.Milliseconds,
-            message);
-
-        // Ğ´ÈëÈÕÖ¾ĞÅÏ¢µ½XMLÎÄ¼ş
-        status = WriteLogToXmlFileA(logMessage);
-        if (!NT_SUCCESS(status))
-        {
-            return status;
-        }
-
-        return STATUS_SUCCESS;
+        UNREFERENCED_PARAMETER(message);
+        return STATUS_NOT_SUPPORTED;
     }
 
     NTSTATUS SetLogFilePath(PWCHAR path)
     {
-        RtlInitUnicodeString(&logFilePath, path);
-        return STATUS_SUCCESS;
+        UNREFERENCED_PARAMETER(path);
+        return STATUS_NOT_SUPPORTED;
     }
 
     NTSTATUS ConvertUnicodeToAnsi(PCWSTR unicodeString, PCHAR* ansiString)
@@ -204,7 +70,7 @@ namespace LogFile
     {
         NTSTATUS status = STATUS_UNSUCCESSFUL;
 
-        //// ´ò¿ªINIÎÄ¼ş
+        //// æ‰“å¼€INIæ–‡ä»¶
         //HANDLE fileHandle;
         //IO_STATUS_BLOCK ioStatusBlock;
         //UNICODE_STRING unicodeFilePath;
@@ -218,7 +84,7 @@ namespace LogFile
         //    return status;
         //}
 
-        //// ¶ÁÈ¡INIÎÄ¼şÄÚÈİ
+        //// è¯»å–INIæ–‡ä»¶å†…å®¹
         //CHAR buffer[512];
         //ULONG bytesRead;
         //status = ZwReadFile(fileHandle, NULL, NULL, NULL, &ioStatusBlock, buffer, sizeof(buffer) - sizeof(CHAR), NULL, NULL);
@@ -229,10 +95,10 @@ namespace LogFile
         //    return status;
         //}
 
-        //// ¹Ø±ÕINIÎÄ¼ş
+        //// å…³é—­INIæ–‡ä»¶
         //ZwClose(fileHandle);
 
-        //// ½âÎöINIÎÄ¼şÄÚÈİ
+        //// è§£æINIæ–‡ä»¶å†…å®¹
         //PCHAR section = NULL;
         //PCHAR key = NULL;
         //PCHAR valueStart = NULL;
@@ -243,7 +109,7 @@ namespace LogFile
         //{
         //    if (token[0] == '[' && token[strlen(token) - 1] == ']')
         //    {
-        //        // ÅĞ¶ÏÊÇ·ñ½øÈëÄ¿±ê½Ú
+        //        // åˆ¤æ–­æ˜¯å¦è¿›å…¥ç›®æ ‡èŠ‚
         //        token[strlen(token) - 1] = '\0';
 
         //        PCHAR ansiString = NULL;
@@ -262,7 +128,7 @@ namespace LogFile
         //            inTargetSection = FALSE;
         //        }
 
-        //        // ÊÍ·Å×ÊÔ´
+        //        // é‡Šæ”¾èµ„æº
         //        if (ansiString != NULL)
         //        {
         //            RtlFreeAnsiString((PANSI_STRING)&ansiString);
@@ -270,7 +136,7 @@ namespace LogFile
         //    }
         //    else if (inTargetSection)
         //    {
-        //        // ÅĞ¶ÏÊÇ·ñÊÇÄ¿±ê¼ü
+        //        // åˆ¤æ–­æ˜¯å¦æ˜¯ç›®æ ‡é”®
         //        PCHAR equalSign = strchr(token, '=');
         //        if (equalSign != NULL)
         //        {
@@ -290,7 +156,7 @@ namespace LogFile
         //                valueEnd = token + strlen(token);
         //            }
 
-        //            // ÊÍ·Å×ÊÔ´
+        //            // é‡Šæ”¾èµ„æº
         //            if (ansiString != NULL)
         //            {
         //                RtlFreeAnsiString((PANSI_STRING)&ansiString);
@@ -301,7 +167,7 @@ namespace LogFile
         //    token = strtok(NULL, "\r\n");
         //}
 
-        //// ¸´ÖÆ¼üÖµµ½Êä³ö»º³åÇø
+        //// å¤åˆ¶é”®å€¼åˆ°è¾“å‡ºç¼“å†²åŒº
         //if (valueStart != NULL && valueEnd != NULL && valueSize >= valueEnd - valueStart + 1)
         //{
         //    RtlCopyMemory(value, valueStart, valueEnd - valueStart);
@@ -318,13 +184,13 @@ namespace LogFile
 
     PWSTR ReadIni(_In_ PCWSTR filePath, _In_ PCWSTR sectionName, _In_ PCWSTR keyName)
     {
-        static WCHAR valueBuffer[256];  // ÓÃÓÚ´æ´¢¼üÖµµÄ»º³åÇø
+        static WCHAR valueBuffer[256];  // ç”¨äºå­˜å‚¨é”®å€¼çš„ç¼“å†²åŒº
 
         NTSTATUS status = ReadIniValue(filePath, sectionName, keyName, valueBuffer, sizeof(valueBuffer));
 
         if (!NT_SUCCESS(status))
         {
-            // ´¦Àí´íÎó£¬ÀıÈç´òÓ¡´íÎóÈÕÖ¾¡¢Å×³öÒì³£µÈ
+            // å¤„ç†é”™è¯¯ï¼Œä¾‹å¦‚æ‰“å°é”™è¯¯æ—¥å¿—ã€æŠ›å‡ºå¼‚å¸¸ç­‰
             // ...
             return nullptr;
         }
@@ -335,33 +201,10 @@ namespace LogFile
 
     NTSTATUS InitDriverLog()
     {
-        NTSTATUS status;         
-
-        // ´´½¨LogsÄ¿Â¼
-        status = LogFile::CreateLogsDirectory(L"\\??\\C:\\Logs");
-        if (!NT_SUCCESS(status))
-        {
-            outLog("´´½¨Ä¿Â¼Ê§°Ü!");
-            return status;
-        }
-
-        //´´½¨ÈÕÖ¾ÎÄ¼ş
-        status = LogFile::SetLogFilePath(L"\\??\\C:\\Logs\\driver.xml");
-        if (!NT_SUCCESS(status))
-        {
-            outLog("ÉèÖÃÈÕÖ¾ÎÄ¼şÊ§°Ü!");
-            return status;
-        }
-
-        boLogInit = true;
-
-        // ¼ÇÂ¼ÈÕÖ¾ĞÅÏ¢
-        //status = Common::LogDriverMessage(L"¼ÇÂ¼ÈÕÖ¾ĞÅÏ¢ Driver loaded."); // ÖĞÎÄÈÕÖ¾ĞÅÏ¢
-        //if (!NT_SUCCESS(status))
-        //{
-        //    outLog(("¼ÇÂ¼ÈÕÖ¾ĞÅÏ¢Ê§°Ü£¡\n"));
-        //    return status;
-        //}
+        // Retired compatibility entry point.  Returning success prevents a
+        // nonessential diagnostic sink from blocking driver initialization;
+        // boLogInit stays false so no kernel file I/O can occur.
+        boLogInit = false;
         return STATUS_SUCCESS;
     }
 
@@ -372,24 +215,24 @@ namespace LogFile
         OBJECT_ATTRIBUTES objectAttributes;
         InitializeObjectAttributes(&objectAttributes, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
 
-        // ´´½¨Ïß³Ì
+        // åˆ›å»ºçº¿ç¨‹
         status = PsCreateSystemThread(&hThread, THREAD_ALL_ACCESS, &objectAttributes, NULL, NULL, StartRoutine, StartContext);
         if (!NT_SUCCESS(status))
         {
-            // ´¦Àí´íÎó
+            // å¤„ç†é”™è¯¯
             return status;
         }
 
-        // »ñÈ¡Ïß³Ì¶ÔÏóÖ¸Õë
+        // è·å–çº¿ç¨‹å¯¹è±¡æŒ‡é’ˆ
         //status = ObReferenceObjectByHandle(hThread, THREAD_ALL_ACCESS, *PsThreadType, KernelMode, (PVOID*)Thread, NULL);
         //if (!NT_SUCCESS(status))
         //{
-        //    // ´¦Àí´íÎó
+        //    // å¤„ç†é”™è¯¯
         //    ZwClose(hThread);
         //    return status;
         //}
 
-        // ¹Ø±ÕÏß³Ì¾ä±ú
+        // å…³é—­çº¿ç¨‹å¥æŸ„
         ZwClose(hThread);
 
         return STATUS_SUCCESS;
@@ -397,25 +240,25 @@ namespace LogFile
 
     //NTSTATUS CreateKernelThread(PKSTART_ROUTINE StartRoutine, PTHREAD_DATA threadData, PETHREAD* Thread)
     //{
-    //    // ´´½¨Ïß³Ì
+    //    // åˆ›å»ºçº¿ç¨‹
     //    return CreateInternalThread(StartRoutine, threadData, Thread);
     //}
 
     VOID KernelSleep(UINT32 milliseconds)
     {
         LARGE_INTEGER delay;
-        delay.QuadPart = -((LONGLONG)milliseconds * 10 * 1000);  // ×ª»»Îª100ÄÉÃëµ¥Î»
+        delay.QuadPart = -((LONGLONG)milliseconds * 10 * 1000);  // è½¬æ¢ä¸º100çº³ç§’å•ä½
 
         KeDelayExecutionThread(KernelMode, FALSE, &delay);
     }
 
     VOID RemovePath(WCHAR* fullPath)
     {
-        WCHAR* lastSlash = wcsrchr(fullPath, L'\\');  // ÔÚ×Ö·û´®ÖĞ²éÕÒ×îºóÒ»¸öÄ¿Â¼·Ö¸ô·û '\'
+        WCHAR* lastSlash = wcsrchr(fullPath, L'\\');  // åœ¨å­—ç¬¦ä¸²ä¸­æŸ¥æ‰¾æœ€åä¸€ä¸ªç›®å½•åˆ†éš”ç¬¦ '\'
 
         if (lastSlash != NULL)
         {
-            WCHAR* fileName = lastSlash + 1;  // Ìø¹ıÄ¿Â¼·Ö¸ô·û
+            WCHAR* fileName = lastSlash + 1;  // è·³è¿‡ç›®å½•åˆ†éš”ç¬¦
             wcscpy_s(fullPath, wcslen(fileName) + 1, fileName);
         }
     }

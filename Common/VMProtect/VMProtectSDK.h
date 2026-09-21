@@ -1,6 +1,10 @@
 #pragma once
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(UNREALDBG_VMP_STUB)
+#define VMP_IMPORT
+#define VMP_API
+#define VMP_WCHAR wchar_t
+#elif defined(__APPLE__) || defined(__unix__)
 #define VMP_IMPORT 
 #define VMP_API
 #define VMP_WCHAR unsigned short

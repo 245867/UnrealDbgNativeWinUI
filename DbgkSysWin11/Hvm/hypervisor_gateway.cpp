@@ -1,4 +1,4 @@
-#include "../Driver.h"
+ï»¿#include "../Driver.h"
 #include "AsmCallset.h"
 #include "vmcall_reason.h"
 #include "../ntapi.h"
@@ -190,7 +190,7 @@ namespace hvgt
 
 	/// <summary>
 	/// Unhook all functions and invalidate tlb
-	/// Ğ¶ÔØÈ«²¿hook ²¢Ë¢ĞÂtlb
+	/// å¸è½½å…¨éƒ¨hook å¹¶åˆ·æ–°tlb
 	/// </summary>
 	/// <returns> status </returns>
 	bool ept_unhook()
@@ -203,7 +203,7 @@ namespace hvgt
 
 	/// <summary>
 	/// Unhook single function and invalidate tlb
-	/// Ğ¶ÔØÖ¸¶¨º¯Êı ²¢Ë¢ĞÂtlb
+	/// å¸è½½æŒ‡å®šå‡½æ•° å¹¶åˆ·æ–°tlb
 	/// </summary>
 	/// <param name="function_address"></param>
 	/// <returns> status </returns>
@@ -215,7 +215,7 @@ namespace hvgt
 		return static_cast<ULONG>(args.statuses) == KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 	}
 
-	//¶ÁeptÎ±Ò³ÄÚ´æ
+	//è¯»eptä¼ªé¡µå†…å­˜
 	bool read_ept_fake_page_memory(void* target_address, void* buffer, unsigned __int64 buffer_size)
 	{
 		HookFunctionArgs args{ target_address, buffer, (void**)buffer_size, __readcr3(), 0 };
@@ -224,7 +224,7 @@ namespace hvgt
 		return static_cast<ULONG>(args.statuses) == KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 	}
 
-	//¶ÁÈ¡ÒşĞÎÈí¼ş¶Ïµã
+	//è¯»å–éšå½¢è½¯ä»¶æ–­ç‚¹
 	bool get_hide_software_breakpoint(void* target_address, void* buffer, unsigned __int64 buffer_size)
 	{
 		HookFunctionArgs args{ target_address, buffer, (void**)buffer_size, __readcr3(), 0 };
@@ -233,7 +233,7 @@ namespace hvgt
 		return static_cast<ULONG>(args.statuses) == KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 	}
 
-	//ÉèÖÃÒşĞÎÈí¼ş¶Ïµã
+	//è®¾ç½®éšå½¢è½¯ä»¶æ–­ç‚¹
 	bool set_hide_software_breakpoint(MDL_MAP* map_table, void* buffer, unsigned __int64 buffer_size)
 	{
 		HookFunctionArgs args{ map_table, buffer, (void**)buffer_size, __readcr3(), 0 };
@@ -257,7 +257,7 @@ namespace hvgt
 		return static_cast<ULONG>(args.statuses) == KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 	}
 
-	//¹ã²¥¸øËùÓĞÂß¼­´¦ÀíÆ÷
+	//å¹¿æ’­ç»™æ‰€æœ‰é€»è¾‘å¤„ç†å™¨
 	bool vmcall(PVOID vmcallinfo)
 	{
 		HookFunctionArgs args = { 0 };

@@ -1,4 +1,4 @@
-#include "../../Driver.h"
+ï»¿#include "../../Driver.h"
 #include "../../ntos/inc/mmtypes.h"
 #include "../../ntos/inc/ntdbg.h"
 #include "../../ntos/inc/ketypes.h"
@@ -18,7 +18,7 @@
 #include "../../Hooks/EptHook/EptHook.h"
 #include "ProtectProcess.h"
 
-//ÊÇ±»±£»¤µÄÎÄ¼þ
+//æ˜¯è¢«ä¿æŠ¤çš„æ–‡ä»¶
 BOOLEAN IsProtectFile(PUNICODE_STRING ImageFileName)
 {
     PLIST_ENTRY ListHead, NextEntry;
@@ -56,8 +56,8 @@ BOOLEAN IsProtectFile(PUNICODE_STRING ImageFileName)
     }
 }
 
-//ÊÇ°×Ãûµ¥½ø³Ì
-NTSTATUS IsWhiteListProcess(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
+//æ˜¯ç™½åå•è¿›ç¨‹
+NTSTATUS IsWhiteListProcess(_In_ HANDLE ProcessHandle,  //è¦è¯»å–çš„ç›®æ ‡è¿›ç¨‹
     _In_opt_ PVOID BaseAddress,
     _Out_opt_ PVOID Buffer,
     _In_ SIZE_T BufferSize,
@@ -103,7 +103,7 @@ NTSTATUS IsWhiteListProcess(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
                     }
                     if (IsProtectFile(&fileName) && (!bIsPassProc))
                     {
-                        outLog("µ±Ç°½ø³Ì: %s   >>>>>>>>>   Ä¿±ê½ø³Ì: %s      BaseAddress: %p   Size: %d", ((_EPROCESS*)PsGetCurrentProcess())->ImageFileName, Process->ImageFileName, BaseAddress, BufferSize);
+                        outLog("å½“å‰è¿›ç¨‹: %s   >>>>>>>>>   ç›®æ ‡è¿›ç¨‹: %s      BaseAddress: %p   Size: %d", ((_EPROCESS*)PsGetCurrentProcess())->ImageFileName, Process->ImageFileName, BaseAddress, BufferSize);
                         //RtlZeroMemory(Buffer, BufferSize);
                         Status = STATUS_ACCESS_DENIED;
                     }

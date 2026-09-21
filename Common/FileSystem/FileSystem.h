@@ -5,16 +5,16 @@
 
 namespace FileSystem
 {
-    //创建ini文件
+    //鍒涘缓ini鏂囦欢
     void CreateIniFile(const std::wstring& filename);
-    //删除ini文件
+    //鍒犻櫎ini鏂囦欢
     bool DeleteIniFile(const std::wstring& filename);
-    //遍历指定目录下的文件
+    //閬嶅巻鎸囧畾鐩綍涓嬬殑鏂囦欢
     std::vector<std::wstring> TraverseDirectory(const std::wstring& directoryPath);
     std::wstring ReadIniValue(const std::wstring& filename, const std::wstring& section, const std::wstring& key);
     void WriteIniValue(const std::wstring& filename, const std::wstring& section, const std::wstring& key, const std::wstring& value);
     std::wstring GetModuleDirectory(HMODULE hModule);
-    //获取自身模块名称
+    //鑾峰彇鑷韩妯″潡鍚嶇О
     std::string GetSelfModuleName();
 }
 

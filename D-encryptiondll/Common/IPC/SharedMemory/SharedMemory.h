@@ -46,7 +46,7 @@ public:
             );
 
             if (m_hMapFile == NULL) {
-                throw std::runtime_error("CreateFileMapping failed");
+                throw std::runtime_error("创建共享内存映射失败");
             }
         }
         else
@@ -64,7 +64,7 @@ public:
 
         if (m_pData == NULL) {
             CloseHandle(m_hMapFile);
-            throw std::runtime_error("MapViewOfFile failed");
+            throw std::runtime_error("映射共享内存视图失败");
         }
 
         //char szBuf[MAX_PATH] = { 0 };
@@ -102,7 +102,7 @@ public:
     {
         // 检查数据类型大小是否超过缓存区大小
         if (sizeof(T) > bufferSize) {
-            throw std::runtime_error("Data structure size exceeds buffer size.");
+            throw std::runtime_error("数据结构大小超过共享内存缓冲区");
         }
 
         std::memcpy(buffer, &data, sizeof(T));

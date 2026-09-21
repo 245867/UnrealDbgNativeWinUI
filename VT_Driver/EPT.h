@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _EPT_H
 #define _EPT_H
@@ -19,7 +19,7 @@ namespace ept
 	bool initialize(__ept_state& ept_state);
 
 	/// <summary>
-	/// ½»»»ÎïÀíÒ³Ãæ²¢Ë¢ĞÂtlb
+	/// äº¤æ¢ç‰©ç†é¡µé¢å¹¶åˆ·æ–°tlb
 	/// </summary>
 	/// <param name="entry_address"> Pointer to page table entry which we want to change </param>
 	/// <param name="entry_value"> Pointer to page table entry which we want use to change </param>
@@ -32,18 +32,18 @@ namespace ept
 	/// </summary>
 	void unhook_all_functions(__ept_state& ept_state);
 
-	//Í¨¹ıvmcall½øĞĞhook ½«vmcallÖ¸Áî²åÈëµ½Ä¿±ê´úÂë
+	//é€šè¿‡vmcallè¿›è¡Œhook å°†vmcallæŒ‡ä»¤æ’å…¥åˆ°ç›®æ ‡ä»£ç 
 	bool vmcall_hook_function(__ept_state& ept_state,
-		void* target_function/*±»¹Ò¹³µÄº¯ÊıµØÖ·*/,
-		void* proxy_function/*ĞÂº¯ÊıµØÖ·*/,
+		void* target_function/*è¢«æŒ‚é’©çš„å‡½æ•°åœ°å€*/,
+		void* proxy_function/*æ–°å‡½æ•°åœ°å€*/,
 		void** origin_function,
 		unsigned __int64 target_cr3);
 
 	//int3 hook
-	bool cc_hook_function(__ept_state& ept_state, void* target_function/*±»¹Ò¹³µÄº¯ÊıµØÖ·*/, void* proxy_function/*ĞÂº¯ÊıµØÖ·*/, void** origin_function);
+	bool cc_hook_function(__ept_state& ept_state, void* target_function/*è¢«æŒ‚é’©çš„å‡½æ•°åœ°å€*/, void* proxy_function/*æ–°å‡½æ•°åœ°å€*/, void** origin_function);
 
 	//#DB hook
-	bool int1_hook_function(__ept_state& ept_state, void* target_function/*±»¹Ò¹³µÄº¯ÊıµØÖ·*/, void* proxy_function/*ĞÂº¯ÊıµØÖ·*/, void** origin_function);
+	bool int1_hook_function(__ept_state& ept_state, void* target_function/*è¢«æŒ‚é’©çš„å‡½æ•°åœ°å€*/, void* proxy_function/*æ–°å‡½æ•°åœ°å€*/, void** origin_function);
 
 	/// <summary>
 	/// Perfrom a hook
@@ -70,30 +70,30 @@ namespace ept
 	/// <returns> status </returns>
 	bool split_pml2(mtrr_data const& mtrrs, __ept_state& ept_state, void* pre_allocated_buffer, unsigned __int64 physical_address);
 
-	//¶ÁÈ¡ÒşĞÎÈí¼ş¶Ïµã
+	//è¯»å–éšå½¢è½¯ä»¶æ–­ç‚¹
 	bool get_hide_software_breakpoint(__ept_state& ept_state, PVT_BREAK_POINT vmcallinfo);
 
-	//ÉèÖÃÒşĞÎÈí¼ş¶Ïµã
+	//è®¾ç½®éšå½¢è½¯ä»¶æ–­ç‚¹
 	bool set_hide_software_breakpoint(PVT_BREAK_POINT vmcallinfo);
 
-	//Ğ´Î±ÔìÒ³ÄÚ´æ
+	//å†™ä¼ªé€ é¡µå†…å­˜
 	bool write_fake_page_memory(__ept_hooked_function_info* hooked_function_info, void* target_address, void* buffer, unsigned __int64 buffer_size);
 
-	//¶ÁÎ±ÔìÒ³ÄÚ´æ
+	//è¯»ä¼ªé€ é¡µå†…å­˜
 	bool read_fake_page_memory(__ept_hooked_function_info* hooked_function_info, void* target_address, void* buffer, unsigned __int64 buffer_size);
 
 	bool handler_vmcall_rip(__ept_state& ept_state);
 
-	//ÅĞ¶ÏÊÇ·ñÊÇ¼àÊÓµÄÒ³
+	//åˆ¤æ–­æ˜¯å¦æ˜¯ç›‘è§†çš„é¡µ
 	int ept_isWatchPage(unsigned __int64 pfn, int ID);
 
-	//ÉèÖÃept¼àÊÓ
+	//è®¾ç½®eptç›‘è§†
 	bool ept_watch_activate(VT_BREAK_POINT vmcallinfo, unsigned __int64 Type, int* outID, int& errorCode);
 
-	//È¡Ïû¼àÊÓ¶Ïµã
+	//å–æ¶ˆç›‘è§†æ–­ç‚¹
 	int ept_watch_deactivate(VT_BREAK_POINT vmcallinfo, int ID);
 
-	//´¦Àí¶Ïµã¼àÊÓÊÂ¼ş
+	//å¤„ç†æ–­ç‚¹ç›‘è§†äº‹ä»¶
 	bool ept_handleWatchEvent(__vcpu* vcpu,
 		__ept_violation ept_violation,
 		__ept_hooked_page_info* hooked_page_info,

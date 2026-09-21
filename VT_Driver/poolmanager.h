@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _POOL_MANAGER_H
 #define _POOL_MANAGER_H
@@ -24,7 +24,7 @@ namespace pool_manager
     struct __pool_manager
     {
         __request_new_allocation* allocation_requests;
-        PLIST_ENTRY list_of_allocated_pools;  //ÒÑ·ÖÅä³ØÁĞ±í
+        PLIST_ENTRY list_of_allocated_pools;  //å·²åˆ†é…æ± åˆ—è¡¨
         volatile long lock_for_request_allocation;
         volatile long lock_for_reading_pool;
         bool is_request_for_allocation_recived;
@@ -32,12 +32,12 @@ namespace pool_manager
 
     struct __pool_table
     {
-        void* address;  //»º³åÇøÖ¸Õë
-        unsigned __int64  size;  //»º³åÇø´óĞ¡
-        allocation_intention intention;  //¸ÃÄÚ´æÓÃÓÚÊ²Ã´
+        void* address;  //ç¼“å†²åŒºæŒ‡é’ˆ
+        unsigned __int64  size;  //ç¼“å†²åŒºå¤§å°
+        allocation_intention intention;  //è¯¥å†…å­˜ç”¨äºä»€ä¹ˆ
         LIST_ENTRY pool_list;
-        bool is_busy;  //ÄÚ´æÊÇ·ñÒÑ±»Ê¹ÓÃ
-        bool recycled; //»ØÊÕ
+        bool is_busy;  //å†…å­˜æ˜¯å¦å·²è¢«ä½¿ç”¨
+        bool recycled; //å›æ”¶
     };
 
     /// <summary>

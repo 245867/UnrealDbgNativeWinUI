@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _GLOBALS_H
 #define _GLOBALS_H
@@ -215,14 +215,14 @@ typedef struct _WINDOW_DATA
 
 typedef struct _PROTECTOBJ
 {
-    MY_LIST list_entry;    //±£»¤¶ÔÏóÁÐ±í
-    FAST_MUTEX Mutex;          //»¥³âËø
+    MY_LIST list_entry;    //ä¿æŠ¤å¯¹è±¡åˆ—è¡¨
+    FAST_MUTEX Mutex;          //äº’æ–¥é”
 }PROTECTOBJ, * PPROTECTOBJ;
 
 typedef struct _DEBUGGER_TABLE
 {
-    MY_LIST list_entry;        //Ö¸ÏòDEBUGGER_DATA¶ÔÏó
-    FAST_MUTEX Mutex;          //»¥³âËø
+    MY_LIST list_entry;        //æŒ‡å‘DEBUGGER_DATAå¯¹è±¡
+    FAST_MUTEX Mutex;          //äº’æ–¥é”
 }DEBUGGER_TABLE,*PDEBUGGER_TABLE;
 
 //
@@ -230,15 +230,15 @@ typedef struct _DEBUGGER_TABLE
 //
 typedef struct _DEBUG_OBJECT
 {
-    KEVENT EventsPresent;        //ÔÚÊÂ¼þÁÐ±í±»Ìî³äÊ±ÉèÖÃµÄÊÂ¼þ¡£
-    FAST_MUTEX Mutex;            //»¥³âËø
-    LIST_ENTRY EventList;        //µ÷ÊÔÊÂ¼þµÄ¶ÓÁÐ
+    KEVENT EventsPresent;        //åœ¨äº‹ä»¶åˆ—è¡¨è¢«å¡«å……æ—¶è®¾ç½®çš„äº‹ä»¶ã€‚
+    FAST_MUTEX Mutex;            //äº’æ–¥é”
+    LIST_ENTRY EventList;        //è°ƒè¯•äº‹ä»¶çš„é˜Ÿåˆ—
     ULONG Flags;
 } DEBUG_OBJECT, * PDEBUG_OBJECT;
 
 typedef struct _MINI_CONTEXT_WOW64
 {
-    BOOLEAN initializated;  //ÓÃ»§ÅÐ¶Ïshadow contextÊÇ·ñÒÑ¾­³õÊ¼»¯
+    BOOLEAN initializated;  //ç”¨æˆ·åˆ¤æ–­shadow contextæ˜¯å¦å·²ç»åˆå§‹åŒ–
     /* 0x0004 */ unsigned long Dr0;
     /* 0x0008 */ unsigned long Dr1;
     /* 0x000c */ unsigned long Dr2;
@@ -250,7 +250,7 @@ typedef struct _MINI_CONTEXT_WOW64
 
 typedef struct _MINI_CONTEXT
 {
-    BOOLEAN initializated;  //ÓÃ»§ÅÐ¶Ïshadow contextÊÇ·ñÒÑ¾­³õÊ¼»¯
+    BOOLEAN initializated;  //ç”¨æˆ·åˆ¤æ–­shadow contextæ˜¯å¦å·²ç»åˆå§‹åŒ–
     ULONG64 Dr0;
     ULONG64 Dr1;
     ULONG64 Dr2;
@@ -260,37 +260,37 @@ typedef struct _MINI_CONTEXT
     ULONG EFlags;
 }MINI_CONTEXT, * PMINI_CONTEXT;
 
-//µ÷ÊÔ½ø³Ì¶ÔÏó
+//è°ƒè¯•è¿›ç¨‹å¯¹è±¡
 typedef struct _DEBUG_PROCESS
 {
     LIST_ENTRY list_entry;
-    FAST_MUTEX Mutex;          //»¥³âËø
-    _EPROCESS* Process;  //½ø³Ì¶ÔÏó
-    PDEBUG_OBJECT DebugObject;  //µ÷ÊÔ¶ÔÏó
+    FAST_MUTEX Mutex;          //äº’æ–¥é”
+    _EPROCESS* Process;  //è¿›ç¨‹å¯¹è±¡
+    PDEBUG_OBJECT DebugObject;  //è°ƒè¯•å¯¹è±¡
     MINI_CONTEXT Context;
     MINI_CONTEXT_WOW64 wow64Context;
 }DEBUG_PROCESS, * PDEBUG_PROCESS;
 
 typedef struct _DEBUG_PROCESS_TABLE
 {
-    MY_LIST list_entry;    //Ö¸ÏòDEBUG_PROCESS¶ÔÏó
-    FAST_MUTEX Mutex;          //»¥³âËø
+    MY_LIST list_entry;    //æŒ‡å‘DEBUG_PROCESSå¯¹è±¡
+    FAST_MUTEX Mutex;          //äº’æ–¥é”
 }DEBUG_PROCESS_TABLE, * PDEBUG_PROCESS_TABLE;
 
 
 typedef struct _BREAKPOINT_TABLE_ENTRY
 {
     LIST_ENTRY list_entry;    
-    _EPROCESS* Process;  //½ø³Ì¶ÔÏó
-    PVOID BreakpointAddress;  //¶ÏµãµØÖ·
-    //BYTE firstByte;  //Ê××Ö½ÚÄÚÈÝ
-    //BYTE originalByte  //Ô­Ê¼×Ö½ÚÄÚÈÝ
+    _EPROCESS* Process;  //è¿›ç¨‹å¯¹è±¡
+    PVOID BreakpointAddress;  //æ–­ç‚¹åœ°å€
+    //BYTE firstByte;  //é¦–å­—èŠ‚å†…å®¹
+    //BYTE originalByte  //åŽŸå§‹å­—èŠ‚å†…å®¹
 }BREAKPOINT_TABLE_ENTRY, * PBREAKPOINT_TABLE_ENTRY;
 
 typedef struct _BREAKPOINT_TABLE
 {
-    MY_LIST list_entry;  //Ö¸ÏòBREAKPOINT_TABLE_ENTRY
-    FAST_MUTEX Mutex;          //»¥³âËø
+    MY_LIST list_entry;  //æŒ‡å‘BREAKPOINT_TABLE_ENTRY
+    FAST_MUTEX Mutex;          //äº’æ–¥é”
 }BREAKPOINT_TABLE,*PBREAKPOINT_TABLE;
 
 typedef struct _MDL_MAP
@@ -300,7 +300,7 @@ typedef struct _MDL_MAP
     PVOID VirtualAddress;
 }MDL_MAP,*PMDL_MAP;
 
-//ÐéÄâ¾ä±ú±í
+//è™šæ‹Ÿå¥æŸ„è¡¨
 typedef struct _VIRTUAL_HANDLE_TABLE_ENTRY
 {
     size_t id;
@@ -312,20 +312,20 @@ typedef struct _VIRTUAL_HANDLE_TABLE_ENTRY
 
 typedef struct _VIRTUAL_HANDLE_TABLE
 {
-    MY_LIST list_entry;    //Ö¸ÏòDEBUG_PROCESS¶ÔÏó
-    FAST_MUTEX Mutex;          //»¥³âËø
+    MY_LIST list_entry;    //æŒ‡å‘DEBUG_PROCESSå¯¹è±¡
+    FAST_MUTEX Mutex;          //äº’æ–¥é”
 }VIRTUAL_HANDLE_TABLE, * PVIRTUAL_HANDLE_TABLE;
 
 typedef struct _DEBUGGER_TABLE_ENTRY
 {
     LIST_ENTRY list_entry;
-    DWORD dwPid;          //µ÷ÊÔÆ÷µÄ½ø³Ìid
-    PTR64(TCHAR*) fileData;  //ÎÄ¼þÐÅÏ¢
-    PTR64(TCHAR*) fileData2;  //ÎÄ¼þÐÅÏ¢
+    DWORD dwPid;          //è°ƒè¯•å™¨çš„è¿›ç¨‹id
+    PTR64(TCHAR*) fileData;  //æ–‡ä»¶ä¿¡æ¯
+    PTR64(TCHAR*) fileData2;  //æ–‡ä»¶ä¿¡æ¯
 }DEBUGGER_TABLE_ENTRY, * PDEBUGGER_TABLE_ENTRY;
 
 
-/*===============================================ÀàÃèÊö===============================================*/
+/*===============================================ç±»æè¿°===============================================*/
 class CDebuggerList : public CMyList
 {
 public:
@@ -367,20 +367,20 @@ private:
 
 
 
-extern PULONG_PTR PspProcessSequenceNumber;               //½ø³ÌÐòÁÐºÅ
-extern _EPROCESS*             DbgkTargetProcess;                      //µ÷ÊÔÄ¿±ê
-extern _EPROCESS*             ProtectProcessEp;                       //±»±£»¤µÄ½ø³Ì
-extern POBJECT_TYPE* DbgkDebugObjectType;                    //µ÷ÊÔ¶ÔÏóÀàÐÍ
-extern POBJECT_TYPE          Hvm_DbgkDebugObjectType;                //×Ô½¨µÄµ÷ÊÔ¶ÔÏóÀàÐÍ
+extern PULONG_PTR PspProcessSequenceNumber;               //è¿›ç¨‹åºåˆ—å·
+extern _EPROCESS*             DbgkTargetProcess;                      //è°ƒè¯•ç›®æ ‡
+extern _EPROCESS*             ProtectProcessEp;                       //è¢«ä¿æŠ¤çš„è¿›ç¨‹
+extern POBJECT_TYPE* DbgkDebugObjectType;                    //è°ƒè¯•å¯¹è±¡ç±»åž‹
+extern POBJECT_TYPE          Hvm_DbgkDebugObjectType;                //è‡ªå»ºçš„è°ƒè¯•å¯¹è±¡ç±»åž‹
 extern POBJECT_TYPE* ObTypeIndexTable;
-extern FAST_MUTEX            DbgkpProcessDebugPortMutex;             //½ø³Ìµ÷ÊÔ¶Ë¿Ú»¥³âËø
+extern FAST_MUTEX            DbgkpProcessDebugPortMutex;             //è¿›ç¨‹è°ƒè¯•ç«¯å£äº’æ–¥é”
 extern FAST_MUTEX            LongFlagsMutex;
 extern PRKEVENT* DbgkErrorPortRegisteredEvent;
 extern PDBGKP_ERROR_PORT     DbgkpErrorPort;
 extern EX_PUSH_LOCK          DbgkpErrorPortLock;
 extern _EPROCESS** DbgkpErrorProcess;
 extern BOOLEAN               IsDbgk;
-extern ULONG                 Ssdtbase;                               //SSDT»ùÖ·
+extern ULONG                 Ssdtbase;                               //SSDTåŸºå€
 extern PVOID                 PspSystemDllBase;
 extern PBOOLEAN              PsImageNotifyEnabled;
 extern EPROCESS_QUOTA_BLOCK  PspDefaultQuotaBlock;
@@ -393,31 +393,31 @@ extern PBOOLEAN              KeI386XMMIPresent;
 extern PULONG                KeFeatureBits;
 extern PULONG_PTR            KeEnabledXStateFeatures;
 extern UNICODE_STRING        PsNtDllPathName;
-extern BOOLEAN               g_IsInitGlobalVariable;                 //³õÊ¼»¯È«¾Ö±äÁ¿
+extern BOOLEAN               g_IsInitGlobalVariable;                 //åˆå§‹åŒ–å…¨å±€å˜é‡
 extern PEX_PUSH_LOCK         PspActiveProcessLock;
-extern PLIST_ENTRY           PsActiveProcessHead;                    //»î¶¯½ø³ÌÁÐ±í
+extern PLIST_ENTRY           PsActiveProcessHead;                    //æ´»åŠ¨è¿›ç¨‹åˆ—è¡¨
 extern LARGE_INTEGER* PspShortTime;
-extern PEX_CALLBACK          PspCreateThreadNotifyRoutine;           //Ïß³ÌÍ¨Öª»Øµ÷º¯ÊýµÄÊý×é
-extern PEX_CALLBACK          PspCreateProcessNotifyRoutine;          //½ø³ÌÍ¨Öª»Øµ÷º¯ÊýµÄÊý×é
+extern PEX_CALLBACK          PspCreateThreadNotifyRoutine;           //çº¿ç¨‹é€šçŸ¥å›žè°ƒå‡½æ•°çš„æ•°ç»„
+extern PEX_CALLBACK          PspCreateProcessNotifyRoutine;          //è¿›ç¨‹é€šçŸ¥å›žè°ƒå‡½æ•°çš„æ•°ç»„
 extern PULONG                PspNotifyEnableMask;
 extern PULONG                PerfGlobalGroupMask;
 extern PVOID* PspSystemDlls;
 extern PVOID                 g_obProcessHandle;
-extern _EPROCESS*             g_ProtectTargetProcess;                 //ÐèÒª±£»¤µÄÄ¿±ê½ø³Ì
-extern PROTECTOBJ            g_ProtectFileObjList;                   //±£»¤µÄÎÄ¼þ¶ÔÏóÁÐ±í
-extern PROTECTOBJ            g_ProtectWndObjList;                    //±£»¤µÄ´°¿Ú¶ÔÏóÁÐ±í
-extern DEBUGGER_TABLE g_DebuggerList;                         //µ÷ÊÔÆ÷¶ÔÏó
-extern DEBUG_PROCESS_TABLE g_DebugProcessList;                     //±»µ÷ÊÔµÄ½ø³ÌÁÐ±í
-extern _EPROCESS* g_SelfProcess;                          //ÎÒÃÇ×Ô¼ºµÄ½ø³Ì
-extern BREAKPOINT_TABLE      g_BreakpointList;                       //¶ÏµãÁÐ±í
-extern VIRTUAL_HANDLE_TABLE  g_VirtualHandleList;                    //ÐéÄâ¾ä±úÁÐ±í
+extern _EPROCESS*             g_ProtectTargetProcess;                 //éœ€è¦ä¿æŠ¤çš„ç›®æ ‡è¿›ç¨‹
+extern PROTECTOBJ            g_ProtectFileObjList;                   //ä¿æŠ¤çš„æ–‡ä»¶å¯¹è±¡åˆ—è¡¨
+extern PROTECTOBJ            g_ProtectWndObjList;                    //ä¿æŠ¤çš„çª—å£å¯¹è±¡åˆ—è¡¨
+extern DEBUGGER_TABLE g_DebuggerList;                         //è°ƒè¯•å™¨å¯¹è±¡
+extern DEBUG_PROCESS_TABLE g_DebugProcessList;                     //è¢«è°ƒè¯•çš„è¿›ç¨‹åˆ—è¡¨
+extern _EPROCESS* g_SelfProcess;                          //æˆ‘ä»¬è‡ªå·±çš„è¿›ç¨‹
+extern BREAKPOINT_TABLE      g_BreakpointList;                       //æ–­ç‚¹åˆ—è¡¨
+extern VIRTUAL_HANDLE_TABLE  g_VirtualHandleList;                    //è™šæ‹Ÿå¥æŸ„åˆ—è¡¨
 extern LONG                  g_TL_Game_pid;
 
 
 
 
 
-/**************************** º¯ÊýÖ¸Õë ****************************/
+/**************************** å‡½æ•°æŒ‡é’ˆ ****************************/
 typedef NTSTATUS(NTAPI* PFN_OBDUPLICATEOBJECT)(
     IN _EPROCESS* SourceProcess,
     IN HANDLE SourceHandle,
@@ -694,7 +694,7 @@ typedef NTSTATUS(__fastcall* PFN_NTGETCONTEXTTHREAD)(_In_ HANDLE hThread, _Inout
 
 typedef NTSTATUS(__fastcall* PFN_NTSETCONTEXTTHREAD)(
     __in HANDLE ThreadHandle,
-    __in PCONTEXT ThreadContext  /*´Ë²ÎÊýÊÇÓÃ»§²ãÌá¹©µÄ»º³åÇø*/
+    __in PCONTEXT ThreadContext  /*æ­¤å‚æ•°æ˜¯ç”¨æˆ·å±‚æä¾›çš„ç¼“å†²åŒº*/
     );
 
 typedef NTSTATUS(__fastcall* PFN_NTREADVIRTUALMEMORY)(_In_ HANDLE ProcessHandle,
@@ -1058,17 +1058,17 @@ typedef VOID(__fastcall* PFN_ADDRESS)();
 
 
 
-extern PFN_OBDUPLICATEOBJECT ObDuplicateObject;  //¸´ÖÆ¶ÔÏó
+extern PFN_OBDUPLICATEOBJECT ObDuplicateObject;  //å¤åˆ¶å¯¹è±¡
 extern PFN_KERESUMETHREAD KeResumeThread;
 extern PFN_KESUSPENDTHREAD KeSuspendThread;
 extern PFN_KEFORCERESUMETHREAD KeForceResumeThread;
 extern PFN_KEFREEZEALLTHREADS KeFreezeAllThreads;
 extern PFN_KETHAWALLTHREADS KeThawAllThreads;
-extern PFN_PSGETNEXTPROCESSTHREAD PsGetNextProcessThread; //»ñÈ¡½ø³ÌµÄÏÂÒ»¸öÏß³Ì
-extern PFN_PSQUITNEXTPROCESSTHREAD PsQuitNextProcessThread; //Ïß³Ì¶ÔÏó½â³ýÒýÓÃ
-extern PFN_MMGETFILENAMEFORADDRESS MmGetFileNameForAddress; //Í¨¹ýµØÖ·»ñÈ¡Ãû³ÆÐÅÏ¢
-extern PFN_MMGETFILENAMEFORSECTION MmGetFileNameForSection; //Í¨¹ý½Ú¶ÔÏó»ñÈ¡Ãû³ÆÐÅÏ¢
-extern PFN_LPCREQUESTWAITREPLYPORTEX LpcRequestWaitReplyPortEx; //ÇëÇó¶Ë¿Ú
+extern PFN_PSGETNEXTPROCESSTHREAD PsGetNextProcessThread; //èŽ·å–è¿›ç¨‹çš„ä¸‹ä¸€ä¸ªçº¿ç¨‹
+extern PFN_PSQUITNEXTPROCESSTHREAD PsQuitNextProcessThread; //çº¿ç¨‹å¯¹è±¡è§£é™¤å¼•ç”¨
+extern PFN_MMGETFILENAMEFORADDRESS MmGetFileNameForAddress; //é€šè¿‡åœ°å€èŽ·å–åç§°ä¿¡æ¯
+extern PFN_MMGETFILENAMEFORSECTION MmGetFileNameForSection; //é€šè¿‡èŠ‚å¯¹è±¡èŽ·å–åç§°ä¿¡æ¯
+extern PFN_LPCREQUESTWAITREPLYPORTEX LpcRequestWaitReplyPortEx; //è¯·æ±‚ç«¯å£
 extern PFN_KECONTEXTFROMKFRAMES KeContextFromKframes;
 extern PFN_KECONTEXTTOKFRAMES KeContextToKframes;
 extern PFN_KICHECKFORATLTHUNK KiCheckForAtlThunk;
@@ -1076,7 +1076,7 @@ extern PFN_KISEGSSTOTRAPFRAME KiSegSsToTrapFrame;
 extern PFN_KIESPTOTRAPFRAME KiEspToTrapFrame;
 extern PFN_KIDEBUGROUTINE KiDebugRoutine;
 extern PFN_RTLDISPATCHEXCEPTION RtlDispatchException;
-extern PFN_PSCALLIMAGENOTIFYROUTINES PsCallImageNotifyRoutines;  //µ÷ÓÃÓ³Ïñ»Øµ÷Àý³Ì
+extern PFN_PSCALLIMAGENOTIFYROUTINES PsCallImageNotifyRoutines;  //è°ƒç”¨æ˜ åƒå›žè°ƒä¾‹ç¨‹
 extern PFN_OBGETPROCESSHANDLECOUNT ObGetProcessHandleCount;
 extern PFN_PSGETPROCESSSESSIONID PsGetProcessSessionId;
 extern PFN_OBISLUIDDEVICEMAPSENABLED ObIsLUIDDeviceMapsEnabled;
@@ -1274,7 +1274,7 @@ extern PFN_SEPDELETEACCESSSTATE SepDeleteAccessState;
 
 
 
-//È«¾Ö±äÁ¿
+//å…¨å±€å˜é‡
 extern PVOID PspLoaderInitRoutine;
 extern unsigned __int64 game_cr3;
 
@@ -1413,7 +1413,7 @@ VOID
 FORCEINLINE
 KeEnterGuardedRegionThread(IN PKTHREAD Thread)
 {
-    //ÒÔÏÂ´úÂëÃèÊöµÄÊÇThread->SpecialApcDisable -= 1;
+    //ä»¥ä¸‹ä»£ç æè¿°çš„æ˜¯Thread->SpecialApcDisable -= 1;
     size_t ptr_SpecialApcDisable = (size_t)Thread + kthread_offset::SpecialApcDisable;
     *(short*)ptr_SpecialApcDisable -= 1;
 }
@@ -1471,7 +1471,7 @@ KeLeaveGuardedRegionThread(IN PKTHREAD Thread)
 
 VOID
 FORCEINLINE
-PspLockProcessShared(IN PMY_EPROCESS Process,  //½ø³Ì¹²ÏíËø
+PspLockProcessShared(IN PMY_EPROCESS Process,  //è¿›ç¨‹å…±äº«é”
     IN PMY_ETHREAD CurrentThread)
 {
     KeEnterCriticalRegionThread(&CurrentThread->Tcb);
@@ -1505,7 +1505,7 @@ PspUnlockDbgkpErrorPortShared(IN PMY_ETHREAD CurrentThread)
 
 VOID
 FORCEINLINE
-PspLockProcessExclusive(IN PMY_EPROCESS Process,   //½ø³Ì¶ÀÕ¼Ëø
+PspLockProcessExclusive(IN PMY_EPROCESS Process,   //è¿›ç¨‹ç‹¬å é”
     IN PMY_ETHREAD CurrentThread)
 {
     KeEnterCriticalRegionThread(&CurrentThread->Tcb);
@@ -1525,7 +1525,7 @@ PspUnlockProcessExclusive(IN PEPROCESS Process,
 
 VOID
 FORCEINLINE
-PspLockProcessListExclusive(IN PETHREAD CurrentThread)  //Ëø×¡»î¶¯½ø³ÌÁÐ±í
+PspLockProcessListExclusive(IN PETHREAD CurrentThread)  //é”ä½æ´»åŠ¨è¿›ç¨‹åˆ—è¡¨
 {
     size_t kthread_base = (size_t)CurrentThread + ethread_offset::Tcb;
     KeEnterGuardedRegionThread((PKTHREAD)kthread_base);
@@ -1543,7 +1543,7 @@ PspUnlockProcessList(IN PETHREAD CurrentThread)
 
 //VOID
 //FORCEINLINE
-//PspLockSystemDllShared(IN _ETHREAD* CurrentThread,   //ÏµÍ³dll¹²ÏíËø
+//PspLockSystemDllShared(IN _ETHREAD* CurrentThread,   //ç³»ç»Ÿdllå…±äº«é”
 //    IN PSP_SYSTEM_DLL SystemDll)
 //{
 //    KeEnterCriticalRegionThread(&CurrentThread->Tcb);

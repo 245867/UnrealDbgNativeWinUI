@@ -1,4 +1,4 @@
-#include "Driver.h"
+ï»¿#include "Driver.h"
 #include "poolmanager.h"
 #include "Globals.h"
 #include "mtrr.h"
@@ -42,14 +42,14 @@ void vmexit_vmx_on_handler(__vcpu* vcpu);
 void vmexit_getsec_handler(__vcpu* vcpu);
 void vmexit_vmx_preemption_handler(__vcpu* vcpu);
 
-//»Ö¸´guest×´Ì¬
+//æ¢å¤guestçŠ¶æ€
 void RestoreGuest()
 {
-	//»Ö¸´guestµÄ¼Ä´æÆ÷×´Ì¬
+	//æ¢å¤guestçš„å¯„å­˜å™¨çŠ¶æ€
 	hv::vmwrite(CR0_READ_SHADOW, hv::read_effective_guest_cr0().flags);
 	hv::vmwrite(CR4_READ_SHADOW, hv::read_effective_guest_cr4().flags);
 
-	// »Ö¸´dr7 cr3¼Ä´æÆ÷µÄÖµ
+	// æ¢å¤dr7 cr3å¯„å­˜å™¨çš„å€¼
 	__writedr(7, hv::vmread(GUEST_DR7));
 	__writecr3(hv::vmread(GUEST_CR3));
 
@@ -60,7 +60,7 @@ void RestoreGuest()
 	__writemsr(IA32_PAT, hv::vmread(GUEST_PAT));
 	__writemsr(IA32_DEBUGCTL, hv::vmread(GUEST_DEBUG_CONTROL));
 
-	//»Ö¸´gdtrºÍidtr¼Ä´æÆ÷µÄÖµ
+	//æ¢å¤gdtrå’Œidtrå¯„å­˜å™¨çš„å€¼
 	__reload_gdtr(hv::vmread(GUEST_GDTR_BASE), hv::vmread(GUEST_GDTR_LIMIT));
 	__reload_idtr(hv::vmread(GUEST_IDTR_BASE), hv::vmread(GUEST_IDTR_LIMIT));
 
@@ -68,7 +68,7 @@ void RestoreGuest()
 	guest_tr.flags = static_cast<uint16_t>(hv::vmread(GUEST_TR_SELECTOR));
 
 	// TSS
-	//×¢ÒâË³ĞòÒªÏÈ½«gdtµÄÖµĞ´»Øgdtr¼Ä´æÆ÷
+	//æ³¨æ„é¡ºåºè¦å…ˆå°†gdtçš„å€¼å†™å›gdtrå¯„å­˜å™¨
 	__pseudo_descriptor64 gdtr = { 0 };
 	__sgdt(&gdtr);
 	(reinterpret_cast<segment_descriptor_32*>(gdtr.base_address) + guest_tr.index)->type = SEGMENT_DESCRIPTOR_TYPE_TSS_AVAILABLE;
@@ -82,8 +82,8 @@ void RestoreGuest()
 	write_ldtr(static_cast<uint16_t>(hv::vmread(GUEST_LDTR_SELECTOR)));
 
 	// FS and GS base address
-	// ºÍ__writemsr(IA32_GS_BASE, hv::vmread(GUEST_GS_BASE))±ÈÆğÀ´
-	// ÕâÖÖ·½Ê½ÄÜÁ¢¼´½«GUEST_GS_BASEµÄÖµĞ´Èëµ½gs base¼Ä´æÆ÷Àï
+	// å’Œ__writemsr(IA32_GS_BASE, hv::vmread(GUEST_GS_BASE))æ¯”èµ·æ¥
+	// è¿™ç§æ–¹å¼èƒ½ç«‹å³å°†GUEST_GS_BASEçš„å€¼å†™å…¥åˆ°gs baseå¯„å­˜å™¨é‡Œ
 	_writefsbase_u64(hv::vmread(GUEST_FS_BASE));
 	_writegsbase_u64(hv::vmread(GUEST_GS_BASE));
 }
@@ -93,7 +93,7 @@ void set_hide_vm_exit_overhead(__vcpu* vcpu, bool value)
 	vcpu->hide_vm_exit_overhead = value;
 }
 
-//Òş²Øvmexit¿ªÏú
+//éšè—vmexitå¼€é”€
 void hide_vm_exit_overhead(__vcpu* vcpu) {
 	//
 	// Guest APERF/MPERF values are stored/restored on vm-entry and vm-exit,
@@ -149,16 +149,16 @@ void hide_vm_exit_overhead(__vcpu* vcpu) {
 	vcpu->tsc_offset -= vcpu->vm_exit_tsc_overhead;
 }
 
-//×¢ÒâÔÚhostÀï¾¡Á¿±ÜÃâÊ¹ÓÃWindowsµÄapi£¬ÒòÎªWindows apiÓĞºÜ¶à×Ô¼ºµÄÏŞÖÆ
-//ÀıÈç»á¼ì²éirql¼¶±ğºÍÕ»base limit¼ì²é£¬ÔÚ¼ì²é²»Í¨¹ıÊ±»á±¨¸æBSOD
-//ASSERT DbgBreakPointµÈº¯Êı¶¼ÎŞ·¨ÔÚhostÀïÊ¹ÓÃ
+//æ³¨æ„åœ¨hosté‡Œå°½é‡é¿å…ä½¿ç”¨Windowsçš„apiï¼Œå› ä¸ºWindows apiæœ‰å¾ˆå¤šè‡ªå·±çš„é™åˆ¶
+//ä¾‹å¦‚ä¼šæ£€æŸ¥irqlçº§åˆ«å’Œæ ˆbase limitæ£€æŸ¥ï¼Œåœ¨æ£€æŸ¥ä¸é€šè¿‡æ—¶ä¼šæŠ¥å‘ŠBSOD
+//ASSERT DbgBreakPointç­‰å‡½æ•°éƒ½æ— æ³•åœ¨hosté‡Œä½¿ç”¨
 EXTERN_C
 bool vmexit_handler(guest_context* guest_registers, PFXSAVE64 fxsave)
 {
 	//__vcpu* vcpu = g_vmm_context.vcpu_table[KeGetCurrentProcessorNumber()];
 
-	//´Ófs_baseÀïÈ¡³övcpuµÄÖ¸Õë
-	//ÒòÎªÔÚÌî³ähost_vmcs×Ö¶ÎHOST_FS_BASEÊ±±£´æµÄ
+	//ä»fs_baseé‡Œå–å‡ºvcpuçš„æŒ‡é’ˆ
+	//å› ä¸ºåœ¨å¡«å……host_vmcså­—æ®µHOST_FS_BASEæ—¶ä¿å­˜çš„
 	__vcpu* vcpu = reinterpret_cast<__vcpu*>(_readfsbase_u64());
 
 	guest_registers->rsp = hv::vmread(GUEST_RSP);
@@ -174,8 +174,8 @@ bool vmexit_handler(guest_context* guest_registers, PFXSAVE64 fxsave)
 
 	vcpu->hide_vm_exit_overhead = false;
 	//
-	//²ÉÓÃº¯Êı°ôµÄÉè¼ÆÎŞ·¨Âú×ãÉè¼ÆĞèÇó
-	//»»×öswitch£¬ÕâÑù¿ÉÒÔ½«Î´À´Î´ÊÕÂ¼µÄreason·Åµ½defaultÀï½øĞĞ´¦Àí
+	//é‡‡ç”¨å‡½æ•°æ£’çš„è®¾è®¡æ— æ³•æ»¡è¶³è®¾è®¡éœ€æ±‚
+	//æ¢åšswitchï¼Œè¿™æ ·å¯ä»¥å°†æœªæ¥æœªæ”¶å½•çš„reasonæ”¾åˆ°defaulté‡Œè¿›è¡Œå¤„ç†
 	dispatch_vm_exit(vcpu);
 	
 	if (vcpu->vmx_off_state.vmx_off_executed == true)
@@ -184,7 +184,7 @@ bool vmexit_handler(guest_context* guest_registers, PFXSAVE64 fxsave)
 
 		RestoreGuest();
 
-		//Èç¹ûÒªÍ£Ö¹ĞéÄâ»¯£¬vmexit_handler ½«·µ»Ø true
+		//å¦‚æœè¦åœæ­¢è™šæ‹ŸåŒ–ï¼Œvmexit_handler å°†è¿”å› true
 		return true;
 	}
 
@@ -234,7 +234,7 @@ void dispatch_vm_exit(__vcpu* vcpu)
 
 	default:
 	{
-		//ÆäËûvmexit£¬ÏÈ×¢Èë#GPÒì³£
+		//å…¶ä»–vmexitï¼Œå…ˆæ³¨å…¥#GPå¼‚å¸¸
 		sLog("reason: %d\n", vcpu->vmexit_info.reason);
 		hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
 		break;
@@ -250,14 +250,14 @@ void skip_instruction()
 	auto new_rip = old_rip + hv::vmread(VM_EXIT_INSTRUCTION_LENGTH);
 
 	// handle wrap-around for 32-bit addresses
-	// ´¦Àí32Î»µØÖ·£¬ÅĞ¶ÏnewipÊÇ·ñ³¬¹ıÁË32Î»µØÖ·
+	// å¤„ç†32ä½åœ°å€ï¼Œåˆ¤æ–­newipæ˜¯å¦è¶…è¿‡äº†32ä½åœ°å€
 	// https://patchwork.kernel.org/project/kvm/patch/20200427165917.31799-1-pbonzini@redhat.com/
 	if (old_rip < (1ull << 32) && new_rip >= (1ull << 32)) {
 		vmx_segment_access_rights cs_access_rights;
 		cs_access_rights.flags = static_cast<uint32_t>(hv::vmread(GUEST_CS_ACCESS_RIGHTS));
 
 		// make sure guest is in 32-bit mode
-		// Èç¹ûguestÊÇ32Î»Ä£Ê½£¬ÔòĞŞÕınewipÈ·±£ÊÇ32Î»µØÖ·
+		// å¦‚æœguestæ˜¯32ä½æ¨¡å¼ï¼Œåˆ™ä¿®æ­£newipç¡®ä¿æ˜¯32ä½åœ°å€
 		if (!cs_access_rights.long_mode)
 			new_rip &= 0xFFFF'FFFF;
 	}
@@ -266,7 +266,7 @@ void skip_instruction()
 
 	// if we're currently blocking interrupts (due to mov ss or sti)
 	// then we should unblock them since we just emulated an instruction
-	// Èç¹ûÎÒÃÇµ±Ç°ÕıÔÚ×èÖ¹ÖĞ¶Ï£¨ÓÉÓÚ mov ss »ò sti£©£¬ÄÇÃ´ÎÒÃÇÓ¦¸Ã½â³ı¶ÔËüÃÇµÄ×èÖ¹£¬ÒòÎªÎÒÃÇ¸Õ¸ÕÄ£ÄâÁËÒ»ÌõÖ¸Áî¡£
+	// å¦‚æœæˆ‘ä»¬å½“å‰æ­£åœ¨é˜»æ­¢ä¸­æ–­ï¼ˆç”±äº mov ss æˆ– stiï¼‰ï¼Œé‚£ä¹ˆæˆ‘ä»¬åº”è¯¥è§£é™¤å¯¹å®ƒä»¬çš„é˜»æ­¢ï¼Œå› ä¸ºæˆ‘ä»¬åˆšåˆšæ¨¡æ‹Ÿäº†ä¸€æ¡æŒ‡ä»¤ã€‚
 	auto interrupt_state = hv::read_interruptibility_state();
 	interrupt_state.blocking_by_mov_ss = 0;
 	interrupt_state.blocking_by_sti = 0;
@@ -280,7 +280,7 @@ void skip_instruction()
 
 	// if we're single-stepping, inject a debug exception
 	// just like normal instruction execution would
-	// Èç¹ûÎÒÃÇµ¥²½Ö´ĞĞ£¬ÔòÏñÕı³£Ö¸ÁîÖ´ĞĞÒ»Ñù×¢Èëµ÷ÊÔÒì³£
+	// å¦‚æœæˆ‘ä»¬å•æ­¥æ‰§è¡Œï¼Œåˆ™åƒæ­£å¸¸æŒ‡ä»¤æ‰§è¡Œä¸€æ ·æ³¨å…¥è°ƒè¯•å¼‚å¸¸
 	if (rflags.trap_flag && !debugctl.btf) {
 		vmx_pending_debug_exceptions dbg_exception;
 		dbg_exception.flags = hv::vmread(GUEST_PENDING_DEBUG_EXCEPTION);
@@ -289,20 +289,20 @@ void skip_instruction()
 	}
 }
 
-//µ÷ÕûripÖ¸ÏòÏÂÒ»ÌõÖ¸Áî
+//è°ƒæ•´ripæŒ‡å‘ä¸‹ä¸€æ¡æŒ‡ä»¤
 void adjust_rip(__vcpu* vcpu)
 {
 	//skip_instruction();
 	hv::vmwrite(GUEST_RIP, vcpu->vmexit_info.guest_rip + vcpu->vmexit_info.instruction_length);
-	if (vcpu->vmexit_info.guest_rflags.trap_flag)  //ÅĞ¶ÏguestÊÇ·ñ¿ªÆôµ¥²½
+	if (vcpu->vmexit_info.guest_rflags.trap_flag)  //åˆ¤æ–­guestæ˜¯å¦å¼€å¯å•æ­¥
 	{
 		__vmx_pending_debug_exceptions pending_debug = { hv::vmread(GUEST_PENDING_DEBUG_EXCEPTION) };
 		__vmx_interruptibility_state interruptibility = { hv::vmread(GUEST_INTERRUPTIBILITY_STATE) };
 
-		pending_debug.bs = true;  //¿ªÆôµ¥²½
+		pending_debug.bs = true;  //å¼€å¯å•æ­¥
 		hv::vmwrite(GUEST_PENDING_DEBUG_EXCEPTION, pending_debug.all);
 
-		//Èç¹ûguestÀï¿ªÆôµ¥²½ ÔòÎÒÃÇ±ØĞë½«×èÈûÈ¡Ïû
+		//å¦‚æœguesté‡Œå¼€å¯å•æ­¥ åˆ™æˆ‘ä»¬å¿…é¡»å°†é˜»å¡å–æ¶ˆ
 		interruptibility.blocking_by_sti = false;
 		interruptibility.blocking_by_mov_ss = false;
 		hv::vmwrite(GUEST_INTERRUPTIBILITY_STATE, interruptibility.all);
@@ -321,12 +321,12 @@ void vmexit_nmi_window_handler(__vcpu* vcpu)
 	--vcpu->queued_nmis;
 
 	// inject the NMI into the guest
-	// ×¢Èënmiµ½guest
+	// æ³¨å…¥nmiåˆ°guest
 	hv::inject_nmi();
 
 	if (vcpu->queued_nmis == 0) {
 		// disable NMI-window exiting since we have no more NMIs to inject
-		// ½ûÓÃ NMI-window exiting£¬ÒòÎªÎÒÃÇÃ»ÓĞ¸ü¶à NMI ¿ÉÒÔ×¢Èë
+		// ç¦ç”¨ NMI-window exitingï¼Œå› ä¸ºæˆ‘ä»¬æ²¡æœ‰æ›´å¤š NMI å¯ä»¥æ³¨å…¥
 		auto ctrl = hv::read_ctrl_proc_based();
 		ctrl.nmi_window_exiting = 0;
 		hv::write_ctrl_proc_based(ctrl);
@@ -334,7 +334,7 @@ void vmexit_nmi_window_handler(__vcpu* vcpu)
 
 	// there is the possibility that a host NMI occurred right before we
 	// disabled NMI-window exiting. make sure to re-enable it if this is the case.
-	// ÔÚÎÒÃÇ½ûÓÃ NMI-window exiting Ö®Ç°£¬ÓĞ¿ÉÄÜ·¢Éúhost NMI¡£Èç¹ûÊÇÕâÖÖÇé¿ö£¬ÇëÈ·±£ÖØĞÂÆôÓÃËü¡£
+	// åœ¨æˆ‘ä»¬ç¦ç”¨ NMI-window exiting ä¹‹å‰ï¼Œæœ‰å¯èƒ½å‘ç”Ÿhost NMIã€‚å¦‚æœæ˜¯è¿™ç§æƒ…å†µï¼Œè¯·ç¡®ä¿é‡æ–°å¯ç”¨å®ƒã€‚
 	if (vcpu->queued_nmis > 0) {
 		auto ctrl = hv::read_ctrl_proc_based();
 		ctrl.nmi_window_exiting = 1;
@@ -344,7 +344,7 @@ void vmexit_nmi_window_handler(__vcpu* vcpu)
 
 void CleanUp(__vcpu* vcpu, __ept_hooked_page_info* hooked_page_info)
 {
-	//±ğÍüÁËÉ¨Î²¹¤×÷
+	//åˆ«å¿˜äº†æ‰«å°¾å·¥ä½œ
 	hooked_page_info->ID = -1;
 	hooked_page_info->isBp = false;
 	hooked_page_info->isInt3 = false;
@@ -353,18 +353,18 @@ void CleanUp(__vcpu* vcpu, __ept_hooked_page_info* hooked_page_info)
 
 void vmexit_monitor_trap_flag_handler(__vcpu* vcpu)
 {	
-	hv::set_mtf(false);  //¹Ø±Õmtf
+	hv::set_mtf(false);  //å…³é—­mtf
 
-	//ÇĞ¼Ç²»¿ÉÀÄÓÃpage_to_change
-	//page_to_changeÖ»ÓĞÔÚ´¥·¢eptÎ¥ÀıÊ±²Å»á±»¼ÇÂ¼£¬
-	//µ±Õâ¸ö±äÁ¿ÎªÕæÊ±£¬ËµÃ÷ÎÒÃÇµÄmtfÊÇÖ÷¶¯ÓÉeptÎ¥ÀıÀï¿ªÆôµÄ£¬
-	//ÊÇÎÒÃÇÏ£Íû´¦ÀíµÄµØÖ·£¬¼ÇµÃÓÃÍêºóÒª½«page_to_changeÇå¿Õ
+	//åˆ‡è®°ä¸å¯æ»¥ç”¨page_to_change
+	//page_to_changeåªæœ‰åœ¨è§¦å‘eptè¿ä¾‹æ—¶æ‰ä¼šè¢«è®°å½•ï¼Œ
+	//å½“è¿™ä¸ªå˜é‡ä¸ºçœŸæ—¶ï¼Œè¯´æ˜æˆ‘ä»¬çš„mtfæ˜¯ä¸»åŠ¨ç”±eptè¿ä¾‹é‡Œå¼€å¯çš„ï¼Œ
+	//æ˜¯æˆ‘ä»¬å¸Œæœ›å¤„ç†çš„åœ°å€ï¼Œè®°å¾—ç”¨å®Œåè¦å°†page_to_changeæ¸…ç©º
 	const auto hooked_page_info = vcpu->ept_state->page_to_change;
 	if (hooked_page_info)
 	{
 		if (hooked_page_info->Options == EPTO_HOOK_FUNCTION)
 		{
-			//½«Ô­Ò³ĞŞ¸ÄÎª²»¿ÉÖ´ĞĞ£¬´Ó¶øÔÙ´Î´¥·¢eptÎ¥Àı½øhost»»»ØÎ±Ò³
+			//å°†åŸé¡µä¿®æ”¹ä¸ºä¸å¯æ‰§è¡Œï¼Œä»è€Œå†æ¬¡è§¦å‘eptè¿ä¾‹è¿›hostæ¢å›ä¼ªé¡µ
 			hooked_page_info->original_entry.execute = 0;
 			vcpu->ept_state->page_to_change = nullptr;
 			ept::swap_pml1_and_invalidate_tlb(*vcpu->ept_state,
@@ -388,32 +388,32 @@ void vmexit_monitor_trap_flag_handler(__vcpu* vcpu)
 			{
 				cr3 guest_cr3;
 				guest_cr3.flags = eptWatchList[ID].cr3;
-				//Í¬²½Ô­Ò³ÄÚÈİµ½Î±Ò³
+				//åŒæ­¥åŸé¡µå†…å®¹åˆ°ä¼ªé¡µ
 				if (PAGE_SIZE != hv::read_guest_virtual_memory(guest_cr3, PAGE_ALIGN(eptWatchList[ID].VirtualAddress), &hooked_page_info->fake_page_contents, PAGE_SIZE))
 				{
-					//¶ÁÈ¡Êı¾İ¿ÉÄÜ²»ÍêÕû
+					//è¯»å–æ•°æ®å¯èƒ½ä¸å®Œæ•´
 					CleanUp(vcpu, hooked_page_info);
 					spinlock::unlock(&eptWatchList_lock);
 					return;
 				}
 
-				//Í¬²½Ô­Ò³ÄÚÈİºó£¬¿ÉÄÜ»á½«ÎÒÃÇÎ±Ò³µÄcc¶Ïµã¸²¸Çµô
-				//¹ÊÎÒÃÇĞèÒªÔÙ´ÎÕÒ³öÕâĞ©¶ÏµãÎ»ÖÃ£¬ÖØĞÂÉèÖÃÉÏcc¶Ïµã
+				//åŒæ­¥åŸé¡µå†…å®¹åï¼Œå¯èƒ½ä¼šå°†æˆ‘ä»¬ä¼ªé¡µçš„ccæ–­ç‚¹è¦†ç›–æ‰
+				//æ•…æˆ‘ä»¬éœ€è¦å†æ¬¡æ‰¾å‡ºè¿™äº›æ–­ç‚¹ä½ç½®ï¼Œé‡æ–°è®¾ç½®ä¸Šccæ–­ç‚¹
 				for (int i = 0; i < EPTWATCHLISTSIZE; i++)
 				{
-					//ÕÒ³öÓëeptWatchList[ID].PhysicalAddressÍ¬Ò»Ò³µÄËùÓĞid
+					//æ‰¾å‡ºä¸eptWatchList[ID].PhysicalAddressåŒä¸€é¡µçš„æ‰€æœ‰id
 					if (ept::ept_isWatchPage(GET_PFN(eptWatchList[ID].PhysicalAddress), i))
 					{
 						if (eptWatchList[i].bpType == 3)
 						{
-							//Ğ´Èëcc¶Ïµã
+							//å†™å…¥ccæ–­ç‚¹
 							int offset = eptWatchList[i].VirtualAddress & 0xFFF;
 							hooked_page_info->fake_page_contents[offset] = 0xCC;
 						}
 					}
 				}
 
-				//½«Ô­Ò³ĞŞ¸ÄÎª²»¿ÉÖ´ĞĞ£¬´Ó¶øÔÙ´Î´¥·¢eptÎ¥Àı½øhost»»»ØÎ±Ò³
+				//å°†åŸé¡µä¿®æ”¹ä¸ºä¸å¯æ‰§è¡Œï¼Œä»è€Œå†æ¬¡è§¦å‘eptè¿ä¾‹è¿›hostæ¢å›ä¼ªé¡µ
 				hooked_page_info->original_entry.execute = 0;
 				ept::swap_pml1_and_invalidate_tlb(*vcpu->ept_state, 
 					hooked_page_info->entry_address,
@@ -426,10 +426,10 @@ void vmexit_monitor_trap_flag_handler(__vcpu* vcpu)
 				{
 				case EPTW_WRITE:
 				{
-					//ÖØĞÂÉèÖÃÎª²»¿ÉĞ´
+					//é‡æ–°è®¾ç½®ä¸ºä¸å¯å†™
 					hooked_page_info->entry_address->write = 0;
 
-					//ÅĞ¶ÏÊÇ·ñÊÇÎÒÃÇ¼àÊÓµÄµØÖ·£¬Èç¹ûÊÇµÄ»°¾ÍÏòGuest×¢Èëµ¥²½Òì³£
+					//åˆ¤æ–­æ˜¯å¦æ˜¯æˆ‘ä»¬ç›‘è§†çš„åœ°å€ï¼Œå¦‚æœæ˜¯çš„è¯å°±å‘Guestæ³¨å…¥å•æ­¥å¼‚å¸¸
 					if (hooked_page_info->isBp)
 					{
 						hv::inject_single_step(vcpu);
@@ -438,10 +438,10 @@ void vmexit_monitor_trap_flag_handler(__vcpu* vcpu)
 				}
 				case EPTW_READWRITE:
 				{
-					//ÖØĞÂÉèÖÃÎª²»¿É¶ÁĞ´
+					//é‡æ–°è®¾ç½®ä¸ºä¸å¯è¯»å†™
 					hooked_page_info->entry_address->read = 0;
 					hooked_page_info->entry_address->write = 0;
-					//ÅĞ¶ÏÊÇ·ñÊÇÎÒÃÇ¼àÊÓµÄµØÖ·£¬Èç¹ûÊÇµÄ»°¾ÍÏòGuest×¢Èëµ¥²½Òì³£
+					//åˆ¤æ–­æ˜¯å¦æ˜¯æˆ‘ä»¬ç›‘è§†çš„åœ°å€ï¼Œå¦‚æœæ˜¯çš„è¯å°±å‘Guestæ³¨å…¥å•æ­¥å¼‚å¸¸
 					if (hooked_page_info->isBp)
 					{
 						hv::inject_single_step(vcpu);
@@ -450,9 +450,9 @@ void vmexit_monitor_trap_flag_handler(__vcpu* vcpu)
 				}
 				case EPTW_EXECUTE:
 				{
-					//ÖØĞÂÉèÖÃ²»¿ÉÖ´ĞĞ
+					//é‡æ–°è®¾ç½®ä¸å¯æ‰§è¡Œ
 					hooked_page_info->entry_address->execute = 0;
-					//ÅĞ¶ÏÊÇ·ñÊÇÎÒÃÇ¼àÊÓµÄµØÖ·£¬Èç¹ûÊÇµÄ»°¾ÍÏòGuest×¢Èëµ¥²½Òì³£
+					//åˆ¤æ–­æ˜¯å¦æ˜¯æˆ‘ä»¬ç›‘è§†çš„åœ°å€ï¼Œå¦‚æœæ˜¯çš„è¯å°±å‘Guestæ³¨å…¥å•æ­¥å¼‚å¸¸
 					if (hooked_page_info->isBp)
 					{
 						hv::inject_single_step(vcpu);
@@ -462,7 +462,7 @@ void vmexit_monitor_trap_flag_handler(__vcpu* vcpu)
 				default:
 					break;
 				}				
-				//Ë¢ĞÂµ±Ç°Âß¼­´¦ÀíÆ÷
+				//åˆ·æ–°å½“å‰é€»è¾‘å¤„ç†å™¨
 				_mm_mfence();
 				invept_single_context_func(vcpu->ept_state->ept_pointer->all);
 			}
@@ -472,7 +472,7 @@ void vmexit_monitor_trap_flag_handler(__vcpu* vcpu)
 	}	
 }
 
-//´¦Àíint3¶ÏµãÖĞ¶Ï
+//å¤„ç†int3æ–­ç‚¹ä¸­æ–­
 unsigned __int32 handler_breakpoint(__ept_state& ept_state, __vmexit_interrupt_info interrupt_info)
 {
 	sLog("\n");
@@ -483,16 +483,16 @@ unsigned __int32 handler_breakpoint(__ept_state& ept_state, __vmexit_interrupt_i
 	while (&ept_state.hooked_page_list != current->Flink)
 	{
 		current = current->Flink;
-		//´ÓÁĞ±íÖĞÈ¡³ö¹Ò¹³Ò³
+		//ä»åˆ—è¡¨ä¸­å–å‡ºæŒ‚é’©é¡µ
 		__ept_hooked_page_info* hooked_page_info = CONTAINING_RECORD(current, __ept_hooked_page_info, hooked_page_list);
 
-		//ÅĞ¶ÏÄ¿±êµØÖ·ÊÇ·ñÊÇ±»¹Ò¹³µÄÒ³
-		//½ö±È½ÏÒ³Ö¡ºÅ
+		//åˆ¤æ–­ç›®æ ‡åœ°å€æ˜¯å¦æ˜¯è¢«æŒ‚é’©çš„é¡µ
+		//ä»…æ¯”è¾ƒé¡µå¸§å·
 		if (hooked_page_info->pfn_of_hooked_page == GET_PFN(physical_address))
 		{
-			//LogInfo("Ò³ÃæÒÑ¹Ò¹³");
+			//LogInfo("é¡µé¢å·²æŒ‚é’©");
 
-			//¼ì²éĞéÄâµØÖ·ÊÇ·ñÒÑ¾­¹Ò¹³
+			//æ£€æŸ¥è™šæ‹Ÿåœ°å€æ˜¯å¦å·²ç»æŒ‚é’©
 			PLIST_ENTRY current_hooked_function = &hooked_page_info->hooked_functions_list;
 			while (&hooked_page_info->hooked_functions_list != current_hooked_function->Flink)
 			{
@@ -503,12 +503,12 @@ unsigned __int32 handler_breakpoint(__ept_state& ept_state, __vmexit_interrupt_i
 				{
 					if (hooked_function_info->breakpoint_address == guest_rip)
 					{
-						return 1;  //×¢Èëint3ÖĞ¶Ï
+						return 1;  //æ³¨å…¥int3ä¸­æ–­
 					}
 					else
 					{
 						hv::vmwrite(GUEST_RIP, hooked_function_info->handler_function);
-						return 2;  //²»×¢ÈëÖĞ¶Ï
+						return 2;  //ä¸æ³¨å…¥ä¸­æ–­
 					}										
 				}
 			}			
@@ -517,7 +517,7 @@ unsigned __int32 handler_breakpoint(__ept_state& ept_state, __vmexit_interrupt_i
 	return 1;
 }
 
-//´¦Àíint1
+//å¤„ç†int1
 unsigned __int32 handler_debug(__ept_state& ept_state, __vmexit_interrupt_info interrupt_info)
 {
 	sLog("\n");
@@ -528,16 +528,16 @@ unsigned __int32 handler_debug(__ept_state& ept_state, __vmexit_interrupt_info i
 	while (&ept_state.hooked_page_list != current->Flink)
 	{
 		current = current->Flink;
-		//´ÓÁĞ±íÖĞÈ¡³ö¹Ò¹³Ò³
+		//ä»åˆ—è¡¨ä¸­å–å‡ºæŒ‚é’©é¡µ
 		__ept_hooked_page_info* hooked_page_info = CONTAINING_RECORD(current, __ept_hooked_page_info, hooked_page_list);
 
-		//ÅĞ¶ÏÄ¿±êµØÖ·ÊÇ·ñÊÇ±»¹Ò¹³µÄÒ³
-		//½ö±È½ÏÒ³Ö¡ºÅ
+		//åˆ¤æ–­ç›®æ ‡åœ°å€æ˜¯å¦æ˜¯è¢«æŒ‚é’©çš„é¡µ
+		//ä»…æ¯”è¾ƒé¡µå¸§å·
 		if (hooked_page_info->pfn_of_hooked_page == GET_PFN(physical_address))
 		{
-			//LogInfo("Ò³ÃæÒÑ¹Ò¹³");
+			//LogInfo("é¡µé¢å·²æŒ‚é’©");
 
-			//¼ì²éĞéÄâµØÖ·ÊÇ·ñÒÑ¾­¹Ò¹³
+			//æ£€æŸ¥è™šæ‹Ÿåœ°å€æ˜¯å¦å·²ç»æŒ‚é’©
 			PLIST_ENTRY current_hooked_function = &hooked_page_info->hooked_functions_list;
 			while (&hooked_page_info->hooked_functions_list != current_hooked_function->Flink)
 			{
@@ -547,7 +547,7 @@ unsigned __int32 handler_debug(__ept_state& ept_state, __vmexit_interrupt_info i
 				if (hooked_function_info->virtual_address == (PVOID)guest_rip)
 				{
 					hv::vmwrite(GUEST_RIP, hooked_function_info->handler_function);
-					return 2;  //²»×¢ÈëÖĞ¶Ï
+					return 2;  //ä¸æ³¨å…¥ä¸­æ–­
 				}
 			}
 		}
@@ -558,17 +558,17 @@ unsigned __int32 handler_debug(__ept_state& ept_state, __vmexit_interrupt_info i
 void vmexit_exception_or_nmi_handler(__vcpu* vcpu)
 {
 	sLog("\n");
-	//µİÔönmi¼ÆÊı
+	//é€’å¢nmiè®¡æ•°
 	++vcpu->queued_nmis;
 
-	//Ö»ÓĞÔÚ¡°NMI exiting¡±ÒÔ¼°¡°virtual-NMIs¡±¶¼Îª 1 Ê±£¬¡°NMI-window exiting¡±²ÅÄÜ±»ÖÃÎ»¡£
-	//µ±¡°NMI-window exiting¡±Îª 1 Ê±£¬ÔÚÃ»ÓĞblocking by NMI ×èÈûµÄÇé¿öÏÂ£¬VM-entry²Ù×÷Íê³Éºó½«Ö±½ÓÒı·¢ VM - exit¡£
+	//åªæœ‰åœ¨â€œNMI exitingâ€ä»¥åŠâ€œvirtual-NMIsâ€éƒ½ä¸º 1 æ—¶ï¼Œâ€œNMI-window exitingâ€æ‰èƒ½è¢«ç½®ä½ã€‚
+	//å½“â€œNMI-window exitingâ€ä¸º 1 æ—¶ï¼Œåœ¨æ²¡æœ‰blocking by NMI é˜»å¡çš„æƒ…å†µä¸‹ï¼ŒVM-entryæ“ä½œå®Œæˆåå°†ç›´æ¥å¼•å‘ VM - exitã€‚
 	auto ctrl = hv::read_ctrl_proc_based();
 	ctrl.nmi_window_exiting = 1;
 	hv::write_ctrl_proc_based(ctrl);
 }
 
-//cpuÖØÆôĞÅºÅ
+//cpué‡å¯ä¿¡å·
 void vmexit_init_signal_handler(__vcpu* vcpu)
 {
 	sLog("GUEST_ACTIVITY_STATE: %d\n", hv::vmread(GUEST_ACTIVITY_STATE));
@@ -591,8 +591,8 @@ void vmexit_ept_misconfiguration_handler(__vcpu* vcpu)
 }
 
 
-//GUEST_PHYSICAL_ADDRESS×Ö¶Î½öÔÚÓÉEPT violation »ò EPT misconfigurationÒıÆğµÄvmexitÊ±ÓĞĞ§
-//¶ÔÓÚÆäËûÇé¿ö£¬Õâ¸ö×Ö¶ÎÊÇÎ´¶¨ÒåÖµ¡£
+//GUEST_PHYSICAL_ADDRESSå­—æ®µä»…åœ¨ç”±EPT violation æˆ– EPT misconfigurationå¼•èµ·çš„vmexitæ—¶æœ‰æ•ˆ
+//å¯¹äºå…¶ä»–æƒ…å†µï¼Œè¿™ä¸ªå­—æ®µæ˜¯æœªå®šä¹‰å€¼ã€‚
 void vmexit_ept_violation_handler(__vcpu* vcpu)
 {
 	__ept_violation ept_violation;
@@ -601,15 +601,15 @@ void vmexit_ept_violation_handler(__vcpu* vcpu)
 	unsigned __int64 guest_physical_adddress = hv::vmread(ept_violation.caused_by_translation ?
 		GUEST_PHYSICAL_ADDRESS : GUEST_LINEAR_ADDRESS);
 
-	//´¥·¢EPTÎ¥Àıºó Ã¶¾ÙhookÁĞ±í ÅĞ¶ÏÊÇ·ñÊÇÓÉÎÒÃÇÉèÖÃµÄhookÒ³Òı·¢µÄ
+	//è§¦å‘EPTè¿ä¾‹å æšä¸¾hookåˆ—è¡¨ åˆ¤æ–­æ˜¯å¦æ˜¯ç”±æˆ‘ä»¬è®¾ç½®çš„hooké¡µå¼•å‘çš„
 	PLIST_ENTRY current = &vcpu->ept_state->hooked_page_list;
 	while (&vcpu->ept_state->hooked_page_list != current->Flink)
 	{
 		current = current->Flink;
 		__ept_hooked_page_info* hooked_page_info = CONTAINING_RECORD(current, __ept_hooked_page_info, hooked_page_list);
 
-		//guestÀïµÄÎïÀíµØÖ·²»»á¸Ä±ä£¬»¹ÊÇÖ¸ÏòÔ­À´µÄGPA
-		//ËùÒÔÔÚ´¥·¢¶ÁĞ´·ÃÎÊÎ¥ÀıÊ±£¬GUEST_PHYSICAL_ADDRESS»¹ÊÇÔ´pfn_of_hooked_page
+		//guesté‡Œçš„ç‰©ç†åœ°å€ä¸ä¼šæ”¹å˜ï¼Œè¿˜æ˜¯æŒ‡å‘åŸæ¥çš„GPA
+		//æ‰€ä»¥åœ¨è§¦å‘è¯»å†™è®¿é—®è¿ä¾‹æ—¶ï¼ŒGUEST_PHYSICAL_ADDRESSè¿˜æ˜¯æºpfn_of_hooked_page
 		if (hooked_page_info->pfn_of_hooked_page == GET_PFN(guest_physical_adddress))
 		{			
 			if ((ept_violation.read_access || ept_violation.write_access) && (!ept_violation.ept_readable || !ept_violation.ept_writeable))
@@ -621,13 +621,13 @@ void vmexit_ept_violation_handler(__vcpu* vcpu)
 
 				if (hooked_page_info->Options == EPTO_VIRTUAL_BREAKPOINT)
 				{
-					//´¦Àí¶Ïµã¼àÊÓÊÂ¼şµÄ
+					//å¤„ç†æ–­ç‚¹ç›‘è§†äº‹ä»¶çš„
 					int bpType = 0;
 					if (ept::ept_handleWatchEvent(vcpu, ept_violation, hooked_page_info, guest_physical_adddress, bpType))
 					{
 						if (bpType == 3)  //int3
 						{
-							hv::set_mtf(true);  //¿ªÆômtf
+							hv::set_mtf(true);  //å¼€å¯mtf
 							hooked_page_info->isInt3 = true;
 							hooked_page_info->original_entry.execute = 1;
 							vcpu->ept_state->page_to_change = hooked_page_info;
@@ -639,7 +639,7 @@ void vmexit_ept_violation_handler(__vcpu* vcpu)
 						else
 						{
 							vcpu->ept_state->page_to_change = hooked_page_info;
-							//Ë¢ĞÂµ±Ç°Âß¼­´¦ÀíÆ÷µÄeptp
+							//åˆ·æ–°å½“å‰é€»è¾‘å¤„ç†å™¨çš„eptp
 							_mm_mfence();
 							invept_single_context_func(vcpu->ept_state->ept_pointer->all);
 						}					
@@ -648,10 +648,10 @@ void vmexit_ept_violation_handler(__vcpu* vcpu)
 
 				if (hooked_page_info->Options == EPTO_HOOK_FUNCTION)
 				{
-					//ÏÂÃæÊÇ´¦Àíº¯ÊıhookµÄ
-					hv::set_mtf(true);  //¿ªÆômtf
-					//´¦Àí×ÔÒıÓÃµÄÇé¿ö£¬ÎÒÃÇ±ØĞë½«Ô­Ò³¿ÉÖ´ĞĞÊôĞÔ»¹Ô­£¬
-					//¿ªÆômtfÈÃguest½øÈëµ¥²½Ä£Ê½£¬È»ºóÔÚvmexit_monitor_trap_flag_handlerÀï½«Î±Ò³»»ÉÏÈ¥¡£
+					//ä¸‹é¢æ˜¯å¤„ç†å‡½æ•°hookçš„
+					hv::set_mtf(true);  //å¼€å¯mtf
+					//å¤„ç†è‡ªå¼•ç”¨çš„æƒ…å†µï¼Œæˆ‘ä»¬å¿…é¡»å°†åŸé¡µå¯æ‰§è¡Œå±æ€§è¿˜åŸï¼Œ
+					//å¼€å¯mtfè®©guestè¿›å…¥å•æ­¥æ¨¡å¼ï¼Œç„¶ååœ¨vmexit_monitor_trap_flag_handleré‡Œå°†ä¼ªé¡µæ¢ä¸Šå»ã€‚
 					hooked_page_info->original_entry.execute = 1;
 					vcpu->ept_state->page_to_change = hooked_page_info;
 					ept::swap_pml1_and_invalidate_tlb(*vcpu->ept_state, 
@@ -664,25 +664,25 @@ void vmexit_ept_violation_handler(__vcpu* vcpu)
 			{
 				if (hooked_page_info->Options == EPTO_VIRTUAL_BREAKPOINT)
 				{
-					//½»»»ÎïÀíÒ³Ãæ²¢Ë¢ĞÂtlb
+					//äº¤æ¢ç‰©ç†é¡µé¢å¹¶åˆ·æ–°tlb
 					ept::swap_pml1_and_invalidate_tlb(*vcpu->ept_state, 
 						hooked_page_info->entry_address, 
 						hooked_page_info->changed_entry, 
 						invept_type::invept_single_context);
 
-					//´¦Àí¶Ïµã¼àÊÓÊÂ¼şµÄ
+					//å¤„ç†æ–­ç‚¹ç›‘è§†äº‹ä»¶çš„
 					//int bpType = 0;
 					//if (ept::ept_handleWatchEvent(vcpu, ept_violation, hooked_page_info, guest_physical_adddress, bpType))
 					//{
 					//	vcpu->ept_state->page_to_change = hooked_page_info;
-					//	//Ë¢ĞÂµ±Ç°Âß¼­´¦ÀíÆ÷µÄeptp
+					//	//åˆ·æ–°å½“å‰é€»è¾‘å¤„ç†å™¨çš„eptp
 					//	invept_single_context_func(vcpu->ept_state->ept_pointer->all);
 					//}
 				}
 
 				if (hooked_page_info->Options == EPTO_HOOK_FUNCTION)
 				{
-					//½»»»ÎïÀíÒ³Ãæ²¢Ë¢ĞÂtlb
+					//äº¤æ¢ç‰©ç†é¡µé¢å¹¶åˆ·æ–°tlb
 					ept::swap_pml1_and_invalidate_tlb(*vcpu->ept_state, 
 						hooked_page_info->entry_address,
 						hooked_page_info->changed_entry,
@@ -699,7 +699,7 @@ void vmexit_ept_violation_handler(__vcpu* vcpu)
 	//qualification.flags = vcpu->vmexit_info.qualification;
 
 	//// guest physical address that caused the ept-violation
-	//// ´¥·¢eptÎ¥ÀıµÄÊµ¼ÊµØÖ·
+	//// è§¦å‘eptè¿ä¾‹çš„å®é™…åœ°å€
 	//auto const physical_address = hv::vmread(qualification.caused_by_translation ?
 	//	GUEST_PHYSICAL_ADDRESS : GUEST_LINEAR_ADDRESS);
 
@@ -764,13 +764,13 @@ void vmexit_ept_violation_handler(__vcpu* vcpu)
 	//	pte->read_access = 0;
 	//	pte->write_access = 0;
 	//	pte->execute_access = 1;
-	//	pte->page_frame_number = hook->exec_pfn;  //Î±Ò³
+	//	pte->page_frame_number = hook->exec_pfn;  //ä¼ªé¡µ
 	//}
 	//else {
 	//	pte->read_access = 1;
 	//	pte->write_access = 1;
 	//	pte->execute_access = 0;
-	//	pte->page_frame_number = hook->orig_pfn;  //Ô­Ò³
+	//	pte->page_frame_number = hook->orig_pfn;  //åŸé¡µ
 	//}
 }
 
@@ -783,7 +783,7 @@ bool mov_to_cr3_handler(__vcpu* vcpu, unsigned __int64 guest_cr3)
 
 	bool invalidate_tlb = true;
 
-	//ÅĞ¶ÏpcidÊÇ·ñ¿ªÆô Óë cr3 bit63ÊÇ·ñÎª1
+	//åˆ¤æ–­pcidæ˜¯å¦å¼€å¯ ä¸ cr3 bit63æ˜¯å¦ä¸º1
 	if (curr_cr4.pcid_enable && (new_cr3.flags & (1ull << 63))) {
 		invalidate_tlb = false;
 		new_cr3.flags &= ~(1ull << 63);
@@ -794,7 +794,7 @@ bool mov_to_cr3_handler(__vcpu* vcpu, unsigned __int64 guest_cr3)
 	__cpuid(reinterpret_cast<int*>(&cpuid_80000008), 0x80000008);
 	uint64_t max_phys_addr = cpuid_80000008.eax.number_of_physical_address_bits;
 
-	//Ó¦¸ÃÎªËùÓĞ±£ÁôÎ»×¢Èë#GPÒì³£
+	//åº”è¯¥ä¸ºæ‰€æœ‰ä¿ç•™ä½æ³¨å…¥#GPå¼‚å¸¸
 	auto const reserved_mask = ~((1ull << max_phys_addr) - 1);
 	if (new_cr3.flags & reserved_mask) {
 		hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
@@ -860,10 +860,10 @@ bool mov_to_cr0_handler(__vcpu* vcpu, unsigned __int64 guest_cr0)
 
 	// Any attempt to clear cr0 PG bit cause #GP
 	if ((cr_registers.cr0.paging_enable == 0) || 
-		(cr_registers.cr0.paging_enable && !cr_registers.cr0.protection_enable)  /*Çå³ıPEÎ»ÉèÖÃPGÎ»»áµ¼ÖÂ#GP*/ ||
+		(cr_registers.cr0.paging_enable && !cr_registers.cr0.protection_enable)  /*æ¸…é™¤PEä½è®¾ç½®PGä½ä¼šå¯¼è‡´#GP*/ ||
 		(!cr_registers.cr0.cache_disable && cr_registers.cr0.not_write_through)  ||
 		(!cr_registers.cr0.write_protect && curr_cr4.control_flow_enforcement_enable) ||
-		(cr_registers.cr0.all & 0xFFFFFFFF00000000) /*ÅĞ¶Ïcr0¸ß32Î»ÊÇ·ñÎª1*/)
+		(cr_registers.cr0.all & 0xFFFFFFFF00000000) /*åˆ¤æ–­cr0é«˜32ä½æ˜¯å¦ä¸º1*/)
 	{
 		hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
 		return false;
@@ -881,7 +881,7 @@ bool mov_to_cr0_handler(__vcpu* vcpu, unsigned __int64 guest_cr0)
 		invept_all_contexts_func();
 	}
 
-	//Ä£ÄâÕı³£Ä£Ê½ÏÂ¼´Ê¹¶ÔÕâĞ©Î»½øĞĞÉèÖÃºóÒ²»á±»Ğ´0
+	//æ¨¡æ‹Ÿæ­£å¸¸æ¨¡å¼ä¸‹å³ä½¿å¯¹è¿™äº›ä½è¿›è¡Œè®¾ç½®åä¹Ÿä¼šè¢«å†™0
 	__cr0 cr0;
 	cr0.all = cr_registers.cr0.all;
 	cr0.reserved_1 = 0;
@@ -895,7 +895,7 @@ bool mov_to_cr0_handler(__vcpu* vcpu, unsigned __int64 guest_cr0)
 	cr0.all |= cr_fixed.split.low;
 	cr_fixed.all = __readmsr(IA32_VMX_CR0_FIXED1);
 	cr0.all &= cr_fixed.split.low;
-	hv::vmwrite(GUEST_CR0, cr0.all);  //¹Ì¶¨GUEST_CR0µÄ¹Ì¶¨Î»
+	hv::vmwrite(GUEST_CR0, cr0.all);  //å›ºå®šGUEST_CR0çš„å›ºå®šä½
 	return true;
 }
 
@@ -923,7 +923,7 @@ bool mov_to_cr4_handler(unsigned __int64 guest_cr4)
 		(new_cr4.linear_addresses_57_bit) ||
 		(new_cr4.control_flow_enforcement_enable && !curr_cr0.write_protect) ||
 		((new_cr4.pcid_enable && !curr_cr4.pcid_enable) && guest_cr3.pcid != 0) ||
-		(new_cr4.flags & 0xFFFFFFFF00000000) /*ÅĞ¶Ïcr4¸ß32Î»ÊÇ·ñÎª1*/)
+		(new_cr4.flags & 0xFFFFFFFF00000000) /*åˆ¤æ–­cr4é«˜32ä½æ˜¯å¦ä¸º1*/)
 	{
 		hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
 		return false;
@@ -939,7 +939,7 @@ bool mov_to_cr4_handler(unsigned __int64 guest_cr4)
 
 	hv::vmwrite<unsigned __int64>(CR4_READ_SHADOW, new_cr4.flags);
 
-	//guest CR4 VMXE Î»£¨bit 13£©±ØĞë¹Ì¶¨1
+	//guest CR4 VMXE ä½ï¼ˆbit 13ï¼‰å¿…é¡»å›ºå®š1
 	__cr4 cr4;
 	__cr_fixed cr_fixed;
 	cr_fixed.all = __readmsr(IA32_VMX_CR4_FIXED0);
@@ -1058,7 +1058,7 @@ void vmexit_vm_instruction(__vcpu* vcpu)
 {
 	sLog("\n");
 	UNREFERENCED_PARAMETER(vcpu);
-	//ÎªÃ¿¸ö VMX Ö¸Áî×¢Èë #UD£¬ÒòÎªÎÒÃÇ²»ÔÊĞíguest½øÈë VMX operation
+	//ä¸ºæ¯ä¸ª VMX æŒ‡ä»¤æ³¨å…¥ #UDï¼Œå› ä¸ºæˆ‘ä»¬ä¸å…è®¸guestè¿›å…¥ VMX operation
 	hv::inject_interruption(EXCEPTION_VECTOR_UNDEFINED_OPCODE, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, false);
 }
 
@@ -1067,7 +1067,7 @@ void vmexit_vm_instruction(__vcpu* vcpu)
 void vmexit_getsec_handler(__vcpu* vcpu)
 {
 	sLog("\n");
-	//Ïòguest×¢Èë#GPÒì³£,ÒòÎªÎÒÃÇÒÑ¾­ÔÚIA32_FEATURE_CONTROL¼Ä´æÆ÷ÖĞ½ûÓÃÁËSMXÄ£Ê½
+	//å‘guestæ³¨å…¥#GPå¼‚å¸¸,å› ä¸ºæˆ‘ä»¬å·²ç»åœ¨IA32_FEATURE_CONTROLå¯„å­˜å™¨ä¸­ç¦ç”¨äº†SMXæ¨¡å¼
 	hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
 }
 
@@ -1084,21 +1084,21 @@ void vmexit_vmx_on_handler(__vcpu* vcpu)
 	}
 }
 
-//ÈıÖØ¹ÊÕÏ´¦Àí
+//ä¸‰é‡æ•…éšœå¤„ç†
 void vmexit_triple_fault_handler(__vcpu* vcpu)
 {
 	sLog("\n");
 	hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
 }
 
-//´¦ÀíÊ§°ÜµÄvmexit
+//å¤„ç†å¤±è´¥çš„vmexit
 void vmexit_failed(__vcpu* vcpu)
 {
 	sLog("\n");
 	hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
 }
 
-//Çå³ıcpu»º´æ,²¢½«Êı¾İĞ´»Øµ½ÄÚ´æ
+//æ¸…é™¤cpuç¼“å­˜,å¹¶å°†æ•°æ®å†™å›åˆ°å†…å­˜
 void vmexit_invd_handler(__vcpu* vcpu)
 {
 	sLog("\n");
@@ -1115,11 +1115,11 @@ void vmexit_invlpg_handler(__vcpu* vcpu)
 	adjust_rip(vcpu);
 }
 
-//´¦ÀírdtscpÖ¸Áî
+//å¤„ç†rdtscpæŒ‡ä»¤
 void vmexit_rdtscp_handler(__vcpu* vcpu)
 {
 	//
-	// Reads the current value of the processor’s time-stamp counter (a 64-bit MSR) into the EDX:EAX registers
+	// Reads the current value of the processoræŠ¯ time-stamp counter (a 64-bit MSR) into the EDX:EAX registers
 	// and also reads the value of the IA32_TSC_AUX MSR (address C0000103H) into the ECX register.
 	// The EDX register is loaded with the high-order 32 bits of the IA32_TSC MSR; 
 	// the EAX register is loaded with the low-order 32 bits of the IA32_TSC MSR; 
@@ -1139,7 +1139,7 @@ void vmexit_rdtscp_handler(__vcpu* vcpu)
 
 void vmexit_vmx_preemption_handler(__vcpu* vcpu)
 {
-	//ÕâÀïÄ¿Ç°Ê²Ã´¶¼²»×ö
+	//è¿™é‡Œç›®å‰ä»€ä¹ˆéƒ½ä¸åš
 	sLog("\n");
 }
 
@@ -1149,14 +1149,14 @@ void vmexit_xsetbv_handler(__vcpu* vcpu)
 	__xcr0 new_xcr0;
 	__xcr0 current_xcr0;
 
-	// CR4.OSXSAVE must be 1·ñÔò×¢Èë#UDÒì³£
+	// CR4.OSXSAVE must be 1å¦åˆ™æ³¨å…¥#UDå¼‚å¸¸
 	if (!hv::read_effective_guest_cr4().os_xsave) {
 		hv::inject_interruption(EXCEPTION_VECTOR_UNDEFINED_OPCODE, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, false);
 		return;
 	}
 
-	// ÔÚÖ§³Ö Intel 64 ¼Ü¹¹µÄ´¦ÀíÆ÷ÉÏ£¬RCX µÄ¸ß 32 Î»½«±»ºöÂÔ¡£
-	// guest_registers->rcx & 0xFFFF'FFFFÄ¿µÄÊÇÎªÁËºöÂÔ¸ß32Î»±£ÁôµÍ32Î»
+	// åœ¨æ”¯æŒ Intel 64 æ¶æ„çš„å¤„ç†å™¨ä¸Šï¼ŒRCX çš„é«˜ 32 ä½å°†è¢«å¿½ç•¥ã€‚
+	// guest_registers->rcx & 0xFFFF'FFFFç›®çš„æ˜¯ä¸ºäº†å¿½ç•¥é«˜32ä½ä¿ç•™ä½32ä½
 	unsigned __int64 xcr_number = vcpu->vmexit_info.guest_registers->rcx & 0xFFFF'FFFF;
 
 	new_xcr0.all = (vcpu->vmexit_info.guest_registers->rdx << 32) | MASK_GET_LOWER_32BITS(vcpu->vmexit_info.guest_registers->rax);
@@ -1164,18 +1164,18 @@ void vmexit_xsetbv_handler(__vcpu* vcpu)
 	current_xcr0.all = _xgetbv(0);
 
 
-	//»ñÈ¡xcr0¼Ä´æÆ÷ÖĞ²»ÊÜÖ§³ÖµÄÎ»
+	//è·å–xcr0å¯„å­˜å™¨ä¸­ä¸å—æ”¯æŒçš„ä½
 	cpuid_eax_0d_ecx_00 cpuid_0d;
 	__cpuidex(reinterpret_cast<int*>(&cpuid_0d), 0x0D, 0x00);
 	auto const unsupported_mask = ~((static_cast<uint64_t>(cpuid_0d.edx.flags) << 32) | cpuid_0d.eax.flags);
 
 
 	//
-	// Èç¹û xcr_number ´óÓÚ 0£¬Ôò×¢Èë #GP
+	// å¦‚æœ xcr_number å¤§äº 0ï¼Œåˆ™æ³¨å…¥ #GP
 	// If value in edx:eax sets bits that are reserved in the xcr specified by ecx then inject #GP
 	// If an attempt is made to clear bit 0 of xcr0 then inject #GP
 	// If an attempt is made to set new_xcr0[2:1] = 0 then inject #GP
-	// Èç¹ûÉèÖÃÁË²»ÊÜÖ§³ÖµÄÎ»£¬Ôò×¢Èë#GP
+	// å¦‚æœè®¾ç½®äº†ä¸å—æ”¯æŒçš„ä½ï¼Œåˆ™æ³¨å…¥#GP
 	//
 	if ((xcr_number != 0) ||
 		(new_xcr0.reserved1 != current_xcr0.reserved1) ||
@@ -1196,20 +1196,20 @@ void vmexit_xsetbv_handler(__vcpu* vcpu)
 	}
 
 	//
-	// ½«¼Ä´æÆ÷ EDX:EAX µÄÄÚÈİĞ´Èë ECX ¼Ä´æÆ÷Ö¸¶¨µÄ 64 Î»À©Õ¹¿ØÖÆ¼Ä´æÆ÷ (XCR)¡£
-	// £¨ÔÚÖ§³Ö Intel 64 ¼Ü¹¹µÄ´¦ÀíÆ÷ÉÏ£¬RCX µÄ¸ß 32 Î»½«±»ºöÂÔ¡££©
+	// å°†å¯„å­˜å™¨ EDX:EAX çš„å†…å®¹å†™å…¥ ECX å¯„å­˜å™¨æŒ‡å®šçš„ 64 ä½æ‰©å±•æ§åˆ¶å¯„å­˜å™¨ (XCR)ã€‚
+	// ï¼ˆåœ¨æ”¯æŒ Intel 64 æ¶æ„çš„å¤„ç†å™¨ä¸Šï¼ŒRCX çš„é«˜ 32 ä½å°†è¢«å¿½ç•¥ã€‚ï¼‰
 	// The contents of the EDX register are copied to high-order 32 bits of the selected XCR and the contents of the EAX register are copied
 	// to low-order 32 bits of the XCR. (On processors that support the Intel 64 architecture,
 	// the high-order 32 bits of each of RAX and RDX are ignored.) Undefined or reserved bits in an XCR should be set to values previously read.
 	// This instruction must be executed at privilege level 0 or in real - address mode; otherwise, a general protection exception #GP(0)
 	// is generated.Specifying a reserved or unimplemented XCR in ECX will also cause a general protection exception.
 	// The processor will also generate a general protection exception if software attempts to write to reserved bits in an XCR.
-	// Ä¿Ç°½öÖ§³Ö XCR0¡£Òò´ËECXµÄËùÓĞÆäËûÖµ¶¼±»±£Áô£¬ÉèÖÃ±£Áô¼Ä´æÆ÷Ôò´¥·¢#GP
+	// ç›®å‰ä»…æ”¯æŒ XCR0ã€‚å› æ­¤ECXçš„æ‰€æœ‰å…¶ä»–å€¼éƒ½è¢«ä¿ç•™ï¼Œè®¾ç½®ä¿ç•™å¯„å­˜å™¨åˆ™è§¦å‘#GP
 	//
 	hv::host_exception_info e;
 	hv::xsetbv_safe(e, xcr_number, new_xcr0.all);
 
-	//Èç¹ûxsetbv_safe·¢ÉúÁËÒì³£ÔòÏòguestÀï×¢Èë#GPÒì³£
+	//å¦‚æœxsetbv_safeå‘ç”Ÿäº†å¼‚å¸¸åˆ™å‘guesté‡Œæ³¨å…¥#GPå¼‚å¸¸
 	if (e.exception_occurred) {
 		hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, true);
 		return;
@@ -1255,7 +1255,7 @@ void vmexit_cpuid_handler(__vcpu* vcpu)
 	//{
 	//case CPUID_PROCESSOR_FEATURES:
 	//{
-	//	//´¦Àícpuid 1  ecx bit31
+	//	//å¤„ç†cpuid 1  ecx bit31
 	//	cpuid_reg.cpuid_eax_01.feature_information_ecx.hypervisor_present = 0; // Hypervisor present bit
 	//	break;
 	//}
@@ -1277,14 +1277,14 @@ void vmexit_cpuid_handler(__vcpu* vcpu)
 	adjust_rip(vcpu);
 }
 
-/*µ±¡°use MSR bitmap¡±Îª 1 Ê±£¬Ê¹ÓÃ RDMSR Ö¸Áî¶Á MSR£¬µ« ECX ¼Ä´æÆ÷Ìá
-¹©µÄ MSR µØÖ·Öµ²»ÔÚ 00000000H¡«00001FFFH »òÕß C0000000H¡«C0001FFFH ·¶Î§ÄÚ£¬
-½«µ¼ÖÂ VM - exit¡£
+/*å½“â€œuse MSR bitmapâ€ä¸º 1 æ—¶ï¼Œä½¿ç”¨ RDMSR æŒ‡ä»¤è¯» MSRï¼Œä½† ECX å¯„å­˜å™¨æ
+ä¾›çš„ MSR åœ°å€å€¼ä¸åœ¨ 00000000Hï½00001FFFH æˆ–è€… C0000000Hï½C0001FFFH èŒƒå›´å†…ï¼Œ
+å°†å¯¼è‡´ VM - exitã€‚
 
-ÈçÔÚ 00000000H¡«00001FFFH »òÕß C0000000H¡«C0001FFFH ·¶Î§ÄÚ£¬ÔòÓÉMSR bitmapÇøÓòÀ´¾ö¶¨
-ÊÇ·ñ´¥·¢vmexit
+å¦‚åœ¨ 00000000Hï½00001FFFH æˆ–è€… C0000000Hï½C0001FFFH èŒƒå›´å†…ï¼Œåˆ™ç”±MSR bitmapåŒºåŸŸæ¥å†³å®š
+æ˜¯å¦è§¦å‘vmexit
 
-½« ECX Ö¸¶¨µÄ MSR ¶ÁÈë EDX:EAX¡£
+å°† ECX æŒ‡å®šçš„ MSR è¯»å…¥ EDX:EAXã€‚
 */
 void vmexit_msr_read_handler(__vcpu* vcpu)
 {
@@ -1299,7 +1299,7 @@ void vmexit_msr_read_handler(__vcpu* vcpu)
 		feature_msr.all = __readmsr(IA32_FEATURE_CONTROL);
 		feature_msr.lock = 1;
 		feature_msr.vmxon_inside_smx = 0;
-		feature_msr.vmxon_outside_smx = 0; //Î±ÔìBIOSÃ»ÓĞ¿ªÆôVT  ½ûÓÃSMXÄ£Ê½
+		feature_msr.vmxon_outside_smx = 0; //ä¼ªé€ BIOSæ²¡æœ‰å¼€å¯VT  ç¦ç”¨SMXæ¨¡å¼
 		feature_msr.senter_local = 0;
 		feature_msr.senter_global = 0;
 		msr.all = feature_msr.all;
@@ -1326,7 +1326,7 @@ void vmexit_msr_read_handler(__vcpu* vcpu)
 	adjust_rip(vcpu);
 }
 
-//½«EDX:EAXÖĞµÄÖµĞ´ÈëECXÖ¸¶¨µÄMSR¡£
+//å°†EDX:EAXä¸­çš„å€¼å†™å…¥ECXæŒ‡å®šçš„MSRã€‚
 void vmexit_msr_write_handler(__vcpu* vcpu)
 {
 	sLog("\n");
@@ -1353,7 +1353,7 @@ void vmexit_msr_write_handler(__vcpu* vcpu)
 
 	// we need to make sure to update EPT memory types if the guest
 	// modifies any of the MTRR registers
-	// Èç¹ûguestĞŞ¸ÄÁËÈÎºÎ MTRR ¼Ä´æÆ÷£¬ÎÒÃÇĞèÒªÈ·±£¸üĞÂ EPT ÄÚ´æÀàĞÍ
+	// å¦‚æœguestä¿®æ”¹äº†ä»»ä½• MTRR å¯„å­˜å™¨ï¼Œæˆ‘ä»¬éœ€è¦ç¡®ä¿æ›´æ–° EPT å†…å­˜ç±»å‹
 	if (msr_index == IA32_MTRR_DEF_TYPE || msr_index == IA32_MTRR_FIX64K_00000 ||
 		msr_index == IA32_MTRR_FIX16K_80000 || msr_index == IA32_MTRR_FIX16K_A0000 ||
 		(msr_index >= IA32_MTRR_FIX4K_C0000 && msr_index <= IA32_MTRR_FIX4K_F8000) ||

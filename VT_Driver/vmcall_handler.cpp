@@ -1,4 +1,4 @@
-#include "Driver.h"
+ï»¿#include "Driver.h"
 #include "poolmanager.h"
 #include "Globals.h"
 #include "vmcall_handler.h"
@@ -44,24 +44,24 @@ void vmexit_vmcall_handler(__vcpu* vcpu)
 
 	//
 	// Check if this vmcall belongs to us
-	// ¼ì²é´ËvmcallÊÇ·ñÊôÓÚÎÒÃÇµ÷ÓÃµÄ
+	// æ£€æŸ¥æ­¤vmcallæ˜¯å¦å±äºæˆ‘ä»¬è°ƒç”¨çš„
 	//
 	if ((vcpu->vmexit_info.guest_registers->rax != VMCALL_IDENTIFIER) &&
 		(vcpu->vmexit_info.guest_registers->eax != VMCALL_IDENTIFIER2))
 	{
 		if (ept::handler_vmcall_rip(*vcpu->ept_state))
 		{
-			return;  //²»È¥¸ü¸Ärax¼Ä´æÆ÷
+			return;  //ä¸å»æ›´æ”¹raxå¯„å­˜å™¨
 		}
 		sLog("\n");
 		hv::inject_interruption(EXCEPTION_VECTOR_UNDEFINED_OPCODE, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, false);
 		return;
 	}
 
-	//Ö»ÔÊĞíring0³ÌĞòµ÷ÓÃ
+	//åªå…è®¸ring0ç¨‹åºè°ƒç”¨
 	//if (hv::get_guest_cpl() != 0)
 	//{
-	//	//Ïòguest»ú×¢Èë#GPÒì³£
+	//	//å‘guestæœºæ³¨å…¥#GPå¼‚å¸¸
 	//	hv::inject_interruption(EXCEPTION_VECTOR_GENERAL_PROTECTION_FAULT, INTERRUPT_TYPE_HARDWARE_EXCEPTION, 0, 1);
 	//	return;
 	//}
@@ -93,7 +93,7 @@ void vmexit_vmcall_handler(__vcpu* vcpu)
 
 
 
-	switch (vmcall_reason)  //Ê²Ã´Ô­Òòµ÷ÓÃvmcall
+	switch (vmcall_reason)  //ä»€ä¹ˆåŸå› è°ƒç”¨vmcall
 	{
 	case VMCALL_TEST:
 	{
@@ -102,7 +102,7 @@ void vmexit_vmcall_handler(__vcpu* vcpu)
 	}
 	case VMCALL_VMXOFF:
 	{
-		call_vmxoff(vcpu);  //ÍË³övmxÄ£Ê½
+		call_vmxoff(vcpu);  //é€€å‡ºvmxæ¨¡å¼
 		adjust_rip(vcpu);
 		break;
 	}
@@ -139,7 +139,7 @@ void vmexit_vmcall_handler(__vcpu* vcpu)
 		adjust_rip(vcpu);
 		break;
 	}
-	case VMCALL_EPT_HOOK_FUNCTION:  //Ö´ĞĞept hook
+	case VMCALL_EPT_HOOK_FUNCTION:  //æ‰§è¡Œept hook
 	{
 		//unsigned __int64 old_cr3 = hv::swap_context(vmcall_parameter4);
 
@@ -150,7 +150,7 @@ void vmexit_vmcall_handler(__vcpu* vcpu)
 		adjust_rip(vcpu);
 		break;
 	}
-	case VMCALL_EPT_UNHOOK_FUNCTION:  //¹Ø±Õept hook
+	case VMCALL_EPT_UNHOOK_FUNCTION:  //å…³é—­ept hook
 	{
 		//unsigned __int64 old_cr3 = hv::swap_context(vmcall_parameter3);
 
@@ -171,7 +171,7 @@ void vmexit_vmcall_handler(__vcpu* vcpu)
 		adjust_rip(vcpu);
 		break;
 	}
-	case VMCALL_INVEPT_CONTEXT:  //Ë¢ĞÂept»º´æ
+	case VMCALL_INVEPT_CONTEXT:  //åˆ·æ–°eptç¼“å­˜
 	{
 		// If set invept all contexts
 		if (vmcall_parameter1 == true)

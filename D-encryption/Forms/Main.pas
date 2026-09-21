@@ -1,5 +1,5 @@
-{
-  ×¢Òâ: RAD Studio 11 ±àÒë64Î»³ÌĞòÊ±£¬Èç¹û½«ÏîÄ¿ÃûÃüÃûÎªÖĞÎÄÔòÎŞ·¨½øĞĞµ÷ÊÔ¡£
+ï»¿{
+  æ³¨æ„: RAD Studio 11 ç¼–è¯‘64ä½ç¨‹åºæ—¶ï¼Œå¦‚æœå°†é¡¹ç›®åå‘½åä¸ºä¸­æ–‡åˆ™æ— æ³•è¿›è¡Œè°ƒè¯•ã€‚
 }
 
 unit Main;
@@ -31,7 +31,7 @@ var
   Form3: TForm3;
 
 const
-  _STR_KEY = '9dd14d00f5dd71bd';  {Ğé»Ãµ÷ÊÔÆ÷¾­16Î»md5¼ÆËãµÃµ½}
+  _STR_KEY = '9dd14d00f5dd71bd';  {è™šå¹»è°ƒè¯•å™¨ç»16ä½md5è®¡ç®—å¾—åˆ°}
 
 implementation
 
@@ -47,11 +47,11 @@ begin
   try
     if (Edit1.Text <> '') and (Edit2.Text <> '') then begin
       json := TJSONObject.Create;
-      json.AddPair('Ğé»Ãµ÷ÊÔÆ÷±êÌâ',Edit1.Text);
-      json.AddPair('QQÈºÈÕÖ¾',Edit2.Text);
+      json.AddPair('è™šå¹»è°ƒè¯•å™¨æ ‡é¢˜',Edit1.Text);
+      json.AddPair('QQç¾¤æ—¥å¿—',Edit2.Text);
       PlainText := json.ToString;
       D_encryption_EncryptDataToFile(PlainText,'copyright.db',_STR_KEY);
-      MessageBox(0,'copyright.dbÉú³ÉÍê±Ï!','Íê³É',MB_OK or MB_ICONINFORMATION);
+      MessageBoxW(0,'copyright.dbç”Ÿæˆå®Œæ¯•!','å®Œæˆ',MB_OK or MB_ICONINFORMATION);
       json.Free;
     end;
   except on e:Exception do
@@ -81,17 +81,17 @@ begin
     DragQueryFile(Msg.Drop, 0, FileName, SizeOf(FileName));
     sFileName := string(PChar(@FileName[0]));
     if sFileName <> '' then begin
-      //·µ»ØµÄÊÇ×Ö½ÚÊı£¬°üº¬½áÎ²¿Õ×Ö·û
+      //è¿”å›çš„æ˜¯å­—èŠ‚æ•°ï¼ŒåŒ…å«ç»“å°¾ç©ºå­—ç¬¦
       decryptedDataLen := D_encryption_DecryptDataFromFile(sFileName,_STR_KEY,nil);
       if decryptedDataLen > 0 then begin
         PlainTextLen := (decryptedDataLen div 2) + 1;
-        SetLength(PlainText,PlainTextLen); //³¤¶ÈÊÇ×Ö·û¸öÊı
+        SetLength(PlainText,PlainTextLen); //é•¿åº¦æ˜¯å­—ç¬¦ä¸ªæ•°
         FillChar(PlainText[0],Length(PlainText) * SizeOf(Char),#0);
         decryptedDataLen := D_encryption_DecryptDataFromFile(sFileName,_STR_KEY,@PlainText[0]);
         jsonStr := string(PChar(@PlainText[0]));
-        json := json.ParseJSONValue(jsonStr) as TJSONObject;     //½âÎöjson
-        Edit1.Text := json.Values['Ğé»Ãµ÷ÊÔÆ÷±êÌâ'].AsType<string>;
-        Edit2.Text := json.Values['QQÈºÈÕÖ¾'].AsType<string>;
+        json := json.ParseJSONValue(jsonStr) as TJSONObject;     //è§£æjson
+        Edit1.Text := json.Values['è™šå¹»è°ƒè¯•å™¨æ ‡é¢˜'].AsType<string>;
+        Edit2.Text := json.Values['QQç¾¤æ—¥å¿—'].AsType<string>;
         json.Free;
         SetLength(PlainText,0);
       end;

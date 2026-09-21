@@ -1,4 +1,4 @@
-#include "../../Driver.h"
+﻿#include "../../Driver.h"
 #include "../../ntos/inc/extypes.h"
 #include "../../ntos/inc/ketypes.h"
 #include "../../ntos/inc/ntosdef.h"
@@ -29,11 +29,11 @@ BOOLEAN InitNtoskrnlSymbolsTable()
     const auto& moduleExtender = extenderFactory.Create(L"ntoskrnl.exe");
     if (!moduleExtender.has_value())
     {
-        outLog("ntoskrnl.exe ���ų�ʼ��ʧ��..");
+        outLog("ntoskrnl.exe 符号初始化失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。.");
         return FALSE;
     }
 
-    //�ں˵�ȫ�ֱ���
+    //内核的全局变量
     PspLoaderInitRoutine = moduleExtender->GetPointer<PVOID>("PspLoaderInitRoutine");
     DbgkDebugObjectType = moduleExtender->GetPointer<POBJECT_TYPE>("DbgkDebugObjectType");
     PspNotifyEnableMask = (PULONG)moduleExtender->GetPointer<PULONG>("PspNotifyEnableMask");
@@ -42,7 +42,7 @@ BOOLEAN InitNtoskrnlSymbolsTable()
     PspProcessSequenceNumber = (PULONG_PTR)moduleExtender->GetPointer<PULONG_PTR>("PspProcessSequenceNumber");
     PsActiveProcessHead = (PLIST_ENTRY)moduleExtender->GetPointer<PLIST_ENTRY>("PsActiveProcessHead");
 
-    //�ں˺���ָ��
+    //内核函数指针
     PsFreezeProcess = (PFN_PSFREEZEPROCESS)moduleExtender->GetPointer<PFN_PSFREEZEPROCESS>("PsFreezeProcess");
     PsThawProcess = (PFN_PSTHAWPROCESS)moduleExtender->GetPointer<PFN_PSTHAWPROCESS>("PsThawProcess");
     Sys_NtCreateDebugObject = (PFN_NTCREATEDEBUGOBJECT)moduleExtender->GetPointer<PFN_NTCREATEDEBUGOBJECT>("NtCreateDebugObject");

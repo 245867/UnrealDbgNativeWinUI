@@ -15,7 +15,9 @@ public:
         logFile.open(filename, std::ios::out | std::ios::app);
         if (!logFile.is_open())
         {
-            ::MessageBoxA(NULL, "Error opening log file: ", filename.c_str(), MB_ICONWARNING);
+            // DLL 可能在宿主尚未创建窗口时初始化；不要弹出阻塞式窗口，
+            // 统一写入调试输出，避免旧版 ANSI 弹窗造成乱码。
+            ::OutputDebugStringW(L"[D-encryption] 无法打开日志文件，请确认程序目录可写。\n");
         }
     }
 
@@ -32,7 +34,7 @@ public:
 
     //void _outDebug(TCHAR* sText)
     //{
-    //    // �߳�ͬ����ʹ�û����������ٽ���
+    //    // 线程同步：使用互斥锁保护临界区
     //    std::lock_guard<std::mutex> lock(mutex);
     //    TCHAR szBuf[1024] = { 0 };
 
@@ -52,7 +54,7 @@ public:
 
     void _outDebug(TCHAR* sText)
     {
-        // �߳�ͬ����ʹ�û����������ٽ���
+        // 线程同步：使用互斥锁保护临界区
         std::lock_guard<std::mutex> lock(mutex);
         TCHAR szBuf[1024] = { 0 };
 
@@ -72,11 +74,37 @@ public:
             {
                 pfnPrintLog = (PFN_PRINTLOG)GetProcAddress(GetModuleHandle(NULL), "PrintLog");
             }
+            if (pfnPrintLog == nullptr)
+            {
+                // 新版 C++ 前端必须导出 PrintLog。缺少该入口是宿主 ABI
+                // 错误，不能静默吞掉：记录到 DLL 日志、调试输出并保留
+                // 错误码；同时不再调用旧版 ANSI MessageBox。
+                SetLastError(ERROR_PROC_NOT_FOUND);
+                const char* diagnostic = "[错误] 宿主未导出 PrintLog；日志回调失败。原因：宿主与 DLL 接口版本不匹配。解决方案：使用配套的 UnrealDbgNative.exe，确认导出函数 PrintLog 存在。";
+                if (logFile.is_open())
+                {
+                    logFile << diagnostic << std::endl;
+                    logFile.flush();
+                }
+                ::OutputDebugStringW(L"[D-encryption] 宿主未导出 PrintLog；请使用配套前端并检查导出表。\n");
+                ::OutputDebugString(szBuf);
+                ::OutputDebugString(_T("\n"));
+                return;
+            }
             pfnPrintLog(szBuf);
         }
         catch (...)
         {
-            ::MessageBox(NULL, _T("��λ����PrintLog���!"), _T("����:"), MB_ICONWARNING);
+            SetLastError(ERROR_UNHANDLED_EXCEPTION);
+            const char* diagnostic = "[错误] 调用 PrintLog 时发生未处理异常；原因：宿主回调 ABI 或运行状态异常。解决方案：确认前端和 DLL 位数、版本一致，并查看日志后重启。";
+            if (logFile.is_open())
+            {
+                logFile << diagnostic << std::endl;
+                logFile.flush();
+            }
+            ::OutputDebugStringW(L"[D-encryption] 调用 PrintLog 时发生未处理异常；请检查前端/DLL ABI。\n");
+            ::OutputDebugString(szBuf);
+            ::OutputDebugString(_T("\n"));
         }
     }
 
@@ -88,19 +116,19 @@ public:
             va_list list;
             TCHAR szBuf[1024] = { 0 };
             va_start(list, _Format);
-            iRet = vswprintf(szBuf, sizeof(szBuf), _Format, list);
+            iRet = _vsnwprintf_s(szBuf, _countof(szBuf), _TRUNCATE, _Format, list);
             _outDebug(szBuf);
             va_end(list);
             return iRet;
         }
         __except (1)
         {
-            ::MessageBox(NULL, _T("��־���������!"), _T("ջ���"), MB_ICONWARNING);
+            ::OutputDebugStringW(L"[D-encryption] 日志缓冲区溢出，已停止本次日志调用。\n");
         }
         return 0;
     }
 
-    ////Ӣ������
+    ////英文日期
     //void Log(const std::string& message) {
     //    if (logFile.is_open()) {
     //        std::time_t now = std::time(nullptr);
@@ -113,7 +141,7 @@ public:
     //}
 
     void Log(const char* format, ...) {
-        // �߳�ͬ����ʹ�û����������ٽ���
+        // 线程同步：使用互斥锁保护临界区
         std::lock_guard<std::mutex> lock(mutex);
 
         if (logFile.is_open()) {
@@ -121,7 +149,7 @@ public:
             std::tm* localTime = std::localtime(&now);
 
             char buffer[100];
-            std::strftime(buffer, sizeof(buffer), "%Y��%m��%d�� %H:%M:%S", localTime);
+            std::strftime(buffer, sizeof(buffer), "%Y年%m月%d日 %H:%M:%S", localTime);
 
             //std::string logMessage = "[" + std::string(buffer) + "] " + format;
 
@@ -138,7 +166,7 @@ public:
 
             std::string logMessage = oss.str();
             logFile << logMessage << std::endl;
-            logFile.flush();  //���������е���������ˢ�µ����̣�ȷ������д���ļ���
+            logFile.flush();  //将缓冲区中的数据立即刷新到磁盘，确保数据写入文件。
             //OutputDebugStringA(logMessage.c_str());
         }
     }
@@ -147,7 +175,7 @@ private:
     std::ofstream logFile;
     std::string filename;
     std::wstring m_modName;
-    std::mutex mutex; // ������
+    std::mutex mutex; // 互斥锁
 };
 
 #endif // !_LOGGER_H

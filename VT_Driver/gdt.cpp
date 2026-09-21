@@ -1,4 +1,4 @@
-#include "Driver.h"
+ï»¿#include "Driver.h"
 #include "poolmanager.h"
 #include "Globals.h"
 #include "mtrr.h"
@@ -10,14 +10,14 @@
 namespace hv {
 
     // initialize the host GDT and populate every descriptor
-    // ³õÊ¼»¯host GDT²¢Ìî³äÃ¿¸öÃèÊö·û
+    // åˆå§‹åŒ–host GDTå¹¶å¡«å……æ¯ä¸ªæè¿°ç¬¦
     void prepare_host_gdt(
         segment_descriptor_32* const gdt,
         task_state_segment_64 const* const tss) {
         memset(gdt, 0, HOST_GDT_DESCRIPTOR_COUNT * sizeof(gdt[0]));
 
         // setup the CS segment descriptor
-        // ÉèÖÃCS¶ÎÃèÊö·û
+        // è®¾ç½®CSæ®µæè¿°ç¬¦
         auto& cs_desc = gdt[host_cs_selector.index];
         cs_desc.type = SEGMENT_DESCRIPTOR_TYPE_CODE_EXECUTE_READ;
         cs_desc.descriptor_type = SEGMENT_DESCRIPTOR_TYPE_CODE_OR_DATA;
@@ -28,7 +28,7 @@ namespace hv {
         cs_desc.granularity = 0;
 
         // setup the TSS segment descriptor
-        // ÉèÖÃTSS¶ÎÃèÊö·û
+        // è®¾ç½®TSSæ®µæè¿°ç¬¦
         auto& tss_desc = *reinterpret_cast<segment_descriptor_64*>(
             &gdt[host_tr_selector.index]);
         tss_desc.type = SEGMENT_DESCRIPTOR_TYPE_TSS_BUSY;
@@ -40,7 +40,7 @@ namespace hv {
         tss_desc.segment_limit_high = 0;
 
         // point the TSS descriptor to our TSS -_-
-        // ½«TSSÃèÊö·ûÖ¸ÏòÎÒÃÇµÄTSS-_-
+        // å°†TSSæè¿°ç¬¦æŒ‡å‘æˆ‘ä»¬çš„TSS-_-
         auto const base = reinterpret_cast<uint64_t>(tss);
         tss_desc.base_address_low = (base >> 00) & 0xFFFF;
         tss_desc.base_address_middle = (base >> 16) & 0xFF;

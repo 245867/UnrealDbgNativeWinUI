@@ -5,11 +5,13 @@
 
 extern HANDLE g_hGeneralDriverDevice;
 
-//³õÊ¼»¯Çı¶¯Éè±¸
+//åˆå§‹åŒ–é©±åŠ¨è®¾å¤‡
 BOOL InitializeDevice(const std::wstring DriveImagePath);
+//åŠ è½½ AIHelper.dll çš„ LoadNT/UnloadNT/outDebug æ¥å£
+BOOL InitInterface();
 
 BOOL _Initialize(const TCHAR* sPath);
-//½áÊøÊ±µÄÉ¨Î²¹¤×÷
+//ç»“æŸæ—¶çš„æ‰«å°¾å·¥ä½œ
 BOOL UnInitialize();
 
 #endif // !_INIT_NTDEVICE_H

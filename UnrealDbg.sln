@@ -15,6 +15,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DbgkSysWin11", "DbgkSysWin1
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VT_Driver", "VT_Driver\VT_Driver.vcxproj", "{B41C66E0-04F8-4049-B41F-5A0D15B1DAD7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealDbgNative", "UnrealDbgNative\UnrealDbgNative.vcxproj", "{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealDbgNativeWinUI", "UnrealDbgNative\UnrealDbgNativeWinUI.vcxproj", "{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -327,6 +331,26 @@ Global
 		{B41C66E0-04F8-4049-B41F-5A0D15B1DAD7}.Win7 Debug|x86.ActiveCfg = Debug|Win32
 		{B41C66E0-04F8-4049-B41F-5A0D15B1DAD7}.Win7 Debug|x86.Build.0 = Debug|Win32
 		{B41C66E0-04F8-4049-B41F-5A0D15B1DAD7}.Win7 Debug|x86.Deploy.0 = Debug|Win32
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Debug|x64.ActiveCfg = Debug|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Debug|x64.Build.0 = Debug|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Release|x64.ActiveCfg = Release|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Release|x64.Build.0 = Release|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Win10 Debug|x64.ActiveCfg = Debug|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Win10 Debug|x64.Build.0 = Debug|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Win10 Release|x64.ActiveCfg = Release|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Win10 Release|x64.Build.0 = Release|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Win7 Debug|x64.ActiveCfg = Debug|x64
+		{7F4DBB87-B7D8-4FB2-BFDE-25268B8EFB4E}.Win7 Debug|x64.Build.0 = Debug|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Debug|x64.ActiveCfg = Debug|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Debug|x64.Build.0 = Debug|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Release|x64.ActiveCfg = Release|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Release|x64.Build.0 = Release|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Win10 Debug|x64.ActiveCfg = Debug|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Win10 Debug|x64.Build.0 = Debug|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Win10 Release|x64.ActiveCfg = Release|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Win10 Release|x64.Build.0 = Release|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Win7 Debug|x64.ActiveCfg = Debug|x64
+		{7B4A7F9C-5989-4C57-AF4A-5B2A06BD2E18}.Win7 Debug|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

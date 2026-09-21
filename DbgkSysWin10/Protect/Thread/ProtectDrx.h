@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _PROTECT_DRX_H
 #define _PROTECT_DRX_H
@@ -58,7 +58,7 @@ NTSTATUS NtGetContextThread(_In_ HANDLE hThread, _Inout_ PCONTEXT ThreadContext)
 NTSTATUS
 NtSetContextThread(
     __in HANDLE ThreadHandle,
-    __in PCONTEXT ThreadContext  /*´Ë²ÎÊıÊÇÓÃ»§²ãÌá¹©µÄ»º³åÇø*/
+    __in PCONTEXT ThreadContext  /*æ­¤å‚æ•°æ˜¯ç”¨æˆ·å±‚æä¾›çš„ç¼“å†²åŒº*/
 );
 
 

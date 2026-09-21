@@ -1,5 +1,5 @@
-{
-  ע��: RAD Studio 11 ����64λ����ʱ���������Ŀ������Ϊ�������޷����е��ԡ�
+﻿{
+  注意: RAD Studio 11 编译64位程序时，如果将项目名命名为中文则无法进行调试。
 }
 
 unit Main;
@@ -52,11 +52,11 @@ begin
         Config.SaveToFile(_STR_CDK_FILE);
         Config.Free;
 
-        MessageBox(0,'ע�Ῠ�ܳɹ�������License.key�ļ�й¶�����ˣ�','��ϲ!!!', MB_OK or MB_ICONINFORMATION or MB_SYSTEMMODAL);
+        MessageBoxW(0,'注册卡密成功，请勿将License.key文件泄露给他人！','恭喜!!!', MB_OK or MB_ICONINFORMATION or MB_SYSTEMMODAL);
         ExitProcess(0);
       end;
     end else begin
-      MessageBox(0,'���ܲ���Ϊ�գ�','����:', MB_OK or MB_ICONWARNING or MB_SYSTEMMODAL);
+      MessageBoxW(0,'卡密不能为空！','错误:', MB_OK or MB_ICONWARNING or MB_SYSTEMMODAL);
     end;
   except on e:Exception do
   end;

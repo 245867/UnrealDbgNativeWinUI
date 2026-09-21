@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _HYPERVISOR_ROUTINES_H
 #define _HYPERVISOR_ROUTINES_H
@@ -57,12 +57,12 @@ namespace hv
 	void set_io_bitmap(unsigned __int16 io_port, __vcpu* vcpu, bool value);
 
 	/// <summary>
-	/// ·µ»Øµ±Ç°guestµÄÌØÈ¨¼¶
+	/// è¿”å›å½“å‰guestçš„ç‰¹æƒçº§
 	/// </summary>
 	/// <returns> Return current guest privilage level</returns>
 	unsigned __int8 get_guest_cpl();
 
-	//»ñÈ¡guestµÄµ±Ç°cpl
+	//è·å–guestçš„å½“å‰cpl
 	uint16_t current_guest_cpl();
 
 	/// <summary>
@@ -121,7 +121,7 @@ namespace hv
 	template <typename T>
 	void vmwrite(unsigned __int64 vmcs_field, T value)
 	{
-		//0Ôò±íÊ¾²Ù×÷³É¹¦
+		//0åˆ™è¡¨ç¤ºæ“ä½œæˆåŠŸ
 		unsigned char res = __vmx_vmwrite(vmcs_field, (unsigned __int64)value);
 		if (res)
 		{

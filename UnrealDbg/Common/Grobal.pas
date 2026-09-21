@@ -1,4 +1,4 @@
-unit Grobal;
+ï»¿unit Grobal;
 
 interface
 
@@ -10,7 +10,7 @@ function GetWMIBaseBoard(WMIProperty: string): string;
 function GetWMIPhysicalMedia(WMIProperty: string): string;
 function GetApplicationPath: string;
 procedure SetPrivilege;
-//Éú³ÉËæ»ú×Ö·û´®
+//ç”Ÿæˆéšæœºå­—ç¬¦ä¸²
 function GenerateRandomString(nCount: Integer): string;
 
 const
@@ -19,14 +19,14 @@ BUFFERSIZE = 500 * 1024;
 implementation
 
 {
-½Ø¶Ï×Ö·û´®
-¹¦ÄÜ£º  ¸ù¾İ·Ö¸î×Ö·û,×îÏÈÆ¥ÅäµÄÎ»ÖÃ(µ±Ç°Î»ÖÃ×Ö·û¶ªÆú),½ØÈ¡×Ö·û´®,dest ±£´æ½ØÈ¡Î»ÖÃÖ®Ç°µÄ×Ö·û´®
-        Ã»ÓĞÆ¥Åä,½ØÈ¡È«²¿
-·µ»ØÖµ£º±£´æ½ØÈ¡Î»ÖÃÖ®ºóµÄ×Ö·û´®
+æˆªæ–­å­—ç¬¦ä¸²
+åŠŸèƒ½ï¼š  æ ¹æ®åˆ†å‰²å­—ç¬¦,æœ€å…ˆåŒ¹é…çš„ä½ç½®(å½“å‰ä½ç½®å­—ç¬¦ä¸¢å¼ƒ),æˆªå–å­—ç¬¦ä¸²,dest ä¿å­˜æˆªå–ä½ç½®ä¹‹å‰çš„å­—ç¬¦ä¸²
+        æ²¡æœ‰åŒ¹é…,æˆªå–å…¨éƒ¨
+è¿”å›å€¼ï¼šä¿å­˜æˆªå–ä½ç½®ä¹‹åçš„å­—ç¬¦ä¸²
 
-²ÎÊı1   str       Ô´²Ù×÷Êı
-²ÎÊı2   dest      Ä¿µÄ²Ù×÷Êı
-²ÎÊı3   divider   ·Ö¸î×Ö·ûÊı×é
+å‚æ•°1   str       æºæ“ä½œæ•°
+å‚æ•°2   dest      ç›®çš„æ“ä½œæ•°
+å‚æ•°3   divider   åˆ†å‰²å­—ç¬¦æ•°ç»„
 }
 function GetValidStr3(Str: string; var Dest: string; const Divider: array of Char): string;
 const
@@ -47,18 +47,18 @@ begin
     BufCount := 0;
     count := 1;
 
-    if SrcLen >= BUF_SIZE - 1 then begin //Ô´×Ö·û´®³¬³¤£¬Ö±½ÓÍË³ö
+    if SrcLen >= BUF_SIZE - 1 then begin //æºå­—ç¬¦ä¸²è¶…é•¿ï¼Œç›´æ¥é€€å‡º
       Result := '';
       Dest := '';
       Exit;
     end;
 
-    if Str = '' then begin //Ô´×Ö·û´®Îª¿Õ£¬Ö±½ÓÍË³ö
+    if Str = '' then begin //æºå­—ç¬¦ä¸²ä¸ºç©ºï¼Œç›´æ¥é€€å‡º
       Dest := '';
       Result := Str;
       Exit;
     end;
-    ArrCount := SizeOf(Divider) div SizeOf(Char); //×Ö·ûÊı×é³¤¶È
+    ArrCount := SizeOf(Divider) div SizeOf(Char); //å­—ç¬¦æ•°ç»„é•¿åº¦
 
     while True do begin
       if count <= SrcLen then begin
@@ -156,7 +156,7 @@ begin
   end;
 end;
 
-//½ø³ÌÌáÈ¨
+//è¿›ç¨‹ææƒ
 procedure SetPrivilege;
 var
   currToken: THandle;
@@ -165,7 +165,7 @@ var
   Luid: TLargeInteger;
 begin
   try
-    if OpenProcessToken(GetCurrentProcess,TOKEN_ADJUST_PRIVILEGES,currToken) then begin  //»ñµÃ½ø³Ì·ÃÎÊÁîÅÆµÄ¾ä±ú
+    if OpenProcessToken(GetCurrentProcess,TOKEN_ADJUST_PRIVILEGES,currToken) then begin  //è·å¾—è¿›ç¨‹è®¿é—®ä»¤ç‰Œçš„å¥æŸ„
       if LookupPrivilegeValue(nil, 'SeDebugPrivilege',Luid) then begin
         newState.PrivilegeCount := 1;
         newState.Privileges[0].Attributes := 2;
@@ -176,20 +176,20 @@ begin
       end;
     end;
   except on e:Exception do
-    MessageBox(0,'½ø³ÌÌáÈ¨Ê±·¢ÉúÁË±ÀÀ£¡£','ÌáÈ¨Ê§°Ü!', MB_ICONWARNING or MB_SYSTEMMODAL);
+    MessageBoxW(0,'è¿›ç¨‹ææƒæ—¶å‘ç”Ÿäº†å´©æºƒã€‚','ææƒå¤±è´¥!', MB_ICONWARNING or MB_SYSTEMMODAL);
   end;
 end;
 
-//Éú³ÉËæ»ú×Ö·û´®
+//ç”Ÿæˆéšæœºå­—ç¬¦ä¸²
 function GenerateRandomString(nCount: Integer): string;
 var
   i: Integer;
   ch: Char;
 begin
-  Randomize; // ³õÊ¼»¯Ëæ»úÊıÖÖ×Ó
+  Randomize; // åˆå§‹åŒ–éšæœºæ•°ç§å­
   Result := '';
   for i := 1 to nCount do begin
-    ch := Chr(Random(26) + Ord('A')); // Éú³ÉËæ»ú´óĞ´×ÖÄ¸
+    ch := Chr(Random(26) + Ord('A')); // ç”Ÿæˆéšæœºå¤§å†™å­—æ¯
     Result := Result + ch;
   end;
 end;

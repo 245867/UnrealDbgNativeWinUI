@@ -1,4 +1,4 @@
-#include "../../Driver.h"
+﻿#include "../../Driver.h"
 #include "../../ntos/inc/extypes.h"
 #include "../../ntos/inc/ketypes.h"
 #include "../../ntos/inc/ntosdef.h"
@@ -30,14 +30,14 @@
 EXTERN_C
 VOID UnEptHook()
 {
-    //ж������ept����
+    //卸载所有ept钩子
     if (hvgt::ept_unhook())
     {
-        outLog("ж������ept����.");
+        outLog("卸载所有ept钩子.");
     }
     else
     {
-        outLog("ж��ept����ʧ��.");
+        outLog("卸载ept钩子失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
     }
 }
 
@@ -49,11 +49,11 @@ VOID Hook_Test()
         {
             if (hvgt::hook_function(Sys_DbgkpQueueMessage, DbgkpQueueMessage, NULL))
             {
-                outLog("hook ϵͳ�����ɹ�.");
+                outLog("挂钩 系统函数成功。");
             }
             else
             {
-                outLog("hook ϵͳ����ʧ��.");
+                outLog("挂钩 系统函数失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
     }
@@ -65,7 +65,7 @@ VOID SetupEptHook()
     if (g_IsInitGlobalVariable)
     {
         //ntos
-        Hook_NtCreateDebugObject();    //�˺����Ǵ������Զ��� �����һ����hook
+        Hook_NtCreateDebugObject();    //此函数是创建调试对象 必须第一个先hook
         Hook_PspInsertProcess();        
         Hook_NtSetInformationDebugObject();
         Hook_NtRemoveProcessDebug();
@@ -84,7 +84,7 @@ VOID SetupEptHook()
         Hook_ObpReferenceObjectByHandleWithTag();
 
         //win32k.sys
-        Hook_ValidateHwnd();  //win32k�д˺���������hook
+        Hook_ValidateHwnd();  //win32k中此函数必须先hook
         Hook_NtUserFindWindowEx();        
         Hook_NtUserWindowFromPoint();
     }
@@ -101,16 +101,16 @@ VOID SetupEptHook()
 //        {
 //            if (hvgt::hook_function(Sys_DbgkOpenProcessDebugPort, DbgkOpenProcessDebugPort, NULL))
 //            {
-//                outLog("hook DbgkOpenProcessDebugPort�ɹ�.");
+//                outLog("挂钩 DbgkOpenProcessDebugPort成功。");
 //            }
 //            else
 //            {
-//                outLog("hook DbgkOpenProcessDebugPortʧ��.");
+//                outLog("挂钩 DbgkOpenProcessDebugPort失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
 //            }
 //        }
 //        else
 //        {
-//            outLog("Sys_DbgkOpenProcessDebugPortΪ��ָ��.");
+//            outLog("Sys_DbgkOpenProcessDebugPort为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
 //        }
 //    }
 //}
@@ -125,21 +125,21 @@ VOID Hook_NtCreateDebugObject()
         {
             if (hvgt::hook_function(Sys_NtCreateDebugObject, NtCreateDebugObject, NULL))
             {
-                outLog("hook NtCreateDebugObject�ɹ�.");
+                outLog("挂钩 NtCreateDebugObject成功。");
             }
             else
             {
-                outLog("hook NtCreateDebugObjectʧ��.");
+                outLog("挂钩 NtCreateDebugObject失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtCreateDebugObjectΪ��ָ��.");
+            outLog("Sys_NtCreateDebugObject为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
     else
     {
-        outLog("Hook_NtCreateDebugObject ʧ��");
+        outLog("Hook_NtCreateDebugObject 失败");
     }
 }
 
@@ -153,16 +153,16 @@ VOID Hook_NtSetInformationDebugObject()
         {
             if (hvgt::hook_function(Sys_NtSetInformationDebugObject, NtSetInformationDebugObject, NULL))
             {
-                outLog("hook NtSetInformationDebugObject�ɹ�.");
+                outLog("挂钩 NtSetInformationDebugObject成功。");
             }
             else
             {
-                outLog("hook NtSetInformationDebugObjectʧ��.");
+                outLog("挂钩 NtSetInformationDebugObject失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtSetInformationDebugObjectΪ��ָ��.");
+            outLog("Sys_NtSetInformationDebugObject为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -177,16 +177,16 @@ VOID Hook_NtRemoveProcessDebug()
         {
             if (hvgt::hook_function(Sys_NtRemoveProcessDebug, NtRemoveProcessDebug, NULL))
             {
-                outLog("hook NtRemoveProcessDebug�ɹ�.");
+                outLog("挂钩 NtRemoveProcessDebug成功。");
             }
             else
             {
-                outLog("hook NtRemoveProcessDebugʧ��.");
+                outLog("挂钩 NtRemoveProcessDebug失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtRemoveProcessDebugΪ��ָ��.");
+            outLog("Sys_NtRemoveProcessDebug为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -201,16 +201,16 @@ VOID Hook_NtDebugActiveProcess()
         {
             if (hvgt::hook_function(Sys_NtDebugActiveProcess, NtDebugActiveProcess, NULL))
             {
-                outLog("hook NtDebugActiveProcess�ɹ�.");
+                outLog("挂钩 NtDebugActiveProcess成功。");
             }
             else
             {
-                outLog("hook NtDebugActiveProcessʧ��.");
+                outLog("挂钩 NtDebugActiveProcess失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtDebugActiveProcessΪ��ָ��.");
+            outLog("Sys_NtDebugActiveProcess为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -225,16 +225,16 @@ VOID Hook_NtWaitForDebugEvent()
         {
             if (hvgt::hook_function(Sys_NtWaitForDebugEvent, NtWaitForDebugEvent, NULL))
             {
-                outLog("hook NtWaitForDebugEvent�ɹ�.");
+                outLog("挂钩 NtWaitForDebugEvent成功。");
             }
             else
             {
-                outLog("hook NtWaitForDebugEventʧ��.");
+                outLog("挂钩 NtWaitForDebugEvent失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtWaitForDebugEventΪ��ָ��.");
+            outLog("Sys_NtWaitForDebugEvent为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -249,16 +249,16 @@ VOID Hook_KiDispatchException()
         {
             if (hvgt::hook_function(Sys_KiDispatchException, KiDispatchException, (PVOID*)&Original_KiDispatchException))
             {
-                outLog("hook KiDispatchException�ɹ�.");
+                outLog("挂钩 KiDispatchException成功。");
             }
             else
             {
-                outLog("hook KiDispatchExceptionʧ��.");
+                outLog("挂钩 KiDispatchException失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_KiDispatchExceptionΪ��ָ��.");
+            outLog("Sys_KiDispatchException为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -273,16 +273,16 @@ VOID Hook_PspInsertProcess()
         {
             if (hvgt::hook_function(Sys_PspInsertProcess, PspInsertProcess, NULL))
             {
-                outLog("hook PspInsertProcess�ɹ�.");
+                outLog("挂钩 PspInsertProcess成功。");
             }
             else
             {
-                outLog("hook PspInsertProcessʧ��.");
+                outLog("挂钩 PspInsertProcess失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_PspInsertProcessΪ��ָ��.");
+            outLog("Sys_PspInsertProcess为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -297,16 +297,16 @@ VOID Hook_PspInsertProcess()
 //        {
 //            if (hvgt::hook_function(Sys_PspInsertThread, PspInsertThread, NULL))
 //            {
-//                outLog("hook PspInsertThread�ɹ�.");
+//                outLog("挂钩 PspInsertThread成功。");
 //            }
 //            else
 //            {
-//                outLog("hook PspInsertThreadʧ��.");
+//                outLog("挂钩 PspInsertThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
 //            }
 //        }
 //        else
 //        {
-//            outLog("Sys_PspInsertThreadΪ��ָ��.");
+//            outLog("Sys_PspInsertThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
 //        }
 //    }
 //}
@@ -321,16 +321,16 @@ VOID Hook_NtDebugContinue()
         {
             if (hvgt::hook_function(Sys_NtDebugContinue, NtDebugContinue, NULL))
             {
-                outLog("hook NtDebugContinue�ɹ�.");
+                outLog("挂钩 NtDebugContinue成功。");
             }
             else
             {
-                outLog("hook NtDebugContinueʧ��.");
+                outLog("挂钩 NtDebugContinue失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtDebugContinueΪ��ָ��.");
+            outLog("Sys_NtDebugContinue为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -345,16 +345,16 @@ VOID Hook_DbgkMapViewOfSection()
         {
             if (hvgt::hook_function(Sys_DbgkMapViewOfSection, DbgkMapViewOfSection, NULL))
             {
-                outLog("hook DbgkMapViewOfSection�ɹ�.");
+                outLog("挂钩 DbgkMapViewOfSection成功。");
             }
             else
             {
-                outLog("hook DbgkMapViewOfSectionʧ��.");
+                outLog("挂钩 DbgkMapViewOfSection失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_DbgkMapViewOfSectionΪ��ָ��.");
+            outLog("Sys_DbgkMapViewOfSection为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -369,16 +369,16 @@ VOID Hook_DbgkUnMapViewOfSection()
         {
             if (hvgt::hook_function(Sys_DbgkUnMapViewOfSection, DbgkUnMapViewOfSection, NULL))
             {
-                outLog("hook DbgkUnMapViewOfSection�ɹ�.");
+                outLog("挂钩 DbgkUnMapViewOfSection成功。");
             }
             else
             {
-                outLog("hook DbgkUnMapViewOfSectionʧ��.");
+                outLog("挂钩 DbgkUnMapViewOfSection失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_DbgkUnMapViewOfSectionΪ��ָ��.");
+            outLog("Sys_DbgkUnMapViewOfSection为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -393,16 +393,16 @@ VOID Hook_NtQueryInformationThread()
         {
             if (hvgt::hook_function(Sys_NtQueryInformationThread, NewNtQueryInformationThread, (PVOID*)&Original_NtQueryInformationThread))
             {
-                outLog("hook NtQueryInformationThread�ɹ�.");
+                outLog("挂钩 NtQueryInformationThread成功。");
             }
             else
             {
-                outLog("hook NtQueryInformationThreadʧ��.");
+                outLog("挂钩 NtQueryInformationThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtQueryInformationThreadΪ��ָ��.");
+            outLog("Sys_NtQueryInformationThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -417,16 +417,16 @@ VOID Hook_NtSuspendThread()
         {
             if (hvgt::hook_function(Sys_NtSuspendThread, NewNtSuspendThread, (PVOID*)&Original_NtSuspendThread))
             {
-                outLog("hook NtSuspendThread�ɹ�.");
+                outLog("挂钩 NtSuspendThread成功。");
             }
             else
             {
-                outLog("hook NtSuspendThreadʧ��.");
+                outLog("挂钩 NtSuspendThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtSuspendThreadΪ��ָ��.");
+            outLog("Sys_NtSuspendThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -441,16 +441,16 @@ VOID Hook_NtResumeThread()
         {
             if (hvgt::hook_function(Sys_NtResumeThread, NewNtResumeThread, (PVOID*)&Original_NtResumeThread))
             {
-                outLog("hook NtResumeThread�ɹ�.");
+                outLog("挂钩 NtResumeThread成功。");
             }
             else
             {
-                outLog("hook NtResumeThreadʧ��.");
+                outLog("挂钩 NtResumeThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtResumeThreadΪ��ָ��.");
+            outLog("Sys_NtResumeThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -465,16 +465,16 @@ VOID Hook_NtResumeThread()
 //        {
 //            if (hvgt::hook_function(Sys_DbgkCreateThread, DbgkCreateThread, (PVOID*)&Original_DbgkCreateThread))
 //            {
-//                outLog("hook DbgkCreateThread�ɹ�.");
+//                outLog("挂钩 DbgkCreateThread成功。");
 //            }
 //            else
 //            {
-//                outLog("hook DbgkCreateThreadʧ��.");
+//                outLog("挂钩 DbgkCreateThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
 //            }
 //        }
 //        else
 //        {
-//            outLog("Sys_DbgkCreateThreadΪ��ָ��.");
+//            outLog("Sys_DbgkCreateThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
 //        }
 //        SetupHook_DbgkCreateThread_CMP_Debugport();
 //    }
@@ -490,16 +490,16 @@ VOID Hook_DbgkCreateThread()
         {
             if (hvgt::hook_function(Sys_DbgkCreateThread, DbgkCreateThread, NULL))
             {
-                outLog("hook DbgkCreateThread�ɹ�.");
+                outLog("挂钩 DbgkCreateThread成功。");
             }
             else
             {
-                outLog("hook DbgkCreateThreadʧ��.");
+                outLog("挂钩 DbgkCreateThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_DbgkCreateThreadΪ��ָ��.");
+            outLog("Sys_DbgkCreateThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -514,16 +514,16 @@ VOID Hook_DbgkExitThread()
         {
             if (hvgt::hook_function(Sys_DbgkExitThread, DbgkExitThread, NULL))
             {
-                outLog("hook DbgkExitThread�ɹ�.");
+                outLog("挂钩 DbgkExitThread成功。");
             }
             else
             {
-                outLog("hook DbgkExitThreadʧ��.");
+                outLog("挂钩 DbgkExitThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_DbgkExitThreadΪ��ָ��.");
+            outLog("Sys_DbgkExitThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -538,16 +538,16 @@ VOID Hook_DbgkExitProcess()
         {
             if (hvgt::hook_function(Sys_DbgkExitProcess, DbgkExitProcess, NULL))
             {
-                outLog("hook DbgkExitProcess�ɹ�.");
+                outLog("挂钩 DbgkExitProcess成功。");
             }
             else
             {
-                outLog("hook DbgkExitProcessʧ��.");
+                outLog("挂钩 DbgkExitProcess失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_DbgkExitProcessΪ��ָ��.");
+            outLog("Sys_DbgkExitProcess为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -562,16 +562,16 @@ VOID Hook_DbgkForwardException()
         {
             if (hvgt::hook_function(Sys_DbgkForwardException, DbgkForwardException, NULL))
             {
-                outLog("hook DbgkForwardException�ɹ�.");
+                outLog("挂钩 DbgkForwardException成功。");
             }
             else
             {
-                outLog("hook DbgkForwardExceptionʧ��.");
+                outLog("挂钩 DbgkForwardException失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_DbgkForwardExceptionΪ��ָ��.");
+            outLog("Sys_DbgkForwardException为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -586,16 +586,16 @@ VOID Hook_DbgkpQueueMessage()
         {
             if (hvgt::hook_function(Sys_DbgkpQueueMessage, DbgkpQueueMessage, NULL))
             {
-                outLog("hook DbgkpQueueMessage�ɹ�.");
+                outLog("挂钩 DbgkpQueueMessage成功。");
             }
             else
             {
-                outLog("hook DbgkpQueueMessageʧ��.");
+                outLog("挂钩 DbgkpQueueMessage失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_DbgkpQueueMessageΪ��ָ��.");
+            outLog("Sys_DbgkpQueueMessage为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -610,16 +610,16 @@ VOID Hook_KeStackAttachProcess()
         {
             if (hvgt::hook_function(Sys_KeStackAttachProcess, NewKeStackAttachProcess, (PVOID*)&Original_KeStackAttachProcess))
             {
-                outLog("hook KeStackAttachProcess�ɹ�.");
+                outLog("挂钩 KeStackAttachProcess成功。");
             }
             else
             {
-                outLog("hook KeStackAttachProcessʧ��.");
+                outLog("挂钩 KeStackAttachProcess失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_KeStackAttachProcessΪ��ָ��.");
+            outLog("Sys_KeStackAttachProcess为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -634,16 +634,16 @@ VOID Hook_KiStackAttachProcess()
         {
             if (hvgt::hook_function(Sys_KiStackAttachProcess, NewKiStackAttachProcess, (PVOID*)&Original_KiStackAttachProcess))
             {
-                outLog("hook KiStackAttachProcess�ɹ�.");
+                outLog("挂钩 KiStackAttachProcess成功。");
             }
             else
             {
-                outLog("hook KiStackAttachProcessʧ��.");
+                outLog("挂钩 KiStackAttachProcess失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_KiStackAttachProcessΪ��ָ��.");
+            outLog("Sys_KiStackAttachProcess为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -658,16 +658,16 @@ VOID Hook_NtProtectVirtualMemory()
         {
             if (hvgt::hook_function(Sys_NtProtectVirtualMemory, NtProtectVirtualMemory, (PVOID*)&Original_NtProtectVirtualMemory))
             {
-                outLog("hook NtProtectVirtualMemory�ɹ�.");
+                outLog("挂钩 NtProtectVirtualMemory成功。");
             }
             else
             {
-                outLog("hook NtProtectVirtualMemoryʧ��.");
+                outLog("挂钩 NtProtectVirtualMemory失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtProtectVirtualMemoryΪ��ָ��.");
+            outLog("Sys_NtProtectVirtualMemory为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -682,16 +682,16 @@ VOID Hook_MiObtainReferencedVadEx()
         {
             if (hvgt::hook_function(Sys_MiObtainReferencedVadEx, MiObtainReferencedVadEx, (PVOID*)&Original_MiObtainReferencedVadEx))
             {
-                outLog("hook MiObtainReferencedVadEx�ɹ�.");
+                outLog("挂钩 MiObtainReferencedVadEx成功。");
             }
             else
             {
-                outLog("hook MiObtainReferencedVadExʧ��.");
+                outLog("挂钩 MiObtainReferencedVadEx失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_MiObtainReferencedVadExΪ��ָ��.");
+            outLog("Sys_MiObtainReferencedVadEx为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -706,16 +706,16 @@ VOID Hook_MmProtectVirtualMemory()
         {
             if (hvgt::hook_function(Sys_MmProtectVirtualMemory, MmProtectVirtualMemory, (PVOID*)&Original_MmProtectVirtualMemory))
             {
-                outLog("hook MmProtectVirtualMemory�ɹ�.");
+                outLog("挂钩 MmProtectVirtualMemory成功。");
             }
             else
             {
-                outLog("hook MmProtectVirtualMemoryʧ��.");
+                outLog("挂钩 MmProtectVirtualMemory失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_MmProtectVirtualMemoryΪ��ָ��.");
+            outLog("Sys_MmProtectVirtualMemory为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -730,16 +730,16 @@ VOID Hook_NtGetContextThread()
         {
             if (hvgt::hook_function(Sys_NtGetContextThread, NtGetContextThread, (PVOID*)&Original_NtGetContextThread))
             {
-                outLog("hook NtGetContextThread�ɹ�.");
+                outLog("挂钩 NtGetContextThread成功。");
             }
             else
             {
-                outLog("hook NtGetContextThreadʧ��.");
+                outLog("挂钩 NtGetContextThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtGetContextThreadΪ��ָ��.");
+            outLog("Sys_NtGetContextThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -754,16 +754,16 @@ VOID Hook_NtSetContextThread()
         {
             if (hvgt::hook_function(Sys_NtSetContextThread, NtSetContextThread, (PVOID*)&Original_NtSetContextThread))
             {
-                outLog("hook NtSetContextThread�ɹ�.");
+                outLog("挂钩 NtSetContextThread成功。");
             }
             else
             {
-                outLog("hook NtSetContextThreadʧ��.");
+                outLog("挂钩 NtSetContextThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtSetContextThreadΪ��ָ��.");
+            outLog("Sys_NtSetContextThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -778,16 +778,16 @@ VOID Hook_NtSetContextThread()
 //        {
 //            if (hvgt::hook_function(Sys_NtShutdownSystem, NtShutdownSystem, NULL))
 //            {
-//                outLog("hook NtShutdownSystem�ɹ�.");
+//                outLog("挂钩 NtShutdownSystem成功。");
 //            }
 //            else
 //            {
-//                outLog("hook NtShutdownSystemʧ��.");
+//                outLog("挂钩 NtShutdownSystem失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
 //            }
 //        }
 //        else
 //        {
-//            outLog("Sys_NtShutdownSystemΪ��ָ��.");
+//            outLog("Sys_NtShutdownSystem为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
 //        }
 //    }
 //}
@@ -802,16 +802,16 @@ VOID Hook_NtOpenProcess()
         {
             if (hvgt::hook_function(Sys_NtOpenProcess, NewNtOpenProcess, (PVOID*)&Original_NtOpenProcess))
             {
-                outLog("hook NtOpenProcess�ɹ�.");
+                outLog("挂钩 NtOpenProcess成功。");
             }
             else
             {
-                outLog("hook NtOpenProcessʧ��.");
+                outLog("挂钩 NtOpenProcess失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtOpenProcessΪ��ָ��.");
+            outLog("Sys_NtOpenProcess为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -826,16 +826,16 @@ VOID Hook_NtReadVirtualMemory()
         {
             if (hvgt::hook_function(Sys_NtReadVirtualMemory, NtReadVirtualMemory, (PVOID*)&Original_NtReadVirtualMemory))
             {
-                outLog("hook NtReadVirtualMemory�ɹ�.");
+                outLog("挂钩 NtReadVirtualMemory成功。");
             }
             else
             {
-                outLog("hook NtReadVirtualMemoryʧ��.");
+                outLog("挂钩 NtReadVirtualMemory失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtReadVirtualMemoryΪ��ָ��.");
+            outLog("Sys_NtReadVirtualMemory为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -850,16 +850,16 @@ VOID Hook_NtWriteVirtualMemory()
         {
             if (hvgt::hook_function(Sys_NtWriteVirtualMemory, NtWriteVirtualMemory, (PVOID*)&Original_NtWriteVirtualMemory))
             {
-                outLog("hook NtWriteVirtualMemory�ɹ�.");
+                outLog("挂钩 NtWriteVirtualMemory成功。");
             }
             else
             {
-                outLog("hook NtWriteVirtualMemoryʧ��.");
+                outLog("挂钩 NtWriteVirtualMemory失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtWriteVirtualMemoryΪ��ָ��.");
+            outLog("Sys_NtWriteVirtualMemory为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -874,16 +874,16 @@ VOID Hook_ObReferenceObjectByHandle()
         {
             if (hvgt::hook_function(Sys_ObReferenceObjectByHandle, NewObReferenceObjectByHandle, (PVOID*)&Original_ObReferenceObjectByHandle))
             {
-                outLog("hook ObReferenceObjectByHandle�ɹ�.");
+                outLog("挂钩 ObReferenceObjectByHandle成功。");
             }
             else
             {
-                outLog("hook ObReferenceObjectByHandleʧ��.");
+                outLog("挂钩 ObReferenceObjectByHandle失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_ObReferenceObjectByHandleΪ��ָ��.");
+            outLog("Sys_ObReferenceObjectByHandle为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -898,16 +898,16 @@ VOID Hook_ObReferenceObjectByHandleWithTag()
         {
             if (hvgt::hook_function(Sys_ObReferenceObjectByHandleWithTag, NewObReferenceObjectByHandleWithTag, (PVOID*)&Original_ObReferenceObjectByHandleWithTag))
             {
-                outLog("hook ObReferenceObjectByHandleWithTag�ɹ�.");
+                outLog("挂钩 ObReferenceObjectByHandleWithTag成功。");
             }
             else
             {
-                outLog("hook ObReferenceObjectByHandleWithTagʧ��.");
+                outLog("挂钩 ObReferenceObjectByHandleWithTag失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_ObReferenceObjectByHandleWithTagΪ��ָ��.");
+            outLog("Sys_ObReferenceObjectByHandleWithTag为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -922,16 +922,16 @@ VOID Hook_ObpReferenceObjectByHandleWithTag()
         {
             if (hvgt::hook_function(Sys_ObpReferenceObjectByHandleWithTag, NewObpReferenceObjectByHandleWithTag, (PVOID*)&Original_ObpReferenceObjectByHandleWithTag))
             {
-                outLog("hook ObpReferenceObjectByHandleWithTag�ɹ�.");
+                outLog("挂钩 ObpReferenceObjectByHandleWithTag成功。");
             }
             else
             {
-                outLog("hook ObpReferenceObjectByHandleWithTagʧ��.");
+                outLog("挂钩 ObpReferenceObjectByHandleWithTag失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_ObpReferenceObjectByHandleWithTagΪ��ָ��.");
+            outLog("Sys_ObpReferenceObjectByHandleWithTag为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -946,16 +946,16 @@ VOID Hook_ObfDereferenceObjectWithTag()
         {
             if (hvgt::hook_function(Sys_ObfDereferenceObjectWithTag, NewObfDereferenceObjectWithTag, (PVOID*)&Original_ObfDereferenceObjectWithTag))
             {
-                outLog("hook ObfDereferenceObjectWithTag�ɹ�.");
+                outLog("挂钩 ObfDereferenceObjectWithTag成功。");
             }
             else
             {
-                outLog("hook ObfDereferenceObjectWithTagʧ��.");
+                outLog("挂钩 ObfDereferenceObjectWithTag失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_ObfDereferenceObjectWithTagΪ��ָ��.");
+            outLog("Sys_ObfDereferenceObjectWithTag为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -970,16 +970,16 @@ VOID Hook_ObfDereferenceObject()
         {
             if (hvgt::hook_function(Sys_ObfDereferenceObject, NewObfDereferenceObject, (PVOID*)&Original_ObfDereferenceObject))
             {
-                outLog("hook ObfDereferenceObject�ɹ�.");
+                outLog("挂钩 ObfDereferenceObject成功。");
             }
             else
             {
-                outLog("hook ObfDereferenceObjectʧ��.");
+                outLog("挂钩 ObfDereferenceObject失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_ObfDereferenceObjectΪ��ָ��.");
+            outLog("Sys_ObfDereferenceObject为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -994,16 +994,16 @@ VOID Hook_MmCopyVirtualMemory()
         {
             if (hvgt::hook_function(Sys_MmCopyVirtualMemory, NewMmCopyVirtualMemory, (PVOID*)&Original_MmCopyVirtualMemory))
             {
-                outLog("hook MmCopyVirtualMemory�ɹ�.");
+                outLog("挂钩 MmCopyVirtualMemory成功。");
             }
             else
             {
-                outLog("hook MmCopyVirtualMemoryʧ��.");
+                outLog("挂钩 MmCopyVirtualMemory失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_MmCopyVirtualMemoryΪ��ָ��.");
+            outLog("Sys_MmCopyVirtualMemory为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1018,16 +1018,16 @@ VOID Hook_PspCreateUserContext()
         {
             if (hvgt::hook_function(Sys_PspCreateUserContext, NewPspCreateUserContext, (PVOID*)&Original_PspCreateUserContext))
             {
-                outLog("hook PspCreateUserContext�ɹ�.");
+                outLog("挂钩 PspCreateUserContext成功。");
             }
             else
             {
-                outLog("hook PspCreateUserContextʧ��.");
+                outLog("挂钩 PspCreateUserContext失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_PspCreateUserContextΪ��ָ��.");
+            outLog("Sys_PspCreateUserContext为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1042,16 +1042,16 @@ VOID Hook_PspCallThreadNotifyRoutines()
         {
             if (hvgt::hook_function(Sys_PspCallThreadNotifyRoutines, NewPspCallThreadNotifyRoutines, (PVOID*)&Original_PspCallThreadNotifyRoutines))
             {
-                outLog("hook PspCallThreadNotifyRoutines�ɹ�.");
+                outLog("挂钩 PspCallThreadNotifyRoutines成功。");
             }
             else
             {
-                outLog("hook PspCallThreadNotifyRoutinesʧ��.");
+                outLog("挂钩 PspCallThreadNotifyRoutines失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_PspCallThreadNotifyRoutinesΪ��ָ��.");
+            outLog("Sys_PspCallThreadNotifyRoutines为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1066,16 +1066,16 @@ VOID Hook_NtTerminateProcess()
         {
             if (hvgt::hook_function(Sys_NtTerminateProcess, NewNtTerminateProcess, (PVOID*)&Original_NtTerminateProcess))
             {
-                outLog("hook NtTerminateProcess�ɹ�.");
+                outLog("挂钩 NtTerminateProcess成功。");
             }
             else
             {
-                outLog("hook NtTerminateProcessʧ��.");
+                outLog("挂钩 NtTerminateProcess失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtTerminateProcessΪ��ָ��.");
+            outLog("Sys_NtTerminateProcess为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1090,16 +1090,16 @@ VOID Hook_PspExitThread()
         {
             if (hvgt::hook_function(Sys_PspExitThread, PspExitThread, (PVOID*)&Original_PspExitThread))
             {
-                outLog("hook PspExitThread�ɹ�.");
+                outLog("挂钩 PspExitThread成功。");
             }
             else
             {
-                outLog("hook PspExitThreadʧ��.");
+                outLog("挂钩 PspExitThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_PspExitThreadΪ��ָ��.");
+            outLog("Sys_PspExitThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
         SetupHook_PspExitThread_CMP_Debugport();
     }
@@ -1115,16 +1115,16 @@ VOID Hook_PspCreateThread()
         {
             if (hvgt::hook_function(Sys_PspCreateThread, PspCreateThread, (PVOID*)&Original_PspCreateThread))
             {
-                outLog("hook PspCreateThread�ɹ�.");
+                outLog("挂钩 PspCreateThread成功。");
             }
             else
             {
-                outLog("hook PspCreateThreadʧ��.");
+                outLog("挂钩 PspCreateThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_PspCreateThreadΪ��ָ��.");
+            outLog("Sys_PspCreateThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1139,16 +1139,16 @@ VOID Hook_NtCreateThreadEx()
         {
             if (hvgt::hook_function(Sys_NtCreateThreadEx, NtCreateThreadEx, (PVOID*)&Original_NtCreateThreadEx))
             {
-                outLog("hook NtCreateThreadEx�ɹ�.");
+                outLog("挂钩 NtCreateThreadEx成功。");
             }
             else
             {
-                outLog("hook NtCreateThreadExʧ��.");
+                outLog("挂钩 NtCreateThreadEx失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtCreateThreadExΪ��ָ��.");
+            outLog("Sys_NtCreateThreadEx为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1163,16 +1163,16 @@ VOID Hook_PspAllocateThread()
         {
             if (hvgt::hook_function(Sys_PspAllocateThread, NewPspAllocateThread, (PVOID*)&Original_PspAllocateThread))
             {
-                outLog("hook PspAllocateThread�ɹ�.");
+                outLog("挂钩 PspAllocateThread成功。");
             }
             else
             {
-                outLog("hook PspAllocateThreadʧ��.");
+                outLog("挂钩 PspAllocateThread失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_PspAllocateThreadΪ��ָ��.");
+            outLog("Sys_PspAllocateThread为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1187,16 +1187,16 @@ VOID Hook_PspAllocateThread()
 //        {
 //            if (hvgt::hook_function(Sys_DbgkpCloseObject, DbgkpCloseObject, NULL))
 //            {
-//                outLog("hook DbgkpCloseObject�ɹ�.");
+//                outLog("挂钩 DbgkpCloseObject成功。");
 //            }
 //            else
 //            {
-//                outLog("hook DbgkpCloseObjectʧ��.");
+//                outLog("挂钩 DbgkpCloseObject失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
 //            }
 //        }
 //        else
 //        {
-//            outLog("Sys_DbgkpCloseObjectΪ��ָ��.");
+//            outLog("Sys_DbgkpCloseObject为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
 //        }
 //    }
 //}
@@ -1214,16 +1214,16 @@ VOID Hook_NtUserFindWindowEx()
         {
             if (hvgt::hook_function(Sys_NtUserFindWindowEx, NewNtUserFindWindowEx, (PVOID*)&Original_NtUserFindWindowEx))
             {
-                outLog("hook NtUserFindWindowEx�ɹ�.");
+                outLog("挂钩 NtUserFindWindowEx成功。");
             }
             else
             {
-                outLog("hook NtUserFindWindowExʧ��.");
+                outLog("挂钩 NtUserFindWindowEx失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtUserFindWindowExΪ��ָ��.");
+            outLog("Sys_NtUserFindWindowEx为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1238,16 +1238,16 @@ VOID Hook_ValidateHwnd()
         {
             if (hvgt::hook_function(Sys_ValidateHwnd, NewValidateHwnd, (PVOID*)&Original_ValidateHwnd))
             {
-                outLog("hook ValidateHwnd�ɹ�.");
+                outLog("挂钩 ValidateHwnd成功。");
             }
             else
             {
-                outLog("hook ValidateHwndʧ��.");
+                outLog("挂钩 ValidateHwnd失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_ValidateHwndΪ��ָ��.");
+            outLog("Sys_ValidateHwnd为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }
@@ -1262,16 +1262,16 @@ VOID Hook_NtUserWindowFromPoint()
         {
             if (hvgt::hook_function(Sys_NtUserWindowFromPoint, NewNtUserWindowFromPoint, (PVOID*)&Original_NtUserWindowFromPoint))
             {
-                outLog("hook NtUserWindowFromPoint�ɹ�.");
+                outLog("挂钩 NtUserWindowFromPoint成功。");
             }
             else
             {
-                outLog("hook NtUserWindowFromPointʧ��.");
+                outLog("挂钩 NtUserWindowFromPoint失败；原因：目标符号地址无效、状态不匹配或资源不足；解决方案：检查匹配版本的符号表、驱动状态和内存池后重试。");
             }
         }
         else
         {
-            outLog("Sys_NtUserWindowFromPointΪ��ָ��.");
+            outLog("Sys_NtUserWindowFromPoint为空指针；原因：符号表未提供该函数；解决方案：检查 PDB 与 Windows 版本是否匹配。");
         }
     }
 }

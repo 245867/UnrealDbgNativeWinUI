@@ -1,4 +1,4 @@
-#include "Driver.h"
+ï»¿#include "Driver.h"
 #include "ntos/inc/ntosdef.h"
 #include "ntos/inc/ketypes.h"
 #include "ntos/inc/amd64.h"
@@ -28,6 +28,8 @@
 #include "Hvm/hypervisor_gateway.h"
 #include "DebugBreak/DebugBreak.h"
 
+#pragma comment(lib, "Wdmsec.lib")
+
 PWCHAR PassProcessList[12] = {
     _T("system"),
     _T("Registry"),
@@ -43,16 +45,78 @@ PWCHAR PassProcessList[12] = {
     _T("ctfmon.exe"),
 };
 
+static const char* IoctlName(ULONG code)
+{
+    switch (code)
+    {
+    case IOCTL_LOAD_SYMBOLS_TABLE:
+    case IOCTL_LOAD_SYMBOLS_TABLE_V2: return "åŠ è½½ç¬¦å·è¡¨";
+    case IOCTL_LOAD_DEBUGGER_STATE:
+    case IOCTL_LOAD_DEBUGGER_STATE_V2: return "åŠ è½½è°ƒè¯•å™¨çŠ¶æ€";
+    case IOCTL_LOAD_PROTECT_OBJ_DATA:
+    case IOCTL_LOAD_PROTECT_OBJ_DATA_V2: return "åŠ è½½ä¿æŠ¤å¯¹è±¡æ•°æ®";
+    case IOCTL_LOAD_DEBUGGER_DATA:
+    case IOCTL_LOAD_DEBUGGER_DATA_V2: return "åŠ è½½è°ƒè¯•å™¨æ•°æ®";
+    case IOCTL_CREATE_REMOTE_THREAD:
+    case IOCTL_CREATE_REMOTE_THREAD_V2: return "åˆ›å»ºè¿œç¨‹çº¿ç¨‹";
+    case IOCTL_GET_PROCESS_INFO:
+    case IOCTL_GET_PROCESS_INFO_V2: return "è·å–è¿›ç¨‹ä¿¡æ¯";
+    case IOCTL_TL_BLOCK_RESUME_THREAD:
+    case IOCTL_TL_BLOCK_RESUME_THREAD_V2: return "TL é˜»æ­¢æ¢å¤çº¿ç¨‹";
+    case IOCTL_SET_HARDWARE_BREAKPOINT:
+    case IOCTL_SET_HARDWARE_BREAKPOINT_V2: return "è®¾ç½®ç¡¬ä»¶æ–­ç‚¹";
+    case IOCTL_DEL_HARDWARE_BREAKPOINT:
+    case IOCTL_DEL_HARDWARE_BREAKPOINT_V2: return "åˆ é™¤ç¡¬ä»¶æ–­ç‚¹";
+    case IOCTL_SET_SOFTWARE_BREAKPOINT:
+    case IOCTL_SET_SOFTWARE_BREAKPOINT_V2: return "è®¾ç½®è½¯ä»¶æ–­ç‚¹";
+    case IOCTL_DEL_SOFTWARE_BREAKPOINT:
+    case IOCTL_DEL_SOFTWARE_BREAKPOINT_V2: return "åˆ é™¤è½¯ä»¶æ–­ç‚¹";
+    case IOCTL_READ_SOFTWARE_BREAKPOINT:
+    case IOCTL_READ_SOFTWARE_BREAKPOINT_V2: return "è¯»å–è½¯ä»¶æ–­ç‚¹";
+    default: return "æœªçŸ¥ IOCTL";
+    }
+}
+
+static const char* NtStatusExplanation(NTSTATUS status)
+{
+    switch (status)
+    {
+    case STATUS_SUCCESS: return "æ“ä½œæˆåŠŸ";
+    case STATUS_INVALID_PARAMETER: return "å‚æ•°æ— æ•ˆï¼›æ£€æŸ¥ IOCTL è¾“å…¥ç»“æ„å’Œé•¿åº¦";
+    case STATUS_ACCESS_DENIED: return "è®¿é—®è¢«æ‹’ç»ï¼›æ£€æŸ¥ç®¡ç†å‘˜æƒé™ã€é©±åŠ¨çŠ¶æ€å’Œå®‰å…¨ç­–ç•¥";
+    case STATUS_NOT_FOUND: return "å¯¹è±¡æœªæ‰¾åˆ°ï¼›æ£€æŸ¥ç¬¦å·è¡¨ã€è®¾å¤‡é“¾æ¥å’Œç›®æ ‡è¿›ç¨‹";
+    case STATUS_OBJECT_NAME_NOT_FOUND: return "å¯¹è±¡åç§°æœªæ‰¾åˆ°ï¼›æ£€æŸ¥é©±åŠ¨è®¾å¤‡å’Œç¬¦å·æ¨¡å—æ˜¯å¦å·²åˆ›å»º";
+    case STATUS_BUFFER_TOO_SMALL: return "ç¼“å†²åŒºä¸è¶³ï¼›æŒ‰è¦æ±‚å¢å¤§è¾“å…¥æˆ–è¾“å‡ºç¼“å†²åŒº";
+    case STATUS_INVALID_DEVICE_REQUEST: return "ä¸æ”¯æŒçš„ IOCTLï¼›ç¡®è®¤å‰ç«¯ä¸é©±åŠ¨ç‰ˆæœ¬åŒ¹é…";
+    case STATUS_NOT_SUPPORTED: return "å½“å‰ç¡¬ä»¶æˆ–è™šæ‹ŸåŒ–ç¯å¢ƒä¸æ”¯æŒè¯¥æ“ä½œï¼›æ£€æŸ¥ Hyper-V/VBS/HVCI å†²çª";
+    case STATUS_DEVICE_NOT_READY: return "VT host å°šæœªå°±ç»ªï¼›ç¡®è®¤ VT_Driver å·²è¿›å…¥ VMX root mode";
+    case STATUS_INSUFFICIENT_RESOURCES: return "å†…æ ¸èµ„æºä¸è¶³ï¼›é‡Šæ”¾èµ„æºå¹¶æ£€æŸ¥éåˆ†é¡µå†…å­˜";
+    case STATUS_ACCESS_VIOLATION: return "è®¿é—®ç”¨æˆ·ç¼“å†²åŒºæ—¶å‘ç”Ÿå¼‚å¸¸ï¼›æ£€æŸ¥æŒ‡é’ˆã€é•¿åº¦å’Œè°ƒç”¨æ–¹ç‰ˆæœ¬";
+    case STATUS_UNSUCCESSFUL: return "é©±åŠ¨æ“ä½œæœªæˆåŠŸï¼›æŸ¥çœ‹æ­¤å‰çš„é”™è¯¯æ—¥å¿—ç¡®å®šå…·ä½“åŸå› ";
+    default: return "æœªæ”¶å½•çš„ NTSTATUSï¼›è¯·ç»“åˆçŠ¶æ€ç å’Œå‰ç½®æ—¥å¿—æ’æŸ¥";
+    }
+}
 EXTERN_C
 VOID Unload(PDRIVER_OBJECT DriverObject)
 {
     UNREFERENCED_PARAMETER(DriverObject);
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, "[DbgkSysWin11] å¼€å§‹å¸è½½\n"));
     //UnloadProtect();
     RemoveHooks();
     //DbgkUnInitialize();
     //ReleaseMemoryResources();
     //_RemoveDevice(DriverObject);
-    DbgPrint("Driver Unload!!!\n");
+    while (DriverObject->DeviceObject != NULL)
+    {
+        PDEVICE_OBJECT device = DriverObject->DeviceObject;
+        PDEVICE_EXTENSION extension = (PDEVICE_EXTENSION)device->DeviceExtension;
+        if (extension != NULL)
+        {
+            IoDeleteSymbolicLink(&extension->ustrSymLinkName);
+        }
+        IoDeleteDevice(device);
+    }
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, "[DbgkSysWin11] å¸è½½å®Œæˆ\n"));
 }
 
 EXTERN_C
@@ -60,22 +124,28 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
 {
     UNREFERENCED_PARAMETER(DriverObject);
     UNREFERENCED_PARAMETER(RegistryPath);
-    LogFile::InitDriverLog();    
+    NTSTATUS logStatus = LogFile::InitDriverLog();
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, NT_SUCCESS(logStatus) ? DPFLTR_INFO_LEVEL : DPFLTR_ERROR_LEVEL,
+        "[DbgkSysWin11] æ—¥å¿—åˆå§‹åŒ–çŠ¶æ€=0x%08X\n", logStatus));
 
     //DbgBreakPoint();
     //ApcCreateRemoteThread((HANDLE)7572, NULL);
-    DbgPrint("Ñª¸¡ÍÀÇı¶¯ÔØÈë³É¹¦!!!\n");
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, "[DbgkSysWin11] é©±åŠ¨å…¥å£å¼€å§‹\n"));
 
     InitGlobalVariable(DriverObject);
     //InitProtect(DriverObject);
     NTSTATUS ntStatus = CreateDevice(DriverObject);
     if (!NT_SUCCESS(ntStatus))
     {
-        outLog("´´½¨Éè±¸¶ÔÏóÊ§°Ü.");
+        outLog("åˆ›å»ºè®¾å¤‡å¯¹è±¡å¤±è´¥ï¼›åŸå› ï¼šç›®æ ‡ç¬¦å·åœ°å€æ— æ•ˆã€çŠ¶æ€ä¸åŒ¹é…æˆ–èµ„æºä¸è¶³ï¼›è§£å†³æ–¹æ¡ˆï¼šæ£€æŸ¥åŒ¹é…ç‰ˆæœ¬çš„ç¬¦å·è¡¨ã€é©±åŠ¨çŠ¶æ€å’Œå†…å­˜æ± åé‡è¯•ã€‚");
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
+            "[DbgkSysWin11] åˆ›å»ºè®¾å¤‡å¯¹è±¡å¤±è´¥ï¼ŒçŠ¶æ€=0x%08X\n", ntStatus));
+        return ntStatus;
     }
     else
     {
-        outLog("´´½¨Éè±¸¶ÔÏó³É¹¦.");
+        outLog("åˆ›å»ºè®¾å¤‡å¯¹è±¡æˆåŠŸã€‚");
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, "[DbgkSysWin11] è®¾å¤‡å’Œç¬¦å·é“¾æ¥åˆ›å»ºæˆåŠŸ\n"));
     }
     DriverObject->MajorFunction[IRP_MJ_CREATE] = InitDispatchRoutin;
     DriverObject->MajorFunction[IRP_MJ_CLOSE] = InitDispatchRoutin;
@@ -84,6 +154,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
     //DbgBreakPoint();    
     //TestVMM();
     DriverObject->DriverUnload = Unload;
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, "[DbgkSysWin11] é©±åŠ¨å…¥å£å®Œæˆ\n"));
     return STATUS_SUCCESS;
 }
 
@@ -110,7 +181,7 @@ PVOID DbgkCreateThread_CMP_Debugport_01()
 
 VOID SetupHook_DbgkCreateThread_CMP_Debugport()
 {
-    BYTE code[] = { 0x48, 0x83,'?','?','?','?' };  //cmpÖ¸Áî
+    BYTE code[] = { 0x48, 0x83,'?','?','?','?' };  //cmpæŒ‡ä»¤
 
 
     BYTE* startaddr = (BYTE*)Sys_DbgkCreateThread;
@@ -118,26 +189,26 @@ VOID SetupHook_DbgkCreateThread_CMP_Debugport()
     {
         BYTE* hookAddr = (BYTE*)SearchCode(code, sizeof(code), startaddr, 0x100);
 
-        //ÅĞ¶ÏÖ¸ÁîÊÇ·ñÊÇcmp
+        //åˆ¤æ–­æŒ‡ä»¤æ˜¯å¦æ˜¯cmp
         if ((hookAddr[0] == 0x48) &&
             (hookAddr[1] == 0x83) &&
             (*(WORD*)&hookAddr[3] == eprocess_offset::DebugPort))
         {
-            //µÃµ½cmpµÄÏÂÒ»ÌõÖ¸Áî
+            //å¾—åˆ°cmpçš„ä¸‹ä¸€æ¡æŒ‡ä»¤
             DbgkCreateThread_jcc_instruction = (unsigned __int64)((unsigned __int64)hookAddr + (unsigned __int64)(LDE((unsigned __int8*)hookAddr, 64)));
             if (hvgt::hook_function(hookAddr, Asm_DbgkCreateThread_CMP_Debugport_01, NULL))
             {
-                outLog("hook DbgkCreateThread_CMP_Debugport_01³É¹¦.");
+                outLog("æŒ‚é’© DbgkCreateThread_CMP_Debugport_01æˆåŠŸã€‚");
             }
             else
             {
-                outLog("hook DbgkCreateThread_CMP_Debugport_01Ê§°Ü.");
+                outLog("æŒ‚é’© DbgkCreateThread_CMP_Debugport_01å¤±è´¥ï¼›åŸå› ï¼šç›®æ ‡ç¬¦å·åœ°å€æ— æ•ˆã€çŠ¶æ€ä¸åŒ¹é…æˆ–èµ„æºä¸è¶³ï¼›è§£å†³æ–¹æ¡ˆï¼šæ£€æŸ¥åŒ¹é…ç‰ˆæœ¬çš„ç¬¦å·è¡¨ã€é©±åŠ¨çŠ¶æ€å’Œå†…å­˜æ± åé‡è¯•ã€‚");
             }
             break;
         }
         else
         {
-            //outLog("Ã»ÓĞÆ¥Åäµ½ cmp qword ptr [rdi+578h]");
+            //outLog("æ²¡æœ‰åŒ¹é…åˆ° cmp qword ptr [rdi+578h]");
             startaddr = (BYTE*)((unsigned __int64)hookAddr + (unsigned __int64)(LDE((unsigned __int8*)hookAddr, 64)));
         }
     }
@@ -145,40 +216,40 @@ VOID SetupHook_DbgkCreateThread_CMP_Debugport()
 
 VOID SetupHook_PspExitThread_CMP_Debugport()
 {
-    BYTE code[] = { 0x49, 0x39,'?','?','?','?' };  //cmpÖ¸Áî
+    BYTE code[] = { 0x49, 0x39,'?','?','?','?' };  //cmpæŒ‡ä»¤
     BYTE* hookAddr = (BYTE*)SearchCode(code, sizeof(code), (BYTE*)Sys_PspExitThread, 0x200);
 
-    //ÅĞ¶ÏÖ¸ÁîÊÇ·ñÊÇcmp
+    //åˆ¤æ–­æŒ‡ä»¤æ˜¯å¦æ˜¯cmp
     if ((hookAddr[0] == 0x49) &&
         (hookAddr[1] == 0x39) &&
         (*(WORD*)&hookAddr[3] == eprocess_offset::DebugPort))  /*if ( Process->DebugPort )*/
     {
-        //µÃµ½cmpµÄÏÂÒ»ÌõÖ¸Áî
+        //å¾—åˆ°cmpçš„ä¸‹ä¸€æ¡æŒ‡ä»¤
         PspExitThread_jcc_instruction = (unsigned __int64)((unsigned __int64)hookAddr + (unsigned __int64)(LDE((unsigned __int8*)hookAddr, 64)));
         if (hvgt::hook_function(hookAddr, Asm_PspExitThread_CMP_Debugport_01, NULL))
         {
-            outLog("hook PspExitThread_CMP_Debugport_01³É¹¦.");
+            outLog("æŒ‚é’© PspExitThread_CMP_Debugport_01æˆåŠŸã€‚");
         }
         else
         {
-            outLog("hook PspExitThread_CMP_Debugport_01Ê§°Ü.");
+            outLog("æŒ‚é’© PspExitThread_CMP_Debugport_01å¤±è´¥ï¼›åŸå› ï¼šç›®æ ‡ç¬¦å·åœ°å€æ— æ•ˆã€çŠ¶æ€ä¸åŒ¹é…æˆ–èµ„æºä¸è¶³ï¼›è§£å†³æ–¹æ¡ˆï¼šæ£€æŸ¥åŒ¹é…ç‰ˆæœ¬çš„ç¬¦å·è¡¨ã€é©±åŠ¨çŠ¶æ€å’Œå†…å­˜æ± åé‡è¯•ã€‚");
         }
     }
     else
     {
-        outLog("Ã»ÓĞÆ¥Åäµ½ cmp [r14+578h]");
+        outLog("æ²¡æœ‰åŒ¹é…åˆ° cmp [r14+578h]");
     }
 }
 
 
-/*ÕÒÌØÕ÷Âë  ×¢ÒâÕÒµ½µÄÌØÕ÷ÂëÊÇ¸ø¶¨µÄµÚ0¸öÌØÕ÷ÂëµÄÊµ¼ÊµØÖ·
-ÌØÕ÷ÂëĞÎÊ½: CHAR EtwHostStateShellcode[] = { 0xB8,0x08,0x00,0x00,0xC0,0xE9,'?','?','?','?',0x48,0x8B,0x15 };
-²ÎÊı:
-    code: ±íÊ¾ÌØÕ÷Âë Èç EtwHostStateShellcode  UCHAR Êı×é
-    codeLenth: ±íÊ¾ÌØÕ÷Âë³¤¶È
-    startaddr: ÕÒÌØÕ÷ÂëµÄÆğÊ¼µØÖ·;
-    addrlenth: ÓÃÀ´È·¶¨ÕÒÌØÕ÷Âë½áÊøµØÖ·,¼´ÕÒÆğÊ¼µØÖ·Æ«ÒÆ³¤¶Èºó½áÊø
-    ·µ»ØÖµ: Èç¹û·µ»Ø0 ±íÊ¾Î´ÕÒµ½,ÆäËüÖµ±íÊ¾ÕÒµ½µÚÒ»¸öÌØÕ÷ÂëµÄÊµ¼ÊµØÖ· ×¢ÒâÊÇÊµ¼ÊµØÖ· ¼´startaddr µ½(startaddr+addrlenth)Õâ·¶Î§ÖĞ¼äµÄÄ³¸öµØÖ·,²»ÊÇÆ«ÒÆÖµ,ÊÇÊµ¼ÊµØÖ·
+/*æ‰¾ç‰¹å¾ç   æ³¨æ„æ‰¾åˆ°çš„ç‰¹å¾ç æ˜¯ç»™å®šçš„ç¬¬0ä¸ªç‰¹å¾ç çš„å®é™…åœ°å€
+ç‰¹å¾ç å½¢å¼: CHAR EtwHostStateShellcode[] = { 0xB8,0x08,0x00,0x00,0xC0,0xE9,'?','?','?','?',0x48,0x8B,0x15 };
+å‚æ•°:
+    code: è¡¨ç¤ºç‰¹å¾ç  å¦‚ EtwHostStateShellcode  UCHAR æ•°ç»„
+    codeLenth: è¡¨ç¤ºç‰¹å¾ç é•¿åº¦
+    startaddr: æ‰¾ç‰¹å¾ç çš„èµ·å§‹åœ°å€;
+    addrlenth: ç”¨æ¥ç¡®å®šæ‰¾ç‰¹å¾ç ç»“æŸåœ°å€,å³æ‰¾èµ·å§‹åœ°å€åç§»é•¿åº¦åç»“æŸ
+    è¿”å›å€¼: å¦‚æœè¿”å›0 è¡¨ç¤ºæœªæ‰¾åˆ°,å…¶å®ƒå€¼è¡¨ç¤ºæ‰¾åˆ°ç¬¬ä¸€ä¸ªç‰¹å¾ç çš„å®é™…åœ°å€ æ³¨æ„æ˜¯å®é™…åœ°å€ å³startaddr åˆ°(startaddr+addrlenth)è¿™èŒƒå›´ä¸­é—´çš„æŸä¸ªåœ°å€,ä¸æ˜¯åç§»å€¼,æ˜¯å®é™…åœ°å€
 */
 EXTERN_C
 ULONG_PTR SearchCode(unsigned char* code, ULONG_PTR codeLenth, unsigned char* startaddr, ULONG_PTR addrlenth)
@@ -247,7 +318,7 @@ ULONG_PTR SearchCode(unsigned char* code, ULONG_PTR codeLenth, unsigned char* st
 //    }
 //    __except (EXCEPTION_EXECUTE_HANDLER)
 //    {
-//        outLog("ÊÍ·ÅÎÄ¼şÁĞ±í ±ÀÀ£.");
+//        outLog("é‡Šæ”¾æ–‡ä»¶åˆ—è¡¨ å´©æºƒ.");
 //    }
 //}
 //
@@ -280,11 +351,11 @@ ULONG_PTR SearchCode(unsigned char* code, ULONG_PTR codeLenth, unsigned char* st
 //    }
 //    __except (EXCEPTION_EXECUTE_HANDLER)
 //    {
-//        outLog("ÊÍ·Å´°¿ÚÁĞ±í ±ÀÀ£.");
+//        outLog("é‡Šæ”¾çª—å£åˆ—è¡¨ å´©æºƒ.");
 //    }
 //}
 
-////»ØÊÕÄÚ´æ×ÊÔ´
+////å›æ”¶å†…å­˜èµ„æº
 //VOID ReleaseMemoryResources()
 //{
 //    ReleaseFileList();
@@ -293,13 +364,13 @@ ULONG_PTR SearchCode(unsigned char* code, ULONG_PTR codeLenth, unsigned char* st
 //    ReleaseDebugProcessList();
 //}
 //
-////³õÊ¼»¯±£»¤
+////åˆå§‹åŒ–ä¿æŠ¤
 //VOID InitProtect(IN PDRIVER_OBJECT DriverObject)
 //{
 //    RegisterCallbacks(DriverObject);
 //}
 //
-////Ğ¶ÔØ±£»¤
+////å¸è½½ä¿æŠ¤
 //VOID UnloadProtect()
 //{
 //    UnCallbacks();
@@ -316,18 +387,18 @@ VOID RemoveHooks()
 //{
 //    __try
 //    {
-//        if (hvgt::test_vmcall() == FALSE)  //³¢ÊÔÊÇ·ñÄÜ¹»³É¹¦Ö´ĞĞvmxÖ¸Áî
+//        if (hvgt::test_vmcall() == FALSE)  //å°è¯•æ˜¯å¦èƒ½å¤ŸæˆåŠŸæ‰§è¡ŒvmxæŒ‡ä»¤
 //        {
-//            outLog("vtÇı¶¯Ã»ÓĞ°²×°!!!");
+//            outLog("vté©±åŠ¨æ²¡æœ‰å®‰è£…!!!");
 //            return STATUS_UNSUCCESSFUL;
 //        }
 //    }
 //    __except (EXCEPTION_EXECUTE_HANDLER)
 //    {
-//        outLog("²»Ö§³ÖvmxÖ¸Áî!!!");
+//        outLog("ä¸æ”¯æŒvmxæŒ‡ä»¤!!!");
 //        return STATUS_UNSUCCESSFUL;
 //    }
-//    outLog("VTÇı¶¯ÒÑ°²×°³É¹¦!!!");
+//    outLog("VTé©±åŠ¨å·²å®‰è£…æˆåŠŸ!!!");
 //    return STATUS_SUCCESS;
 //}
 //
@@ -365,7 +436,7 @@ VOID RemoveHooks()
 //}
 //
 //EXTERN_C
-////¹Ø±ÕĞ´±£»¤
+////å…³é—­å†™ä¿æŠ¤
 //KIRQL WriteProtectDisable()
 //{
 //    KIRQL Irql = KeRaiseIrqlToDpcLevel();
@@ -377,7 +448,7 @@ VOID RemoveHooks()
 //}
 //
 //EXTERN_C
-////¿ªÆôĞ´±£»¤
+////å¼€å¯å†™ä¿æŠ¤
 //VOID WriteProtectEnable(KIRQL Irql)
 //{
 //    UINT64 cr0 = __readcr0();
@@ -489,7 +560,7 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //    }
 //
 //    RtlGetExtendedContextLength(ContextFlags, &ContextLength);
-//    ContextFrame = (PCONTEXT)alloca(ContextLength);                            // ÉêÇëÕ»ÄÚ´æ¿Õ¼ä
+//    ContextFrame = (PCONTEXT)alloca(ContextLength);                            // ç”³è¯·æ ˆå†…å­˜ç©ºé—´
 //
 //    RtlInitializeExtendedContext(ContextFrame, ContextFlags, &ContextEx);
 //
@@ -542,11 +613,11 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //                goto Handled;
 //            }
 //
-//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //            /* If the Debugger couldn't handle it, dispatch the exception */
 //            if (RtlDispatchException(ExceptionRecord, ContextFrame)) goto Handled;
 //        }
-//        DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//        DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //
 //        /* This is a second-chance exception, only for the debugger */
 //        if (KiDebugRoutine(TrapFrame,
@@ -569,21 +640,21 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //    }
 //    else
 //    {
-//        //´¦ÀíÓÃ»§²ãµÄÒì³£
+//        //å¤„ç†ç”¨æˆ·å±‚çš„å¼‚å¸¸
 //
-//        if ((((_EPROCESS*)PsGetCurrentProcess())->WoW64Process)/*ÅĞ¶Ïµ±Ç°½ø³ÌÊÇ·ñÎª32Î»½ø³Ì*/ &&
-//            (ExceptionRecord->ExceptionCode == STATUS_DATATYPE_MISALIGNMENT)/*Òì³£ÀàĞÍÎª¶ÔÆë¹ÊÕÏ*/ &&
-//            (TrapFrame->EFlags & EFLAGS_AC_MASK)/*ÅĞ¶Ï¶ÔÆë¼ì²éÊÇ·ñ±»¿ªÆô*/)
+//        if ((((_EPROCESS*)PsGetCurrentProcess())->WoW64Process)/*åˆ¤æ–­å½“å‰è¿›ç¨‹æ˜¯å¦ä¸º32ä½è¿›ç¨‹*/ &&
+//            (ExceptionRecord->ExceptionCode == STATUS_DATATYPE_MISALIGNMENT)/*å¼‚å¸¸ç±»å‹ä¸ºå¯¹é½æ•…éšœ*/ &&
+//            (TrapFrame->EFlags & EFLAGS_AC_MASK)/*åˆ¤æ–­å¯¹é½æ£€æŸ¥æ˜¯å¦è¢«å¼€å¯*/)
 //        {
-//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
-//            TrapFrame->EFlags &= ~EFLAGS_AC_MASK;  //¹Ø±Õ¶ÔÆë¼ì²é
+//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
+//            TrapFrame->EFlags &= ~EFLAGS_AC_MASK;  //å…³é—­å¯¹é½æ£€æŸ¥
 //            return;
 //        }
 //        else
 //        {
 //            if ((ContextFrame->SegCs & 0xfff8) == KGDT64_R3_CMCODE)
 //            {
-//                DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//                DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //                switch (ExceptionRecord->ExceptionCode)
 //                {
 //                case STATUS_BREAKPOINT:
@@ -600,7 +671,7 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //                // align the stack address.
 //                //
 //
-//                //32Î»´úÂë´¦Àí  Çå¿ÕÕ»µØÖ·¸ß32Î»£¬²¢ÒÔ16×Ö½Ú¶ÔÆëÕ»µØÖ·
+//                //32ä½ä»£ç å¤„ç†  æ¸…ç©ºæ ˆåœ°å€é«˜32ä½ï¼Œå¹¶ä»¥16å­—èŠ‚å¯¹é½æ ˆåœ°å€
 //
 //                FaultingRsp = (ContextFrame->Rsp & 0xFFFFFFF0);
 //
@@ -645,11 +716,11 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //                UserMode);
 //
 //            if (!(((_EPROCESS*)PsGetCurrentProcess())->DebugPort) &&
-//                !(*KdIgnoreUmExceptions/*ºöÂÔuser modeÒì³£*/) &&
+//                !(*KdIgnoreUmExceptions/*å¿½ç•¥user modeå¼‚å¸¸*/) &&
 //                !DebugObject || (DebugService == TRUE))
 //            {
 //                /* Call the kernel debugger */
-//                if (KiDebugRoutine(TrapFrame,  //½«Òì³£×ª·¢¸øRing0µ÷ÊÔÆ÷
+//                if (KiDebugRoutine(TrapFrame,  //å°†å¼‚å¸¸è½¬å‘ç»™Ring0è°ƒè¯•å™¨
 //                    ExceptionFrame,
 //                    ExceptionRecord,
 //                    ContextFrame,
@@ -657,30 +728,30 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //                    FALSE))
 //                {
 //                    /* Exception was handled */
-//                    DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//                    DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //                    goto Handled;
 //                }
-//                DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//                DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //            }
 //
-//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //
 //            /* Forward exception to user mode debugger */
-//            if (DbgkForwardException(ExceptionRecord, TRUE, FALSE)) return;  //½«Òì³£×ª·¢¸øRing3µ÷ÊÔÆ÷
+//            if (DbgkForwardException(ExceptionRecord, TRUE, FALSE)) return;  //å°†å¼‚å¸¸è½¬å‘ç»™Ring3è°ƒè¯•å™¨
 //
 //
-//            //È¡ÏûTFÎ»
-//            TrapFrame->EFlags &= ~EFLAGS_TF_MASK;  //²»¸½¼Óµ÷ÊÔÆ÷ËùÒÔ ²»ĞèÒªµ¥²½Ö´ĞĞ
-//            LocalExceptRecord.ExceptionCode = STATUS_ACCESS_VIOLATION;  //°ÑÒì³£ÀàĞÍÉèÖÃÎªAV´íÎó        
+//            //å–æ¶ˆTFä½
+//            TrapFrame->EFlags &= ~EFLAGS_TF_MASK;  //ä¸é™„åŠ è°ƒè¯•å™¨æ‰€ä»¥ ä¸éœ€è¦å•æ­¥æ‰§è¡Œ
+//            LocalExceptRecord.ExceptionCode = STATUS_ACCESS_VIOLATION;  //æŠŠå¼‚å¸¸ç±»å‹è®¾ç½®ä¸ºAVé”™è¯¯        
 //
-//            // Èç¹ûÃ»ÓĞµ÷ÊÔÆ÷Ôò½«Òì³£ÅÉ·¢¸ø³ÌĞò×Ô¼º´¦Àí
+//            // å¦‚æœæ²¡æœ‰è°ƒè¯•å™¨åˆ™å°†å¼‚å¸¸æ´¾å‘ç»™ç¨‹åºè‡ªå·±å¤„ç†
 //            /* Set up the user-stack */
 //        DispatchToUser:
 //            _SEH2_TRY
 //            {
-//                DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//                DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //
-//            //·ÖÅäÓÃ»§Õ»´æ´¢CONTEXT½á¹¹Êı¾İ
+//            //åˆ†é…ç”¨æˆ·æ ˆå­˜å‚¨CONTEXTç»“æ„æ•°æ®
 //            UserStack_0 = FaultingRsp;
 //            if ((ContextFlags & CONTEXT_XSTATE) == CONTEXT_XSTATE)// CONTEXT_XSTATE
 //            {
@@ -700,7 +771,7 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //            TempContextEx.XState.Offset = (LONG)((UCHAR*)UserStack_0 - (UCHAR*)UserContextEx);
 //            TempContextEx.XState.Length = (ULONG)(FaultingRsp - UserStack_0);
 //
-//            //Ì½²âÕ»ÊÇ·ñ¿ÉĞ´
+//            //æ¢æµ‹æ ˆæ˜¯å¦å¯å†™
 //            ProbeForWriteSmallStructure(UserContext,
 //                FaultingRsp - (UserStack_1 - (CONTEXT_LENGTH + CONTEXT_EX_LENGTH + EXCEPTION_RECORD_LENGTH)),
 //                STACK_ALIGN2);
@@ -709,12 +780,12 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //            MachineFrame->Rip = ContextFrame->Rip;
 //            *UserExceptionRecord = *ExceptionRecord;
 //
-//            //¸´ÖÆCONTEXTÉÏÏÂÎÄÓëXStateÇø
+//            //å¤åˆ¶CONTEXTä¸Šä¸‹æ–‡ä¸XStateåŒº
 //            RtlpCopyExtendedContext(TRUE, UserContextEx, &TempContextEx, ContextFlags, ContextEx, NULL);
 //            *UserContextEx = TempContextEx;
 //            TrapFrame->Rsp = (ULONG_PTR)UserContext;
 //
-//            _disable();                             // ¹ØÖĞ¶Ï
+//            _disable();                             // å…³ä¸­æ–­
 //            TrapFrame->SegCs = KGDT64_R3_CODE | RPL_MASK;
 //            TrapFrame->Rip = *(ULONG_PTR*)KeUserExceptionDispatcher;
 //            InsCallback = ((_EPROCESS*)PsGetCurrentProcess())->Pcb.InstrumentationCallback;
@@ -723,9 +794,9 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //                TrapFrame->R10 = TrapFrame->Rip;
 //                TrapFrame->Rip = (ULONG_PTR)InsCallback;
 //            }
-//            _enable();                              // ¿ªÖĞ¶Ï
+//            _enable();                              // å¼€ä¸­æ–­
 //
-//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //
 //            /* Dispatch exception to user-mode */
 //            _SEH2_YIELD(return);
@@ -754,7 +825,7 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //        }
 //        else
 //        {
-//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//            DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //        }
 //
 //        /* Try second chance */
@@ -771,7 +842,7 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //
 //        //UnEptHook();
 //        //DbgBreakPoint();
-//        DBGKTRACE(DBGK_EXCEPTION_DEBUG, "ÅÉÇ²Òì³£..\n");
+//        DBGKTRACE(DBGK_EXCEPTION_DEBUG, "æ´¾é£å¼‚å¸¸..\n");
 //
 //        /* 3rd strike, kill the process */
 //        DPRINT1("Kill %.16s, ExceptionCode: %lx, ExceptionAddress: %p, BaseAddress: %p, P0: %lx, P1: %lx\n",
@@ -896,7 +967,7 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //
 
 //
-////ÅĞ¶ÏÄ¿±ê½ø³ÌÊÇ·ñÊÇÎÒÃÇ×Ô¼º
+////åˆ¤æ–­ç›®æ ‡è¿›ç¨‹æ˜¯å¦æ˜¯æˆ‘ä»¬è‡ªå·±
 //BOOLEAN IsSelf(_EPROCESS* Process)
 //{
 //    BOOLEAN result = FALSE;
@@ -907,7 +978,7 @@ VOID KiDispatchException(IN PEXCEPTION_RECORD ExceptionRecord,
 //    return result;
 //}
 
-//ÅĞ¶ÏÄ¿±ê½ø³ÌÊÇ·ñÊÇÎÒÃÇ×Ô¼ºµÄµ÷ÊÔÆ÷
+//åˆ¤æ–­ç›®æ ‡è¿›ç¨‹æ˜¯å¦æ˜¯æˆ‘ä»¬è‡ªå·±çš„è°ƒè¯•å™¨
 BOOLEAN IsDebugger(PEPROCESS Process)
 {
     BOOLEAN result = FALSE;
@@ -935,7 +1006,7 @@ BOOLEAN IsDebugger(PEPROCESS Process)
 
         if (entry)
         {            
-            if (entry->dwPid == (DWORD)pid)
+            if (entry->dwPid == HandleToULong(pid))
             {
                 result = TRUE;
                 break;
@@ -986,24 +1057,28 @@ BOOLEAN IsProtectTargetProcess(_EPROCESS* Process)
     return result;
 }
 
-//´´½¨Éè±¸ ·ûºÅÁ´½ÓµÈ
+//åˆ›å»ºè®¾å¤‡ ç¬¦å·é“¾æ¥ç­‰
 NTSTATUS CreateDevice(IN PDRIVER_OBJECT pDriver_Object)
 {
     NTSTATUS ntStatus;
     PDEVICE_OBJECT pDevObj;
     PDEVICE_EXTENSION pDevExt;
 
-    //´´½¨Éè±¸Ãû³Æ
+    //åˆ›å»ºè®¾å¤‡åç§°
     UNICODE_STRING devName;
     RtlInitUnicodeString(&devName, L"\\Device\\DbgkSysDevice");
 
-    //´´½¨Éè±¸
-    ntStatus = IoCreateDevice(pDriver_Object,
+    // Only SYSTEM and built-in Administrators may open this bridge device.
+    UNICODE_STRING deviceSddl;
+    RtlInitUnicodeString(&deviceSddl, L"D:P(A;;GA;;;SY)(A;;GA;;;BA)");
+    ntStatus = IoCreateDeviceSecure(pDriver_Object,
         sizeof(DEVICE_EXTENSION),
         &devName,
         FILE_DEVICE_UNKNOWN,
         0,
         FALSE,
+        &deviceSddl,
+        NULL,
         &pDevObj);
 
     if (!NT_SUCCESS(ntStatus))
@@ -1011,26 +1086,30 @@ NTSTATUS CreateDevice(IN PDRIVER_OBJECT pDriver_Object)
         return ntStatus;
     }
 
-    //´´½¨Ö±½Ó¶ÁĞ´Éè±¸
+    //åˆ›å»ºç›´æ¥è¯»å†™è®¾å¤‡
     pDevObj->Flags |= DO_BUFFERED_IO;
     pDevExt = (PDEVICE_EXTENSION)pDevObj->DeviceExtension;
     pDevExt->pDevice = pDevObj;
     pDevExt->ustrDeviceName = devName;
 
-    //´´½¨·ûºÅÁ´½Ó
+    //åˆ›å»ºç¬¦å·é“¾æ¥
     UNICODE_STRING symLinkName;
     RtlInitUnicodeString(&symLinkName, L"\\??\\UnrealDbg");
     pDevExt->ustrSymLinkName = symLinkName;
     ntStatus = IoCreateSymbolicLink(&symLinkName, &devName);
     if (!NT_SUCCESS(ntStatus))
     {
-        IoDeleteDevice(pDevObj);  //´´½¨Ê§°ÜÉ¾³ıÉè±¸
+        IoDeleteDevice(pDevObj);  //åˆ›å»ºå¤±è´¥åˆ é™¤è®¾å¤‡
         return ntStatus;
     }
+    // The I/O manager will not dispatch requests until initialization is
+    // explicitly cleared. Leaving this flag set can make
+    // CreateFile(\\.\\UnrealDbg) fail on newer Windows builds.
+    pDevObj->Flags &= ~DO_DEVICE_INITIALIZING;
     return STATUS_SUCCESS;
 }
 
-////É¾³ıÉè±¸
+////åˆ é™¤è®¾å¤‡
 //VOID _RemoveDevice(IN PDRIVER_OBJECT pDriver_Object)
 //{
 //    PDEVICE_OBJECT	pNextObj;
@@ -1039,7 +1118,7 @@ NTSTATUS CreateDevice(IN PDRIVER_OBJECT pDriver_Object)
 //    {
 //        PDEVICE_EXTENSION pDevExt = (PDEVICE_EXTENSION)pNextObj->DeviceExtension;
 //
-//        //É¾³ı·ûºÅÁ´½Ó
+//        //åˆ é™¤ç¬¦å·é“¾æ¥
 //        UNICODE_STRING pLinkName = pDevExt->ustrSymLinkName;
 //        IoDeleteSymbolicLink(&pLinkName);
 //        pNextObj = pNextObj->NextDevice;
@@ -1050,13 +1129,13 @@ NTSTATUS CreateDevice(IN PDRIVER_OBJECT pDriver_Object)
 NTSTATUS InitDispatchRoutin(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
-    //µÃµ½µ±Ç°¶ÑÕ»
+    //å¾—åˆ°å½“å‰å †æ ˆ
     PIO_STACK_LOCATION stack = IoGetCurrentIrpStackLocation(pIrp);
-    //µÃµ½ÊäÈë»º³åÇø´óĞ¡
+    //å¾—åˆ°è¾“å…¥ç¼“å†²åŒºå¤§å°
     ULONG cbin = stack->Parameters.DeviceIoControl.InputBufferLength;
-    //µÃµ½Êä³ö»º³åÇø´óĞ¡
+    //å¾—åˆ°è¾“å‡ºç¼“å†²åŒºå¤§å°
     ULONG cbout = stack->Parameters.DeviceIoControl.OutputBufferLength;
-    //µÃµ½IOCTLÂë
+    //å¾—åˆ°IOCTLç 
     ULONG code = stack->Parameters.DeviceIoControl.IoControlCode;
 
     //switch (code)
@@ -1083,93 +1162,152 @@ NTSTATUS InitDispatchRoutin(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
     //}
 
     pIrp->IoStatus.Status = ntStatus;
-    pIrp->IoStatus.Information = cbin;
+    // CREATE/CLOSE never return a payload.
+    pIrp->IoStatus.Information = 0;
     IoCompleteRequest(pIrp, IO_NO_INCREMENT);
     return ntStatus;
 }
 
 NTSTATUS HandlerDispatchRoutin(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
 {
+    UNREFERENCED_PARAMETER(pDevObj);
     NTSTATUS ntStatus = STATUS_SUCCESS;
-    //µÃµ½µ±Ç°¶ÑÕ»
+    if (pIrp == NULL)
+    {
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "[DbgkSysWin11] IOCTL åˆ†å‘æ”¶åˆ°ç©º IRP\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+    //å¾—åˆ°å½“å‰å †æ ˆ
     PIO_STACK_LOCATION stack = IoGetCurrentIrpStackLocation(pIrp);
-    //µÃµ½ÊäÈë»º³åÇø´óĞ¡
+    if (stack == NULL)
+    {
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "[DbgkSysWin11] è·å–å½“å‰ IRP æ ˆå¤±è´¥ï¼šè¿”å›ç©ºæŒ‡é’ˆ\n"));
+        pIrp->IoStatus.Status = STATUS_INVALID_PARAMETER;
+        pIrp->IoStatus.Information = 0;
+        IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+        return STATUS_INVALID_PARAMETER;
+    }
+    //å¾—åˆ°è¾“å…¥ç¼“å†²åŒºå¤§å°
     ULONG cbin = stack->Parameters.DeviceIoControl.InputBufferLength;
-    //µÃµ½Êä³ö»º³åÇø´óĞ¡
+    //å¾—åˆ°è¾“å‡ºç¼“å†²åŒºå¤§å°
     ULONG cbout = stack->Parameters.DeviceIoControl.OutputBufferLength;
-    //µÃµ½IOCTLÂë
+    //å¾—åˆ°IOCTLç 
     ULONG code = stack->Parameters.DeviceIoControl.IoControlCode;
+
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL,
+        "[DbgkSysWin11] IOCTL å¼€å§‹ï¼Œä»£ç =0x%08X åç§°=%s è¾“å…¥=%lu è¾“å‡º=%lu è¿›ç¨‹ ID=%lu\n",
+        code, IoctlName(code), cbin, cbout, HandleToULong(PsGetCurrentProcessId())));
+
+    if (pIrp->AssociatedIrp.SystemBuffer == NULL || cbin != sizeof(USER_DATA))
+    {
+        ntStatus = STATUS_INVALID_PARAMETER;
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
+            "[DbgkSysWin11] IOCTL æ‹’ç»ï¼šç¼“å†²è¾“å…¥æ— æ•ˆï¼Œåœ°å€=%p å¤§å°=%luï¼ŒæœŸæœ›è‡³å°‘=%zuï¼›åŸå› ï¼šè°ƒç”¨æ–¹æœªæä¾›å®Œæ•´çš„ METHOD_BUFFERED è¾“å…¥ï¼›è§£å†³æ–¹æ¡ˆï¼šæ£€æŸ¥ IOCTL ç»“æ„ä½“ç‰ˆæœ¬å’Œè¾“å…¥ç¼“å†²åŒºé•¿åº¦ã€‚\n",
+            pIrp->AssociatedIrp.SystemBuffer, cbin, sizeof(USER_DATA)));
+        goto complete;
+    }
+
+    PUSER_DATA requestData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
+    constexpr ULONG kMaximumPayload = 1024 * 1024;
+    if (requestData->uSize > kMaximumPayload ||
+        (requestData->uSize != 0 && requestData->pUserData == 0))
+    {
+        ntStatus = STATUS_INVALID_PARAMETER;
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
+            "[DbgkSysWin11] IOCTL å®¡è®¡æ‹’ç»ï¼šè´Ÿè½½é•¿åº¦=%luã€ç”¨æˆ·æŒ‡é’ˆ=%pï¼›å…è®¸ä¸Šé™=%luã€‚åŸå› ï¼šé•¿åº¦è¶Šç•Œæˆ–éé›¶è´Ÿè½½æ²¡æœ‰æŒ‡é’ˆï¼›è§£å†³æ–¹æ¡ˆï¼šä½¿ç”¨åŒ¹é…ç‰ˆæœ¬ DLLï¼ŒæŒ‰ USER_DATA æäº¤æœ‰æ•ˆåŠ å¯†ç¼“å†²åŒºã€‚\n",
+            requestData->uSize, (PVOID)requestData->pUserData, kMaximumPayload));
+        goto complete;
+    }
 
     switch (code)
     {
     case IOCTL_LOAD_SYMBOLS_TABLE:
+    case IOCTL_LOAD_SYMBOLS_TABLE_V2:
     {
-        //µ÷ÓÃÏß³ÌÀ´×ÔguiÏß³Ì
+        //è°ƒç”¨çº¿ç¨‹æ¥è‡ªguiçº¿ç¨‹
+        if (cbout < sizeof(DWORD))
+        {
+            ntStatus = STATUS_BUFFER_TOO_SMALL;
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
+                "[DbgkSysWin11] ç¬¦å·è¡¨ IOCTL æ‹’ç»ï¼šè¾“å‡ºç¼“å†²åŒº=%luï¼Œå°äº DWORDï¼›è§£å†³æ–¹æ¡ˆï¼šè°ƒç”¨æ–¹æä¾›è‡³å°‘ 4 å­—èŠ‚è¾“å‡ºç¼“å†²åŒºã€‚\n", cbout));
+            break;
+        }
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
-        InitSymbolsTable(userData, pIrp);
+        ntStatus = InitSymbolsTable(userData, pIrp);
         break;
     }
     case IOCTL_LOAD_DEBUGGER_STATE:
+    case IOCTL_LOAD_DEBUGGER_STATE_V2:
     {
         //PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         //InitDebuggerState((PDEBUGGER_STATE)userData->pUserData);
         break;
     }
     case IOCTL_LOAD_PROTECT_OBJ_DATA:
+    case IOCTL_LOAD_PROTECT_OBJ_DATA_V2:
     {
         //PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         //InitProtectList(userData, pIrp);
         break;
     }
     case IOCTL_LOAD_DEBUGGER_DATA:
+    case IOCTL_LOAD_DEBUGGER_DATA_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         InitDebuggerInfo(userData);
         break;
     }
     case IOCTL_CREATE_REMOTE_THREAD:
+    case IOCTL_CREATE_REMOTE_THREAD_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         CreateRemoteThread(userData);
         break;
     }
     case IOCTL_GET_PROCESS_INFO:
+    case IOCTL_GET_PROCESS_INFO_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         GetProcessInfo(userData, pIrp);
         break;
     }
     case IOCTL_TL_BLOCK_RESUME_THREAD:
+    case IOCTL_TL_BLOCK_RESUME_THREAD_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         TL_BlockGameResumeThread(userData, pIrp);
         break;
     }
     case IOCTL_SET_HARDWARE_BREAKPOINT:
+    case IOCTL_SET_HARDWARE_BREAKPOINT_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         SetHardwareBreakpoint(userData, pIrp);
         break;
     }
     case IOCTL_DEL_HARDWARE_BREAKPOINT:
+    case IOCTL_DEL_HARDWARE_BREAKPOINT_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         RemoveHardwareBreakpoint(userData, pIrp);
         break;
     }
     case IOCTL_SET_SOFTWARE_BREAKPOINT:
+    case IOCTL_SET_SOFTWARE_BREAKPOINT_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         SetSoftwareBreakpoint(userData, pIrp);
         break;
     }
     case IOCTL_DEL_SOFTWARE_BREAKPOINT:
+    case IOCTL_DEL_SOFTWARE_BREAKPOINT_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         RemoveSoftwareBreakpoint(userData, pIrp);
         break;
     }
     case IOCTL_READ_SOFTWARE_BREAKPOINT:
+    case IOCTL_READ_SOFTWARE_BREAKPOINT_V2:
     {
         PUSER_DATA userData = (PUSER_DATA)pIrp->AssociatedIrp.SystemBuffer;
         ReadSoftwareBreakpoint(userData, pIrp);
@@ -1177,14 +1315,19 @@ NTSTATUS HandlerDispatchRoutin(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
     }
     default:
     {
-        ntStatus = STATUS_INVALID_VARIANT;
+        ntStatus = STATUS_INVALID_DEVICE_REQUEST;
         break;
     }
     }
 
+complete:
     pIrp->IoStatus.Status = ntStatus;
-    pIrp->IoStatus.Information = cbout;
+    pIrp->IoStatus.Information = (code == IOCTL_LOAD_SYMBOLS_TABLE || code == IOCTL_LOAD_SYMBOLS_TABLE_V2) &&
+        NT_SUCCESS(ntStatus) ? sizeof(DWORD) : 0;
     IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, NT_SUCCESS(ntStatus) ? DPFLTR_INFO_LEVEL : DPFLTR_ERROR_LEVEL,
+        "[DbgkSysWin11] IOCTL å®Œæˆï¼Œä»£ç =0x%08X åç§°=%s çŠ¶æ€=0x%08Xï¼ˆ%sï¼‰ å®é™…è¿”å›å­—èŠ‚æ•°=%lu\n",
+        code, IoctlName(code), ntStatus, NtStatusExplanation(ntStatus), (ULONG)pIrp->IoStatus.Information));
     return ntStatus;
 }
 
@@ -1204,17 +1347,17 @@ void GetProcessInfo(IN PUSER_DATA userData, IN PIRP pIrp)
 {
     USER_DATA user = GetUserData(userData);
 
-    PRING3_PROCESS_INFO output = (PRING3_PROCESS_INFO)pIrp->AssociatedIrp.SystemBuffer;  //ÄÚºËµÄ»º³åÇø£¬ÊäÈëÊä³ö¶¼ÓÃµÄÕâ¸ö
+    PRING3_PROCESS_INFO output = (PRING3_PROCESS_INFO)pIrp->AssociatedIrp.SystemBuffer;  //å†…æ ¸çš„ç¼“å†²åŒºï¼Œè¾“å…¥è¾“å‡ºéƒ½ç”¨çš„è¿™ä¸ª
     RtlZeroMemory(output, sizeof(RING3_PROCESS_INFO));
 
-    //·ÖÅäÃ÷ÎÄ»º´æÇø
+    //åˆ†é…æ˜æ–‡ç¼“å­˜åŒº
     BYTE* aucPlainText = allocate_pool<BYTE*>(user.uSize);
     DecryptData((PVOID)user.pUserData, aucPlainText);
 
-    // ¼ÆËãÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹ÌåÊıÁ¿
+    // è®¡ç®—æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“æ•°é‡
     size_t numElements = user.uSize / sizeof(RING3_PROCESS_INFO);
 
-    // ±éÀúÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹Ìå
+    // éå†æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“
     for (size_t i = 0; i < numElements; i++)
     {
         PRING3_PROCESS_INFO pInfo = reinterpret_cast<PRING3_PROCESS_INFO>(aucPlainText + i * sizeof(RING3_PROCESS_INFO));
@@ -1248,17 +1391,17 @@ void TL_BlockGameResumeThread(IN PUSER_DATA userData, IN PIRP pIrp)
 {
     USER_DATA user = GetUserData(userData);
 
-    PRING3_TL_GAME_TABLE_ENTRY output = (PRING3_TL_GAME_TABLE_ENTRY)pIrp->AssociatedIrp.SystemBuffer;  //ÄÚºËµÄ»º³åÇø£¬ÊäÈëÊä³ö¶¼ÓÃµÄÕâ¸ö
+    PRING3_TL_GAME_TABLE_ENTRY output = (PRING3_TL_GAME_TABLE_ENTRY)pIrp->AssociatedIrp.SystemBuffer;  //å†…æ ¸çš„ç¼“å†²åŒºï¼Œè¾“å…¥è¾“å‡ºéƒ½ç”¨çš„è¿™ä¸ª
     RtlZeroMemory(output, sizeof(RING3_TL_GAME_TABLE_ENTRY));
 
-    //·ÖÅäÃ÷ÎÄ»º´æÇø
+    //åˆ†é…æ˜æ–‡ç¼“å­˜åŒº
     BYTE* aucPlainText = allocate_pool<BYTE*>(user.uSize);
     DecryptData((PVOID)user.pUserData, aucPlainText);
 
-    // ¼ÆËãÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹ÌåÊıÁ¿
+    // è®¡ç®—æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“æ•°é‡
     size_t numElements = user.uSize / sizeof(RING3_TL_GAME_TABLE_ENTRY);
 
-    // ±éÀúÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹Ìå
+    // éå†æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“
     for (size_t i = 0; i < numElements; i++)
     {
         PRING3_TL_GAME_TABLE_ENTRY pInfo = reinterpret_cast<PRING3_TL_GAME_TABLE_ENTRY>(aucPlainText + i * sizeof(RING3_TL_GAME_TABLE_ENTRY));
@@ -1274,14 +1417,14 @@ void TL_BlockGameResumeThread(IN PUSER_DATA userData, IN PIRP pIrp)
 
 void CreateRemoteThread(IN PUSER_DATA userData)
 {
-    //·ÖÅäÃ÷ÎÄ»º´æÇø
+    //åˆ†é…æ˜æ–‡ç¼“å­˜åŒº
     BYTE* aucPlainText = allocate_pool<BYTE*>(userData->uSize);
     DecryptData((PVOID)userData->pUserData, aucPlainText);
 
-    // ¼ÆËãÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹ÌåÊıÁ¿
+    // è®¡ç®—æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“æ•°é‡
     size_t numElements = userData->uSize / sizeof(RING3_REMOTE_THREAD);
 
-    // ±éÀúÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹Ìå
+    // éå†æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“
     for (size_t i = 0; i < numElements; i++)
     {
         PRING3_REMOTE_THREAD pInfo = reinterpret_cast<PRING3_REMOTE_THREAD>(aucPlainText + i * sizeof(RING3_REMOTE_THREAD));
@@ -1307,8 +1450,8 @@ void CreateRemoteThread(IN PUSER_DATA userData)
 //        fileData = CONTAINING_RECORD(NextEntry,
 //            FILEDATA,
 //            ProtectList);
-//        outLog("±£»¤µÄÎÄ¼şÃû: %wZ", fileData->fileName);
-//        outLog("±£»¤µÄÎÄ¼şÂ·¾¶: %wZ", fileData->filePath);
+//        outLog("ä¿æŠ¤çš„æ–‡ä»¶å: %wZ", fileData->fileName);
+//        outLog("ä¿æŠ¤çš„æ–‡ä»¶è·¯å¾„: %wZ", fileData->filePath);
 //
 //        /* Move to the next entry */
 //        NextEntry = NextEntry->Flink;
@@ -1356,7 +1499,7 @@ VOID InitFileList(PRING3_PROTECT_OBJECT pProtectObj)
             SubStr2 = (WCHAR*)MemAllocate(256 * sizeof(WCHAR), FALSE, TAG_PRO);
             fileData = (PFILEDATA)MemAllocate(sizeof(FILEDATA), FALSE, TAG_PRO);
 
-            sText = SplitString(sText, SubStr, '&');  //»ñÈ¡ÎÄ¼şÃû
+            sText = SplitString(sText, SubStr, '&');  //è·å–æ–‡ä»¶å
             if (StrIsValid(SubStr))
             {
                 RtlInitUnicodeString(&fileData->fileName, SubStr);
@@ -1364,7 +1507,7 @@ VOID InitFileList(PRING3_PROTECT_OBJECT pProtectObj)
             if (sText == NULL)
                 break;
 
-            sText = SplitString(sText, SubStr2, '%'); //»ñÈ¡ÎÄ¼şÂ·¾¶
+            sText = SplitString(sText, SubStr2, '%'); //è·å–æ–‡ä»¶è·¯å¾„
             if (StrIsValid(SubStr2))
             {
                 RtlInitUnicodeString(&fileData->filePath, SubStr2);
@@ -1378,7 +1521,7 @@ VOID InitFileList(PRING3_PROTECT_OBJECT pProtectObj)
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        outLog("³õÊ¼»¯ÎÄ¼şÁĞ±í ±ÀÀ£.");
+        outLog("åˆå§‹åŒ–æ–‡ä»¶åˆ—è¡¨å´©æºƒï¼›è¯·æ£€æŸ¥ä¿æŠ¤åˆ—è¡¨æ•°æ®æ ¼å¼å’Œå†…æ ¸å†…å­˜æ± ã€‚");
     }
 }
 
@@ -1400,7 +1543,7 @@ VOID InitWindowList(PRING3_PROTECT_OBJECT pProtectObj)
             SubStr = (WCHAR*)MemAllocate(256 * sizeof(WCHAR), FALSE, TAG_PRO);
             fileData = (PWINDOW_DATA)MemAllocate(sizeof(WINDOW_DATA), FALSE, TAG_PRO);
 
-            sText = SplitString(sText, SubStr, '&');  //»ñÈ¡´°¿Ú±êÌâ»òÀàÃû
+            sText = SplitString(sText, SubStr, '&');  //è·å–çª—å£æ ‡é¢˜æˆ–ç±»å
             if (StrIsValid(SubStr))
             {
                 RtlInitUnicodeString(&fileData->WindowName, SubStr);
@@ -1413,28 +1556,28 @@ VOID InitWindowList(PRING3_PROTECT_OBJECT pProtectObj)
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        outLog("³õÊ¼»¯´°¿ÚÁĞ±í ±ÀÀ£.");
+        outLog("åˆå§‹åŒ–çª—å£åˆ—è¡¨å´©æºƒï¼›è¯·æ£€æŸ¥çª—å£åˆ—è¡¨æ•°æ®æ ¼å¼å’Œå†…æ ¸å†…å­˜æ± ã€‚");
     }
 }
 
 
-//³õÊ¼»¯±£»¤ÁĞ±í
+//åˆå§‹åŒ–ä¿æŠ¤åˆ—è¡¨
 VOID InitProtectList(IN PUSER_DATA userData, IN PIRP pIrp)
 {
 
     USER_DATA user = GetUserData(userData);
 
-    PRING3_PROTECT_OBJECT output = (PRING3_PROTECT_OBJECT)pIrp->AssociatedIrp.SystemBuffer;  //ÄÚºËµÄ»º³åÇø£¬ÊäÈëÊä³ö¶¼ÓÃµÄÕâ¸ö
+    PRING3_PROTECT_OBJECT output = (PRING3_PROTECT_OBJECT)pIrp->AssociatedIrp.SystemBuffer;  //å†…æ ¸çš„ç¼“å†²åŒºï¼Œè¾“å…¥è¾“å‡ºéƒ½ç”¨çš„è¿™ä¸ª
     RtlZeroMemory(output, sizeof(RING3_PROTECT_OBJECT));
 
-    //·ÖÅäÃ÷ÎÄ»º´æÇø
+    //åˆ†é…æ˜æ–‡ç¼“å­˜åŒº
     BYTE* aucPlainText = allocate_pool<BYTE*>(user.uSize);
     DecryptData((PVOID)user.pUserData, aucPlainText);
 
-    // ¼ÆËãÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹ÌåÊıÁ¿
+    // è®¡ç®—æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“æ•°é‡
     size_t numElements = user.uSize / sizeof(RING3_PROTECT_OBJECT);
 
-    // ±éÀúÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹Ìå
+    // éå†æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“
     for (size_t i = 0; i < numElements; i++)
     {
         PRING3_PROTECT_OBJECT pInfo = reinterpret_cast<PRING3_PROTECT_OBJECT>(aucPlainText + i * sizeof(RING3_PROTECT_OBJECT));
@@ -1464,14 +1607,14 @@ VOID InitProtectList(IN PUSER_DATA userData, IN PIRP pIrp)
 
 VOID InitDebuggerInfo(IN PUSER_DATA userData)
 {
-    //·ÖÅäÃ÷ÎÄ»º´æÇø
+    //åˆ†é…æ˜æ–‡ç¼“å­˜åŒº
     BYTE* aucPlainText = allocate_pool<BYTE*>(userData->uSize);
     DecryptData((PVOID)userData->pUserData, aucPlainText);
 
-    // ¼ÆËãÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹ÌåÊıÁ¿
+    // è®¡ç®—æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“æ•°é‡
     size_t numElements = userData->uSize / sizeof(RING3_DEBUGGER_TABLE_ENTRY);
 
-    // ±éÀúÃ÷ÎÄ»º³åÇøÖĞµÄ½á¹¹Ìå
+    // éå†æ˜æ–‡ç¼“å†²åŒºä¸­çš„ç»“æ„ä½“
     for (size_t i = 0; i < numElements; i++)
     {
         PRING3_DEBUGGER_TABLE_ENTRY pInfo = reinterpret_cast<PRING3_DEBUGGER_TABLE_ENTRY>(aucPlainText + i * sizeof(RING3_DEBUGGER_TABLE_ENTRY));
@@ -1644,7 +1787,7 @@ VOID InitGlobalVariable(PDRIVER_OBJECT DriverObject)
 //        {
 //            _interlockedbittestandset((LONG*)(&CurrentProcess->Flags2), 15u);
 //        }
-//        //½«Ïß³Ì²åÈëµ½½ø³ÌµÄÏß³ÌÁĞ±í
+//        //å°†çº¿ç¨‹æ’å…¥åˆ°è¿›ç¨‹çš„çº¿ç¨‹åˆ—è¡¨
 //        InsertTailList(&CurrentProcess->ThreadListHead, &Thread->ThreadListEntry);
 //
 //        if (CurrentProcess->Pcb.InstrumentationCallback)
@@ -1853,7 +1996,7 @@ VOID InitGlobalVariable(PDRIVER_OBJECT DriverObject)
 //                            if (Processa)
 //                            {
 //                                ProcessCallBackEx = (PCREATE_PROCESS_NOTIFY_ROUTINE_EX)ExGetCallBackBlockRoutine(CallBack);
-//                                //µ÷ÓÃ½ø³ÌÍ¨Öª»Øµ÷
+//                                //è°ƒç”¨è¿›ç¨‹é€šçŸ¥å›è°ƒ
 //                                ProcessCallBackEx((PEPROCESS)CurrentProcess,
 //                                    CurrentProcess->UniqueProcessId,
 //                                    pCreateInfo);
@@ -1862,7 +2005,7 @@ VOID InitGlobalVariable(PDRIVER_OBJECT DriverObject)
 //                        else
 //                        {
 //                            ProcessCallBack = (PCREATE_PROCESS_NOTIFY_ROUTINE)ExGetCallBackBlockRoutine(CallBack);
-//                            //µ÷ÓÃ½ø³ÌÍ¨Öª»Øµ÷
+//                            //è°ƒç”¨è¿›ç¨‹é€šçŸ¥å›è°ƒ
 //                            ProcessCallBack(CurrentProcess->InheritedFromUniqueProcessId,
 //                                CurrentProcess->UniqueProcessId,
 //                                TRUE);
@@ -2088,10 +2231,10 @@ NTSTATUS NtCreateThreadEx(unsigned __int64 a1,
 
     //if (PsGetCurrentProcessId() == (HANDLE)6480)
     //{
-    //    _disable(); //¹ØÖĞ¶Ï
+    //    _disable(); //å…³ä¸­æ–­
     //    game_cr3 = __readcr3();
     //    *(ULONG64*)((UCHAR*)PsGetCurrentProcess() + 0x28) = game_cr3;
-    //    _enable();  //¿ªÖĞ¶Ï
+    //    _enable();  //å¼€ä¸­æ–­
     //}
 
     ASSERT(Original_NtCreateThreadEx);
@@ -2164,7 +2307,7 @@ VOID InsertVirtualHandleList(PVIRTUAL_HANDLE_TABLE_ENTRY entry)
 VOID CreateVirtualHandleTable(PCLIENT_ID ClientId, _EPROCESS* Process)
 {
     PVIRTUAL_HANDLE_TABLE_ENTRY entry = allocate_pool<VIRTUAL_HANDLE_TABLE_ENTRY>();
-    entry->id = 0x8bf13889f4bc9949;  //VIRTUAL_HANDLE_TABLE md5¹şÏ£ÕªÒª
+    entry->id = 0x8bf13889f4bc9949;  //VIRTUAL_HANDLE_TABLE md5å“ˆå¸Œæ‘˜è¦
     entry->handle = ClientId->UniqueProcess;
     entry->UniqueProcessId = ClientId->UniqueProcess;
     entry->Object = Process;
@@ -2301,8 +2444,8 @@ NTSTATUS NewObReferenceObjectByHandleWithTag(HANDLE Handle,
     return Original_ObReferenceObjectByHandleWithTag(Handle, DesiredAccess, ObjectType, AccessMode, a5, Object, a7);
 }
 
-//ObReferenceObjectByHandleÓëObReferenceObjectByHandleWithTagº¯ÊıÄÚ²¿
-//¶¼µ÷ÓÃµÄObpReferenceObjectByHandleWithTag
+//ObReferenceObjectByHandleä¸ObReferenceObjectByHandleWithTagå‡½æ•°å†…éƒ¨
+//éƒ½è°ƒç”¨çš„ObpReferenceObjectByHandleWithTag
 NTSTATUS NewObpReferenceObjectByHandleWithTag(HANDLE Handle,
     ACCESS_MASK DesiredAccess,
     POBJECT_TYPE ObjectType,
@@ -2312,7 +2455,7 @@ NTSTATUS NewObpReferenceObjectByHandleWithTag(HANDLE Handle,
     POBJECT_HANDLE_INFORMATION HandleInformation,
     __int64 a8)
 {
-    //ÅĞ¶ÏÊÇ·ñÎªÎÒÃÇ×ÔÉí½ø³Ìµ÷ÓÃ
+    //åˆ¤æ–­æ˜¯å¦ä¸ºæˆ‘ä»¬è‡ªèº«è¿›ç¨‹è°ƒç”¨
     if (IsDebugger(PsGetCurrentProcess()) /* &&
     (ObjectType == *PsProcessType)*/)
     {
@@ -2322,13 +2465,13 @@ NTSTATUS NewObpReferenceObjectByHandleWithTag(HANDLE Handle,
     NTSTATUS ntStatus = Original_ObpReferenceObjectByHandleWithTag(Handle, DesiredAccess, ObjectType, AccessMode, Tag, Object, HandleInformation, a8);
     if (NT_SUCCESS(ntStatus) && (ObjectType == *PsProcessType))
     {        
-        // ÅĞ¶Ïµ±Ç°µ÷ÓÃÕßÊÇ·ñÊÇµ÷ÊÔÆ÷½ø³Ì
+        // åˆ¤æ–­å½“å‰è°ƒç”¨è€…æ˜¯å¦æ˜¯è°ƒè¯•å™¨è¿›ç¨‹
         if (!IsDebugger(PsGetCurrentProcess()))
         {
-            //ÅĞ¶Ï·ÃÎÊµÄ¶ÔÏóÊÇ·ñÊÇÎÒÃÇµÄµ÷ÊÔÆ÷
+            //åˆ¤æ–­è®¿é—®çš„å¯¹è±¡æ˜¯å¦æ˜¯æˆ‘ä»¬çš„è°ƒè¯•å™¨
             if (IsDebugger(*(PEPROCESS*)Object))
             {
-                //»ñÈ¡µ±Ç°µ÷ÓÃ½ø³Ì
+                //è·å–å½“å‰è°ƒç”¨è¿›ç¨‹
                 WCHAR SubStr[256] = { 0 };
                 UNICODE_STRING ImageFileName, PassImage;
                 NTSTATUS Status = GetProcessName(PsGetCurrentProcess(), &SubStr[0]);
@@ -2340,7 +2483,7 @@ NTSTATUS NewObpReferenceObjectByHandleWithTag(HANDLE Handle,
                         RtlInitUnicodeString(&PassImage, PassProcessList[i]);
                         if (RtlEqualUnicodeString(&ImageFileName, &PassImage, TRUE))
                         {
-                            //·¢ÏÖÊÇ°×Ãûµ¥½ø³Ì¾Í·ÅĞĞ
+                            //å‘ç°æ˜¯ç™½åå•è¿›ç¨‹å°±æ”¾è¡Œ
                             goto pass;
                         }
                     }
@@ -2364,8 +2507,8 @@ LONG_PTR NewObfDereferenceObject(
     {
         //POBJECT_HEADER ObjectHeader;
         //ObjectHeader = OBJECT_TO_OBJECT_HEADER(Object);
-        //outLog("Ö¸Õë¼ÆÊı: %d", ObjectHeader->PointerCount);
-        //outLog("¾ä±ú¼ÆÊı: %d", ObjectHeader->HandleCount);
+        //outLog("æŒ‡é’ˆè®¡æ•°: %d", ObjectHeader->PointerCount);
+        //outLog("å¥æŸ„è®¡æ•°: %d", ObjectHeader->HandleCount);
         VIRTUAL_HANDLE_TABLE_ENTRY handle_table = { 0 };
         NTSTATUS status = GetVirtualHandleTableByObject(Object, &handle_table);
         if (NT_SUCCESS(status))
@@ -2386,8 +2529,8 @@ LONG_PTR NewObfDereferenceObjectWithTag(
     {
         //POBJECT_HEADER ObjectHeader;
         //ObjectHeader = OBJECT_TO_OBJECT_HEADER(Object);
-        //outLog("Ö¸Õë¼ÆÊı: %d", ObjectHeader->PointerCount);
-        //outLog("¾ä±ú¼ÆÊı: %d", ObjectHeader->HandleCount);
+        //outLog("æŒ‡é’ˆè®¡æ•°: %d", ObjectHeader->PointerCount);
+        //outLog("å¥æŸ„è®¡æ•°: %d", ObjectHeader->HandleCount);
         VIRTUAL_HANDLE_TABLE_ENTRY handle_table = { 0 };
         NTSTATUS status = GetVirtualHandleTableByObject(Object, &handle_table);
         if (NT_SUCCESS(status))
@@ -2430,21 +2573,21 @@ NTSTATUS NewNtOpenProcess(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJ
 //            //    ObDereferenceObject(Process);
 //            //}
 //
-//            ////½«Ä¿±ê½ø³ÌµÄpid×÷ÎªĞéÄâ¾ä±ú·µ»Ø
+//            ////å°†ç›®æ ‡è¿›ç¨‹çš„pidä½œä¸ºè™šæ‹Ÿå¥æŸ„è¿”å›
 //            //*ProcessHandle = ClientId->UniqueProcess;
 //            //return STATUS_SUCCESS;
 //        }
 //        else
 //        {
-//            outLog("PsLookupProcessByProcessId Ê§°Ü.");
+//            outLog("PsLookupProcessByProcessId å¤±è´¥ï¼›åŸå› ï¼šç›®æ ‡ç¬¦å·åœ°å€æ— æ•ˆã€çŠ¶æ€ä¸åŒ¹é…æˆ–èµ„æºä¸è¶³ï¼›è§£å†³æ–¹æ¡ˆï¼šæ£€æŸ¥åŒ¹é…ç‰ˆæœ¬çš„ç¬¦å·è¡¨ã€é©±åŠ¨çŠ¶æ€å’Œå†…å­˜æ± åé‡è¯•ã€‚");
 //        }
     }
     return Original_NtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
 }
 
-//Èç¹ûApcFuncµ÷ÓÃµÄÊÇLdrInitializeThunkÔò
-//a4ÊÇContextRecord
-//a5ÊÇntdllÄ£¿é»ùÖ·
+//å¦‚æœApcFuncè°ƒç”¨çš„æ˜¯LdrInitializeThunkåˆ™
+//a4æ˜¯ContextRecord
+//a5æ˜¯ntdllæ¨¡å—åŸºå€
 VOID NewPspCreateUserContext(_CONTEXT* context,
     char a2,
     PVOID ApcFunc,
@@ -2466,7 +2609,7 @@ VOID NewPspCallThreadNotifyRoutines(_ETHREAD* Thread, BOOLEAN Create, BOOLEAN a3
     //DbgBreakPoint();
     if (IsDebugger(PsGetCurrentProcess()))
     {
-        //ÊÇÎÒÃÇ×Ô¼ºµÄµ÷ÊÔÆ÷Òª´´½¨Ïß³Ì£¬ÔòÖ±½Ó·µ»Ø²»×ßÏß³Ì»Øµ÷
+        //æ˜¯æˆ‘ä»¬è‡ªå·±çš„è°ƒè¯•å™¨è¦åˆ›å»ºçº¿ç¨‹ï¼Œåˆ™ç›´æ¥è¿”å›ä¸èµ°çº¿ç¨‹å›è°ƒ
         return;
     }
     Original_PspCallThreadNotifyRoutines(Thread, Create, a3);
@@ -2499,11 +2642,11 @@ PMMVAD MiObtainReferencedVadEx(PVOID StartingAddress, char a2, PNTSTATUS status)
                 //*(unsigned long*)ptr_LongFlags = 0x3A0;
                 g_ptrLongFlags = ptr_LongFlags;
             }
-            //if (LongFlags & 8)  //ÅĞ¶Ïbit3 NoChangeÊÇ·ñ±»ÉèÖÃ
+            //if (LongFlags & 8)  //åˆ¤æ–­bit3 NoChangeæ˜¯å¦è¢«è®¾ç½®
             //{
-            //    //Èç¹ûVadFlags.NoChange±»ÉèÖÃÔò½«Æä¹Ø±Õ
-            //    unsigned long mask = ~(1UL << 3);  // ´´½¨ÑÚÂë£¬bit3Îª0£¬ÆäËûÎ»Îª1
-            //    LongFlags &= mask;  // ½«bit3ÉèÖÃÎª0
+            //    //å¦‚æœVadFlags.NoChangeè¢«è®¾ç½®åˆ™å°†å…¶å…³é—­
+            //    unsigned long mask = ~(1UL << 3);  // åˆ›å»ºæ©ç ï¼Œbit3ä¸º0ï¼Œå…¶ä»–ä½ä¸º1
+            //    LongFlags &= mask;  // å°†bit3è®¾ç½®ä¸º0
             //    *(unsigned long*)ptr_LongFlags = LongFlags;
             //}
         }
@@ -2533,7 +2676,7 @@ NTSTATUS MmProtectVirtualMemory(_EPROCESS* sourceProcess,
                     *(unsigned long*)g_ptrLongFlags = 0x3A0;
 
                     status = Original_MmProtectVirtualMemory(sourceProcess, TargetProcess, BaseAddress, RegionSize, NewProtectWin32, LastProtect);
-                    //»¹Ô­
+                    //è¿˜åŸ
                     *(unsigned long*)g_ptrLongFlags = 0x188;
                     g_ptrLongFlags = NULL;
                 }
@@ -2552,7 +2695,7 @@ NewKeStackAttachProcess(
 {
     if (IsDebugger((PEPROCESS)PROCESS))
     {
-        //»ñÈ¡µ±Ç°µ÷ÓÃ½ø³Ì
+        //è·å–å½“å‰è°ƒç”¨è¿›ç¨‹
         WCHAR SubStr[256] = { 0 };
         UNICODE_STRING ImageFileName, PassImage;
         NTSTATUS Status = GetProcessName(PsGetCurrentProcess(), &SubStr[0]);
@@ -2564,7 +2707,7 @@ NewKeStackAttachProcess(
                 RtlInitUnicodeString(&PassImage, PassProcessList[i]);
                 if (RtlEqualUnicodeString(&ImageFileName, &PassImage, TRUE))
                 {
-                    //·¢ÏÖÊÇ°×Ãûµ¥½ø³Ì¾Í·ÅĞĞ
+                    //å‘ç°æ˜¯ç™½åå•è¿›ç¨‹å°±æ”¾è¡Œ
                     goto pass;
                 }
             }
@@ -2581,7 +2724,7 @@ VOID NewKiStackAttachProcess(_KPROCESS* Process, BOOLEAN a2, _KAPC_STATE* ApcSta
 {
     if (IsDebugger((PEPROCESS)Process))
     {
-        //»ñÈ¡µ±Ç°µ÷ÓÃ½ø³Ì
+        //è·å–å½“å‰è°ƒç”¨è¿›ç¨‹
         WCHAR SubStr[256] = { 0 };
         UNICODE_STRING ImageFileName, PassImage;
         NTSTATUS Status = GetProcessName(PsGetCurrentProcess(), &SubStr[0]);
@@ -2593,7 +2736,7 @@ VOID NewKiStackAttachProcess(_KPROCESS* Process, BOOLEAN a2, _KAPC_STATE* ApcSta
                 RtlInitUnicodeString(&PassImage, PassProcessList[i]);
                 if (RtlEqualUnicodeString(&ImageFileName, &PassImage, TRUE))
                 {
-                    //·¢ÏÖÊÇ°×Ãûµ¥½ø³Ì¾Í·ÅĞĞ
+                    //å‘ç°æ˜¯ç™½åå•è¿›ç¨‹å°±æ”¾è¡Œ
                     goto pass;
                 }
             }
@@ -2621,9 +2764,9 @@ NewNtTerminateProcess(
         NULL);
     if (NT_SUCCESS(Status))
     {
-        //DbgPrint("ÒªÖÕÖ¹µÄ½ø³Ì:\n");
+        //DbgPrint("è¦ç»ˆæ­¢çš„è¿›ç¨‹:\n");
         //PrintProcessName(Process);
-        //DbgPrint("µ±Ç°½ø³Ì:\n");
+        //DbgPrint("å½“å‰è¿›ç¨‹:\n");
         //PrintProcessName((_EPROCESS*)PsGetCurrentProcess());
 
         ObDereferenceObject(Process);
@@ -2667,7 +2810,7 @@ NewNtSuspendThread(
                         if (RtlEqualUnicodeString(&ImageFileName, &PassImage, TRUE))
                         {
                             size_t ptr_SuspendCount = (size_t)Thread + kthread_offset::SuspendCount;
-                            DbgPrint("ptr_SuspendCount: %p    CurrentSuspendCount: %d\n", ptr_SuspendCount, *(char*)ptr_SuspendCount);
+                            DbgPrint("SuspendCount åœ°å€ï¼š%pï¼›å½“å‰æŒ‚èµ·è®¡æ•°ï¼š%d\n", ptr_SuspendCount, *(char*)ptr_SuspendCount);
                             //DbgPrint("ntStatus: %x    PreviousSuspendCount: %d\n", ntStatus, *PreviousSuspendCount);
                         }
                     }
@@ -2700,7 +2843,7 @@ NewNtResumeThread(
     //    RtlInitUnicodeString(&PassImage, L"TL.exe");
     //    if (RtlEqualUnicodeString(&ImageFileName, &PassImage, TRUE))
     //    {
-    //        DbgPrint("µ±Ç°µ÷ÓÃÕßÊÇTL  µ±Ç°µ÷ÓÃÏß³Ì: %d", PsGetCurrentThreadId());
+    //        DbgPrint("å½“å‰è°ƒç”¨è€…æ˜¯TL  å½“å‰è°ƒç”¨çº¿ç¨‹: %d", PsGetCurrentThreadId());
     //        //return STATUS_SUCCESS;
     //    }
     //}
@@ -2708,8 +2851,8 @@ NewNtResumeThread(
 
     if (PsGetCurrentProcessId() == (HANDLE)g_TL_Game_pid)
     {
-        //×èÖ¹TL Game»Ö¸´ÓÎÏ·Ïß³Ì
-        DbgPrint("µ±Ç°µ÷ÓÃÕßÊÇTL  µ±Ç°µ÷ÓÃÏß³Ì: %d", PsGetCurrentThreadId());
+        //é˜»æ­¢TL Gameæ¢å¤æ¸¸æˆçº¿ç¨‹
+        DbgPrint("å½“å‰è°ƒç”¨è€…æ˜¯TL  å½“å‰è°ƒç”¨çº¿ç¨‹: %d", PsGetCurrentThreadId());
         return STATUS_SUCCESS;
     }
 
@@ -2781,14 +2924,14 @@ HANDLE NewNtUserQueryWindow(
     IN HWND hwnd,
     IN WINDOWINFOCLASS WindowInfo)
 {
-    ////ÅĞ¶Ïµ±Ç°µ÷ÓÃÕßÊÇ·ñÊÇµ÷ÊÔÆ÷½ø³Ì
+    ////åˆ¤æ–­å½“å‰è°ƒç”¨è€…æ˜¯å¦æ˜¯è°ƒè¯•å™¨è¿›ç¨‹
     //if (!IsDebugger(PsGetCurrentProcess()))
     //{
-    //    //¸ù¾İ´°¿Ú¾ä±ú»ñµÃ´°¿Ú¶ÔÏó
+    //    //æ ¹æ®çª—å£å¥æŸ„è·å¾—çª—å£å¯¹è±¡
     //    PWND pwnd = Sys_ValidateHwnd(hwnd);
     //    if (pwnd)
     //    {
-    //        //¸ù¾İÏß³Ì¶ÔÏó»ñµÃ½ø³Ì¶ÔÏó
+    //        //æ ¹æ®çº¿ç¨‹å¯¹è±¡è·å¾—è¿›ç¨‹å¯¹è±¡
     //        PsGetThreadProcess((PETHREAD)pwnd->head.pti->pEThread);
     //    }
     //}
@@ -2799,6 +2942,6 @@ HANDLE NewNtUserQueryWindow(
 VOID PrintProcessName(_EPROCESS* Process)
 {
     size_t ptr_ImageFileName = (size_t)Process + eprocess_offset::ImageFileName;
-    //outLog("´òÓ¡½ø³ÌÃû: %s", ptr_ImageFileName);
-    DbgPrint("´òÓ¡½ø³ÌÃû: %s  pid: %d\n", ptr_ImageFileName, PsGetProcessId((PEPROCESS)Process));
+    //outLog("æ‰“å°è¿›ç¨‹å: %s", ptr_ImageFileName);
+    DbgPrint("æ‰“å°è¿›ç¨‹å: %s  pid: %d\n", ptr_ImageFileName, PsGetProcessId((PEPROCESS)Process));
 }

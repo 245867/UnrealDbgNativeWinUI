@@ -1,4 +1,4 @@
-#include "Driver.h"
+﻿#include "Driver.h"
 #include "poolmanager.h"
 #include "Globals.h"
 #include "cpuid.h"
@@ -11,6 +11,7 @@
 #include "crx.h"
 #include "hypervisor_routines.h"
 #include "vmm.h"
+#include "hypervisor_gateway.h"
 
 EXTERN_C void vmx_save_state();
 
@@ -23,6 +24,7 @@ void free_vmm_context()
 		{
 			pool_manager::uninitialize();
 			free_pool(g_vmm_context.pool_manager);
+			g_vmm_context.pool_manager = nullptr;
 		}
 
 		// VCPU TABLE
@@ -72,7 +74,9 @@ void free_vmm_context()
 				}
 			}
 			free_pool(g_vmm_context.vcpu);
+			g_vmm_context.vcpu = nullptr;
 		}
+		g_vmm_context.processor_count = 0;
 
 		//free_pool(g_vmm_context);
 	}
@@ -80,36 +84,41 @@ void free_vmm_context()
 	//g_vmm_context = nullptr;
 }
 
-//����g_vmm_context������
+//分配g_vmm_context上下文
 bool allocate_vmm_context()
 {
 	__cpuid_info cpuid_reg = { 0 };
 
 	//
 	// Allocate virtual cpu context for every logical core
-	// Ϊÿ���߼��������������� CPU ������
+	// 为每个逻辑处理器分配虚拟 CPU 上下文
 	//
 	//g_vmm_context.processor_count = KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 	g_vmm_context.processor_count = KeQueryActiveProcessorCount(NULL);
+	if (g_vmm_context.processor_count == 0 || g_vmm_context.processor_count > 64)
+	{
+		outDebug("当前处理器组包含 %u 个逻辑处理器；此 VMM 使用 64 位亲和掩码，无法安全覆盖超过 64 个处理器；解决方案：在单组不超过 64 个逻辑处理器的测试环境运行，或迁移到处理器组 API。\n", g_vmm_context.processor_count);
+		return false;
+	}
 	auto const arr_size = sizeof(__vcpu) * g_vmm_context.processor_count;
 	g_vmm_context.vcpu = allocate_pool<__vcpu*>(arr_size);
 	if (g_vmm_context.vcpu == nullptr)
 	{
-		outDebug("vcpu_table could not be allocated");
+		outDebug("无法分配 VCPU 表；原因：非分页内存池不足；解决方案：释放资源并重试。");
 		return false;
 	}
 	RtlSecureZeroMemory(g_vmm_context.vcpu, arr_size);
 
 	//
 	// Build mtrr map for physcial memory caching informations
-	// ���� mtrr ӳ�����洢�����ڴ滺����Ϣ
+	// 构建 mtrr 映射来存储物理内存缓存信息
 	//
 	ept::build_mtrr_map();
 
-	//��ǰ��guest��������ڴ�
+	//提前在guest里分配了内存
 	if (pool_manager::initialize() == false)
 	{
-		outDebug("Ԥ�����ڴ�ʧ��!\n");
+		outDebug("预分配内存失败；原因：非分页内存池不足；解决方案：减少预分配数量后重试。\n");
 		return false;
 	}
 
@@ -117,7 +126,7 @@ bool allocate_vmm_context()
 	{
 		if (init_vcpu(&g_vmm_context.vcpu[iter]) == false)
 		{
-			outDebug("init_vcpuʧ��!\n");
+			outDebug("初始化 VCPU 失败；原因：VCPU 结构或 VMX 状态初始化失败；解决方案：检查虚拟化支持和内存池。\n");
 			return false;
 		}			
 	}
@@ -127,14 +136,14 @@ bool allocate_vmm_context()
 	__cpuid((int*)&cpuid_reg.eax, 0);
 	g_vmm_context.highest_basic_leaf = cpuid_reg.eax;
 
-	//����hostҳ��
-	//�����������ڴ�ӳ�䵽���ǵĵ�ַ�ռ�
+	//创建host页表
+	//将所有物理内存映射到我们的地址空间
 	create_host_page_tables();
 
 	return true;
 }
 
-//����vcpu�ṹ�ڴ�
+//分配vcpu结构内存
 bool init_vcpu(__vcpu* vcpu)
 {
 
@@ -149,7 +158,7 @@ bool init_vcpu(__vcpu* vcpu)
 	vcpu->vcpu_bitmaps.io_bitmap_a = allocate_pool<unsigned __int8*>(PAGE_SIZE);
 	if (vcpu->vcpu_bitmaps.io_bitmap_a == nullptr)
 	{
-		outDebug("io bitmap a could not be allocated");
+		outDebug("无法分配 I/O 位图 A；原因：非分页内存池不足；解决方案：释放资源并重试。");
 		return false;
 	}
 	RtlSecureZeroMemory(vcpu->vcpu_bitmaps.io_bitmap_a, PAGE_SIZE);
@@ -158,7 +167,7 @@ bool init_vcpu(__vcpu* vcpu)
 	vcpu->vcpu_bitmaps.io_bitmap_b = allocate_pool<unsigned __int8*>(PAGE_SIZE);
 	if (vcpu->vcpu_bitmaps.io_bitmap_b == nullptr)
 	{
-		outDebug("io bitmap b could not be allocated");
+		outDebug("无法分配 I/O 位图 B；原因：非分页内存池不足；解决方案：释放资源并重试。");
 		return false;
 	}
 	RtlSecureZeroMemory(vcpu->vcpu_bitmaps.io_bitmap_b, PAGE_SIZE);
@@ -170,7 +179,7 @@ bool init_vcpu(__vcpu* vcpu)
 	vcpu->ept_state = allocate_pool<__ept_state>();
 	if (vcpu->ept_state == nullptr)
 	{
-		outDebug("ept state could not be allocated");
+		outDebug("无法分配 EPT 状态；原因：非分页内存池不足；解决方案：释放资源并重试。");
 		return false;
 	}
 	RtlSecureZeroMemory(vcpu->ept_state, sizeof(__ept_state));
@@ -182,20 +191,20 @@ bool init_vcpu(__vcpu* vcpu)
 
 	//
 	// Initialize ept structure
-	// ��ʼ�� ept �ṹ
+	// 初始化 ept 结构
 	//
 	if (ept::initialize(*vcpu->ept_state) == false)
 	{
-		outDebug("��ʼ�� ept �ṹʧ��!\n");
+		outDebug("初始化 EPT 结构失败；原因：页表建立失败；解决方案：检查 MTRR 和系统内存后重试。\n");
 		return false;
 	}
 
-	outDebug("vcpu entry allocated successfully at %llX", vcpu);
+	outDebug("VCPU 条目分配成功，地址=%llX", vcpu);
 
 	return true;
 }
 
-//����vmxon����
+//分配vmxon区域
 bool init_vmxon(__vcpu* vcpu)
 {
 	//__vmx_basic_msr vmx_basic = { 0 };
@@ -240,7 +249,7 @@ bool init_vmxon(__vcpu* vcpu)
 	return true;
 }
 
-//����vmcs����
+//分配vmcs区域
 bool init_vmcs(__vcpu* vcpu)
 {
 	//__vmx_basic_msr vmx_basic = { 0 };
@@ -272,7 +281,7 @@ bool init_vmcs(__vcpu* vcpu)
 	return true;
 }
 
-//���ڿ��ƼĴ��� cr4 cr0������vmxģʽ
+//调节控制寄存器 cr4 cr0来启用vmx模式
 void adjust_control_registers()
 {
 	__cr4 cr4;
@@ -294,7 +303,7 @@ void adjust_control_registers()
 	__writecr4(cr4.all);
 	_enable();
 
-	//����IA32_FEATURE_CONTROL�Ĵ�����bit0 bit2֧�ֿ���vmxģʽ
+	//设置IA32_FEATURE_CONTROL寄存器的bit0 bit2支持开启vmx模式
 	__ia32_feature_control_msr feature_msr = { 0 };
 	feature_msr.all = __readmsr(IA32_FEATURE_CONTROL);
 
@@ -307,7 +316,7 @@ void adjust_control_registers()
 	}
 }
 
-//��ʼ���߼���������������ǰvmcs�����������
+//初始化逻辑处理器并启动当前vmcs管理的虚拟机
 bool init_logical_processor(unsigned int iter)
 {
 	//DbgBreakPoint();
@@ -315,45 +324,49 @@ bool init_logical_processor(unsigned int iter)
 
 	__vcpu* vcpu = &g_vmm_context.vcpu[processor_number];
 
-	//���ڿ��ƼĴ��� cr4 cr0������vmxģʽ
+	//调节控制寄存器 cr4 cr0来启用vmx模式
 	adjust_control_registers();
 
-	if (!hv::enter_vmx_operation(vcpu->vmxon))  //����vmxģʽ
+	if (!hv::enter_vmx_operation(vcpu->vmxon))  //进入vmx模式
 	{
-		LogError("Failed to put vcpu %d into VMX operation.\n", processor_number);
+		LogError("VCPU %d 进入 VMX 操作失败；原因：VMXON 区域无效或处理器拒绝进入虚拟化；解决方案：确认 BIOS 已启用 VT-x，并检查之前的虚拟化实例。\n", processor_number);
 		return false;
 	}
 
 
 	if (!hv::load_vmcs_pointer(vcpu->vmcs))
 	{
-		LogError("load_vmcs_pointerʧ��.\n", processor_number);
+		LogError("加载 VMCS 指针失败；原因：VMCS 区域未初始化或物理地址无效；解决方案：重新初始化 VMM 后重试。\n", processor_number);
+		// VMXON succeeded but VMCS setup failed.  Leave VMX root mode before
+		// returning so a later unload/retry cannot operate on a stale context.
+		__vmx_off();
+		vcpu->vcpu_status.vmx_on = false;
 		return false;
 	}
 
-	//����host��idt��gdt
+	//创建host的idt和gdt
 	hv::prepare_external_structures(vcpu);
 	vcpu->vcpu_status.vmx_on = true;
-	LogInfo("vcpu %d is now in VMX operation.\n", processor_number);
+	LogInfo("VCPU %d 已进入 VMX 操作。\n", processor_number);
 
-	//����vmcs����
+	//配置vmcs区域
 	fill_vmcs(vcpu, 0);
 	vcpu->vcpu_status.vmm_launched = true;
 
-	//��GUEST_RIPָ����λ�ü���ִ��
-	//����vm�����	
+	//从GUEST_RIP指定的位置继续执行
+	//运行vm虚拟机	
 	if (!hv::vm_launch()) {
 		vcpu->vmexit_info.instruction_error = hv::vmread(VM_INSTRUCTION_ERROR);
-		LogError("Vmlaunch failed error: %d", vcpu->vmexit_info.instruction_error);
+		LogError("VMLAUNCH 失败，VMX 指令错误码=%d；原因：VMCS 检查未通过；解决方案：根据 VMX 指令错误码检查控制字段、主机状态和客户机状态。", vcpu->vmexit_info.instruction_error);
 		vcpu->vcpu_status.vmm_launched = false;
 		vcpu->vcpu_status.vmx_on = false;
-		__vmx_off();  //�˳�vmxģʽ
+		__vmx_off();  //退出vmx模式
 		return false;
 	}
 	return true;
 }
 
-//����hostҳ��
+//创建host页表
 void create_host_page_tables()
 {
 	PEPROCESS Process = NULL;
@@ -392,18 +405,18 @@ bool initalize_vcpu(unsigned int iter)
 	return init_logical_processor(iter);
 }
 
-//��ʼ��vmm ������
+//初始化vmm 并运行
 bool vmm_init()
 {	
 
-	//����vmm������
+	//分配vmm上下文
 	if (allocate_vmm_context() == false)
 	{
-		outDebug("����vmm������ʧ��.\n");
+		outDebug("分配 VMM 上下文失败；原因：非分页内存池不足；解决方案：释放资源后重试。\n");
 		return false;
 	}		
 
-	//������Ҫ�ڵ��� DISPATCH_LEVEL �� IRQL �����У��Ա� KeSetSystemAffinityThreadEx ������Ч
+	//我们需要在低于 DISPATCH_LEVEL 的 IRQL 下运行，以便 KeSetSystemAffinityThreadEx 立即生效
 	NT_ASSERT(KeGetCurrentIrql() <= APC_LEVEL);	
 
 	// virtualize every cpu
@@ -413,9 +426,11 @@ bool vmm_init()
 		auto const orig_affinity = KeSetSystemAffinityThreadEx(1ull << iter);
 
 		if (!initalize_vcpu(iter)) {
-			// TODO: handle this bruh -_-
+			// Roll back every processor that may already be in VMX root mode,
+			// including the processor whose initialization just failed.
+			hvgt::vmoff(iter + 1);
 			KeRevertToUserAffinityThreadEx(orig_affinity);
-			outDebug("initalize_vcpuʧ��.\n");
+			outDebug("初始化 VCPU 失败；已回滚全部 VMX 状态；原因：逻辑处理器未能进入 VMX；解决方案：检查 BIOS 虚拟化设置和 VMX 错误日志。\n");
 			return false;
 		}
 

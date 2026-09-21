@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _VMCS_H
 #define _VMCS_H
 
-//Õ»¶ÔÆë¿ÉÒÔÌá¸ßÄÚ´æ·ÃÎÊµÄĞ§ÂÊ
-//ÔÚx64¼Ü¹¹ÖĞ£¬Õ»ÊÇÒÔ16×Ö½Ú¶ÔÆëµÄ
+//æ ˆå¯¹é½å¯ä»¥æé«˜å†…å­˜è®¿é—®çš„æ•ˆç‡
+//åœ¨x64æ¶æ„ä¸­ï¼Œæ ˆæ˜¯ä»¥16å­—èŠ‚å¯¹é½çš„
 #define StackAlignment(x) ((x) & ~0xF)
 
 #define _MINIMAL

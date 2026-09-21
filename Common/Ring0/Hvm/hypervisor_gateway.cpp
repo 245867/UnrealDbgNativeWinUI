@@ -1,4 +1,4 @@
-#include <ntifs.h>
+﻿#include <ntifs.h>
 #include "../SymbolicAccess/Utils/Log.h"
 #include "hypervisor_gateway.h"
 #include "ASM/AsmCallset.h"
@@ -72,7 +72,7 @@ namespace hvgt
 
 	/// <summary>
 	/// Unhook all functions and invalidate tlb
-	/// ж��ȫ��hook ��ˢ��tlb
+	/// 卸载全部hook 并刷新tlb
 	/// </summary>
 	/// <returns> status </returns>
 	bool ept_unhook()
@@ -84,7 +84,7 @@ namespace hvgt
 
 	/// <summary>
 	/// Unhook single function and invalidate tlb
-	/// ж��ָ������ ��ˢ��tlb
+	/// 卸载指定函数 并刷新tlb
 	/// </summary>
 	/// <param name="function_address"></param>
 	/// <returns> status </returns>
@@ -95,7 +95,7 @@ namespace hvgt
 		return status;
 	}
 
-	//��ȡ���������ϵ�
+	//读取隐形软件断点
 	bool get_hide_software_breakpoint(void* target_address, void* buffer, unsigned __int64 buffer_size)
 	{
 		bool status = __vm_call(VMCALL_READ_SOFTWARE_BREAKPOINT, (unsigned __int64)target_address, (unsigned __int64)buffer, buffer_size);
@@ -104,7 +104,7 @@ namespace hvgt
 		return status;
 	}
 
-	//�������������ϵ�
+	//设置隐形软件断点
 	bool set_hide_software_breakpoint(void* target_address, void* buffer, unsigned __int64 buffer_size)
 	{
 		bool status = __vm_call(VMCALL_HIDE_SOFTWARE_BREAKPOINT, (unsigned __int64)target_address, (unsigned __int64)buffer, buffer_size);
@@ -155,23 +155,23 @@ namespace hvgt
 		return __vm_call(VMCALL_TEST, 0, 0, 0);
 	}
 
-	//����VT�����Ƿ����
+	//测试VT驱动是否加载
 	NTSTATUS TestVMM()
 	{
 		__try
 		{
-			if (test_vmcall() == FALSE)  //�����Ƿ��ܹ��ɹ�ִ��vmxָ��
+			if (test_vmcall() == FALSE)  //尝试是否能够成功执行vmx指令
 			{
-				outLog("vt����û�а�װ!!!\n");
+				outLog("vt驱动没有安装!!!\n");
 				return STATUS_UNSUCCESSFUL;
 			}
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
-			outLog("��֧��vmxָ��!!!\n");
+			outLog("不支持vmx指令!!!\n");
 			return STATUS_UNSUCCESSFUL;
 		}
-		outLog("VT�����Ѱ�װ�ɹ�!!!\n");
+		outLog("VT驱动已安装成功!!!\n");
 		return STATUS_SUCCESS;
 	}
 
@@ -199,7 +199,7 @@ namespace hvgt
 
 		if (NT_SUCCESS(status) == false)
 		{
-			LogError("Couldn't get hypervisor device object pointer");
+			LogError("获取 VT 驱动设备对象指针失败；原因：设备未创建、符号链接不可用或驱动未加载；解决方案：确认 VT 驱动服务已启动、设备链接名称匹配，并查看驱动日志。");
 			return false;
 		}
 
@@ -208,7 +208,7 @@ namespace hvgt
 
 		if (irp == NULL)
 		{
-			LogError("Couldn't create Irp");
+			LogError("创建 IRP 请求失败；原因：内核资源不足或请求参数无效；解决方案：释放未完成的请求、检查缓冲区参数后重试。");
 			ObDereferenceObject(airhv_device_object);
 			return false;
 		}

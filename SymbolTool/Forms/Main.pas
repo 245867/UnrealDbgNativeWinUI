@@ -1,5 +1,5 @@
-{
-  ×¢Òâ: RAD Studio 11 ±àÒë64Î»³ÌĞòÊ±£¬Èç¹û½«ÏîÄ¿ÃûÃüÃûÎªÖĞÎÄÔòÎŞ·¨½øĞĞµ÷ÊÔ¡£
+ï»¿{
+  æ³¨æ„: RAD Studio 11 ç¼–è¯‘64ä½ç¨‹åºæ—¶ï¼Œå¦‚æœå°†é¡¹ç›®åå‘½åä¸ºä¸­æ–‡åˆ™æ— æ³•è¿›è¡Œè°ƒè¯•ã€‚
 }
 
 unit Main;
@@ -28,7 +28,7 @@ type
 
 var
   Form2: TForm2;
-  g_SelectServer: Integer; //Ñ¡ÔñµÄ·şÎñÆ÷
+  g_SelectServer: Integer; //é€‰æ‹©çš„æœåŠ¡å™¨
 
 const
   _STR_CONFIG_INI = 'Config.ini';
@@ -49,7 +49,7 @@ begin
       sPath := sPath + _STR_CONFIG_INI;
       if FileExists(sPath) then begin
         Config := TIniFile.Create(sPath);
-        g_SelectServer := Config.ReadInteger('·ûºÅ','·şÎñÆ÷', g_SelectServer);
+        g_SelectServer := Config.ReadInteger('ç¬¦å·','æœåŠ¡å™¨', g_SelectServer);
         Config.Free;
       end;
     end;
@@ -70,7 +70,7 @@ begin
     if sPath <> '' then begin
       sPath := sPath + _STR_CONFIG_INI;
       Config := TIniFile.Create(sPath);
-      Config.WriteInteger('·ûºÅ','·şÎñÆ÷',g_SelectServer);
+      Config.WriteInteger('ç¬¦å·','æœåŠ¡å™¨',g_SelectServer);
       Config.Free;
     end;
 
@@ -81,12 +81,12 @@ end;
 
 procedure TForm2.RadioButtonMicrosoftServerClick(Sender: TObject);
 begin
-  SetSymbolState(200);  //Î¢Èí·şÎñÆ÷
+  SetSymbolState(200);  //å¾®è½¯æœåŠ¡å™¨
 end;
 
 procedure TForm2.RadioButtonMirrorServerClick(Sender: TObject);
 begin
-  SetSymbolState(100);  //¾µÏñ·şÎñÆ÷
+  SetSymbolState(100);  //é•œåƒæœåŠ¡å™¨
 end;
 
 procedure TForm2.RefRadioButtonState;
@@ -107,7 +107,7 @@ end;
 
 initialization
 begin
-  g_SelectServer := 100;  //Ä¬ÈÏÑ¡Ôñ¾µÏñ·şÎñÆ÷
+  g_SelectServer := 100;  //é»˜è®¤é€‰æ‹©é•œåƒæœåŠ¡å™¨
 end;
 
 end.

@@ -1,15 +1,15 @@
-#include "Driver.h"
+ï»¿#include "Driver.h"
 #include "invalid_ept.h"
 #include "AsmCallset.h"
 
-//Ë¢ĞÂÈ«²¿µÄÂß¼­´¦ÀíÆ÷
+//åˆ·æ–°å…¨éƒ¨çš„é€»è¾‘å¤„ç†å™¨
 void invept_all_contexts_func()
 {
 	__invept_descriptor descriptor = { 0 };
 	__invept(invept_all_context, &descriptor);
 }
 
-//Ë¢ĞÂÖ¸¶¨µÄÂß¼­´¦ÀíÆ÷µÄeptp
+//åˆ·æ–°æŒ‡å®šçš„é€»è¾‘å¤„ç†å™¨çš„eptp
 void invept_single_context_func(unsigned __int64 ept_pointer)
 {
 	__invept_descriptor descriptor = { 0 };

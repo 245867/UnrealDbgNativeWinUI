@@ -46,22 +46,22 @@ NTSTATUS NTAPI NewNtDebugActiveProcess(
 
         if (!g_target_cr3 || !g_target_pid)
         {
-            ReportSeriousError("cr3 »ò pidÎª¿Õ");
+            ReportSeriousError("cr3 æˆ– pidä¸ºç©º");
             return STATUS_UNSUCCESSFUL;
         }
 
-        //Á¬½Óµ÷ÊÔÆ÷
+        //è¿æ¥è°ƒè¯•å™¨
         Status = Sys_NtDebugActiveProcess(ProcessHandle, DebugObjectHandle);
         return Status;
     }
     else
     {
-        ReportSeriousError("ÎŞ·¨»ñÈ¡Ä¿±ê½ø³Ìcr3");
+        ReportSeriousError("æ— æ³•è·å–ç›®æ ‡è¿›ç¨‹cr3");
         return STATUS_UNSUCCESSFUL;
     }
 }
 
-//´Ë¶Î´úÂëĞèÒª±»Ğ´Èëµ½±»µ÷ÊÔµÄÄ¿±ê½ø³ÌÀï
+//æ­¤æ®µä»£ç éœ€è¦è¢«å†™å…¥åˆ°è¢«è°ƒè¯•çš„ç›®æ ‡è¿›ç¨‹é‡Œ
 //VOID
 //NTAPI
 //NewDbgUiRemoteBreakin(VOID)
@@ -81,10 +81,10 @@ NewDbgUiIssueRemoteBreakin(IN HANDLE Process)
     CLIENT_ID ClientId;
     NTSTATUS Status;
 
-    //logger.Log("¿ªÊ¼¸½¼Ó");
+    //logger.Log("å¼€å§‹é™„åŠ ");
     //DWORD dwPid = GetProcessId(Process);
 
-    //logger.Log("Ä¿±ê½ø³Ìpid: %d", dwPid);
+    //logger.Log("ç›®æ ‡è¿›ç¨‹pid: %d", dwPid);
 
     if (InjectCode(Process))
     {
@@ -121,7 +121,7 @@ NTSTATUS NTAPI NewDbgUiDebugActiveProcess(HANDLE hProcess)
     Status = NtDebugActiveProcess(hProcess, NtCurrentTeb()->DbgSsReserved[1]);
     //if (NT_SUCCESS(Status))
     //{
-    //    //ÔÚÄ¿±ê½ø³ÌÄÚ´¥·¢int3ÊÂ¼ş
+    //    //åœ¨ç›®æ ‡è¿›ç¨‹å†…è§¦å‘int3äº‹ä»¶
     //    Status = DbgUiIssueRemoteBreakin(hProcess);
     //    if (!NT_SUCCESS(Status))
     //        ZwRemoveProcessDebug(hProcess, NtCurrentTeb()->DbgSsReserved[1]);
@@ -152,7 +152,7 @@ NewNtCreateUserProcess(
         //DoDebuggerBreak(ProcessHandle);
         g_process_info.ProcessHandle = *ProcessHandle;
         g_process_info.isCreate = TRUE;
-        logger.Log("´´½¨µ÷ÊÔ½ø³Ì");
+        logger.Log("åˆ›å»ºè°ƒè¯•è¿›ç¨‹");
     }
     return Status;
 }
@@ -163,7 +163,7 @@ NewDebugActiveProcess(
     _In_ DWORD dwProcessId
 )
 {
-    logger.Log("¸½¼Óµ½Ä¿±ê½ø³Ì");
+    logger.Log("é™„åŠ åˆ°ç›®æ ‡è¿›ç¨‹");
     return Sys_DebugActiveProcess(dwProcessId);
 }
 
@@ -207,7 +207,7 @@ NewVirtualProtectEx(
 
         //if (GetLastError() == 87)
         //{
-        //    //¿ÉÄÜÊÇÓÉÓÚ×ÔÓ³Éäµ¼ÖÂµÄ
+        //    //å¯èƒ½æ˜¯ç”±äºè‡ªæ˜ å°„å¯¼è‡´çš„
         //    *lpflOldProtect = MAP_PROTECT;
         //    return TRUE;
         //}
@@ -229,7 +229,7 @@ NewWriteProcessMemory(
 
     if (((*(BYTE*)lpBuffer != 0xCC)) && (nSize == 1))
     {
-        //logger.Log("×¼±¸ÒÆ³ıcc¶Ïµã  lpBaseAddress: %p   ×Ö½Ú: %x", lpBaseAddress, *(BYTE*)lpBuffer);
+        //logger.Log("å‡†å¤‡ç§»é™¤ccæ–­ç‚¹  lpBaseAddress: %p   å­—èŠ‚: %x", lpBaseAddress, *(BYTE*)lpBuffer);
         INT3BreakpointList.Lock();
 
         int elementCount = (int)INT3BreakpointList.size();
@@ -237,7 +237,7 @@ NewWriteProcessMemory(
         {
             VT_BREAK_POINT Breakpoint = INT3BreakpointList.at(i);
             if ((lpBaseAddress == (LPVOID)Breakpoint.VirtualAddress) &&
-                (*(BYTE*)lpBuffer == Breakpoint.OriginalBytes)) //¿ÉÄÜÊÇÎªÁËÉ¾³ı¶Ïµã
+                (*(BYTE*)lpBuffer == Breakpoint.OriginalBytes)) //å¯èƒ½æ˜¯ä¸ºäº†åˆ é™¤æ–­ç‚¹
             {
                 //VT_BREAK_POINT vmcallinfo = { 0 };
                 //vmcallinfo.cr3 = Breakpoint.cr3;
@@ -252,13 +252,13 @@ NewWriteProcessMemory(
                 //boSuccess = current_vmcall(&vmcallinfo);
                 //if (boSuccess)
                 //{
-                //    logger.Log("É¾³ıcc¶Ïµã");
+                //    logger.Log("åˆ é™¤ccæ–­ç‚¹");
                 //    INT3BreakpointList.erase(it);
                 //    break;
                 //}
                 //else
                 //{
-                //    logger.Log("É¾³ıcc¶ÏµãÊ§°Ü");
+                //    logger.Log("åˆ é™¤ccæ–­ç‚¹å¤±è´¥");
                 //}
 
 
@@ -286,19 +286,19 @@ NewWriteProcessMemory(
                     if (output == 1998)
                     {
                         boSuccess = true;
-                        logger.Log("É¾³ıcc¶Ïµã");
+                        logger.Log("åˆ é™¤ccæ–­ç‚¹");
                         INT3BreakpointList.erase(INT3BreakpointList.begin() + i);
                         break;
                     }
                     else
                     {
                         boSuccess = false;
-                        ReportSeriousError("É¾³ıcc¶ÏµãÊ§°Ü");
+                        ReportSeriousError("åˆ é™¤ccæ–­ç‚¹å¤±è´¥");
                     }
                 }
                 else
                 {
-                    ReportSeriousError("IOCTL_DEL_SOFTWARE_BREAKPOINT ÇëÇóÊ§°Ü!");
+                    ReportSeriousError("IOCTL_DEL_SOFTWARE_BREAKPOINT è¯·æ±‚å¤±è´¥!");
                 }
             }
         }
@@ -311,28 +311,28 @@ NewWriteProcessMemory(
     }
 
     if ((*(BYTE*)lpBuffer == 0xCC) &&
-        (nSize == 1))  /*¿ÉÄÜÊÇÎªÁËÉèÖÃcc¶Ïµã*/
+        (nSize == 1))  /*å¯èƒ½æ˜¯ä¸ºäº†è®¾ç½®ccæ–­ç‚¹*/
     {
         BYTE OriginalBytes = 0;
         SIZE_T NumberOfBytes = 0;
-        if (Sys_ReadProcessMemory(hProcess, lpBaseAddress, &OriginalBytes, 1, &NumberOfBytes))  //±¸·İÔ­×Ö½Ú
+        if (Sys_ReadProcessMemory(hProcess, lpBaseAddress, &OriginalBytes, 1, &NumberOfBytes))  //å¤‡ä»½åŸå­—èŠ‚
         {
-            //´¥·¢Ğ´¿½±´
+            //è§¦å‘å†™æ‹·è´
             NumberOfBytes = 0;
             if (Sys_WriteProcessMemory(hProcess, lpBaseAddress, &OriginalBytes, 1, &NumberOfBytes) == FALSE)
             {
-                logger.Log("¿ÉÄÜÓĞmap±£»¤");
+                logger.Log("å¯èƒ½æœ‰mapä¿æŠ¤");
             }
             else
             {
-                logger.Log("´¥·¢Ğ´¿½±´");
+                logger.Log("è§¦å‘å†™æ‹·è´");
             }
 
 
             //VT_BREAK_POINT vmcallinfo = { 0 };
             //vmcallinfo.cr3 = g_target_cr3;
             //vmcallinfo.VirtualAddress = (unsigned __int64)lpBaseAddress;
-            //vmcallinfo.Size = 1; //cc¶Ïµã¾Í1×Ö½Ú
+            //vmcallinfo.Size = 1; //ccæ–­ç‚¹å°±1å­—èŠ‚
             //vmcallinfo.command = VMCALL_HIDE_SOFTWARE_BREAKPOINT;
             //vmcallinfo.LoopUserMode = (unsigned __int64)DbgUserBreakPoint;
             //vmcallinfo.OriginalBytes = OriginalBytes;
@@ -344,7 +344,7 @@ NewWriteProcessMemory(
             //    INT3BreakpointList.Lock();
             //    INT3BreakpointList.push_back(vmcallinfo);
             //    INT3BreakpointList.UnLock();
-            //    logger.Log("ÉèÖÃint3¶Ïµã³É¹¦  ÎïÀíÒ³: %x", GET_PFN(vmcallinfo.PhysicalAddress));
+            //    logger.Log("è®¾ç½®int3æ–­ç‚¹æˆåŠŸ  ç‰©ç†é¡µ: %x", GET_PFN(vmcallinfo.PhysicalAddress));
             //}
 
 
@@ -352,7 +352,7 @@ NewWriteProcessMemory(
             VT_BREAK_POINT vmcallinfo = { 0 };
             vmcallinfo.cr3 = g_target_cr3;
             vmcallinfo.VirtualAddress = (unsigned __int64)lpBaseAddress;
-            vmcallinfo.Size = 1; //cc¶Ïµã¾Í1×Ö½Ú
+            vmcallinfo.Size = 1; //ccæ–­ç‚¹å°±1å­—èŠ‚
             vmcallinfo.command = VMCALL_HIDE_SOFTWARE_BREAKPOINT;
             vmcallinfo.LoopUserMode = (unsigned __int64)DbgUserBreakPoint;
             vmcallinfo.OriginalBytes = OriginalBytes;
@@ -375,17 +375,17 @@ NewWriteProcessMemory(
                     INT3BreakpointList.Lock();
                     INT3BreakpointList.push_back(output);
                     INT3BreakpointList.UnLock();
-                    logger.Log("ÉèÖÃint3¶Ïµã³É¹¦  ÎïÀíÒ³: %x", GET_PFN(output.PhysicalAddress));
+                    logger.Log("è®¾ç½®int3æ–­ç‚¹æˆåŠŸ  ç‰©ç†é¡µ: %x", GET_PFN(output.PhysicalAddress));
                 }
                 else
                 {
                     boSuccess = false;
-                    ReportSeriousError("ÉèÖÃint3¶ÏµãÊ§°Ü");
+                    ReportSeriousError("è®¾ç½®int3æ–­ç‚¹å¤±è´¥");
                 }
             }
             else
             {
-                ReportSeriousError("IOCTL_SET_SOFTWARE_BREAKPOINT ÇëÇóÊ§°Ü!");
+                ReportSeriousError("IOCTL_SET_SOFTWARE_BREAKPOINT è¯·æ±‚å¤±è´¥!");
             }
         }
         if (boSuccess)
@@ -421,7 +421,7 @@ NewReadProcessMemory(
         for (int i = elementCount - 1; i != -1; i--)
         {
             VT_BREAK_POINT Breakpoint = INT3BreakpointList.at(i);
-            if (lpBaseAddress == (LPVOID)Breakpoint.VirtualAddress) //¿ÉÄÜÊÇÎªÁË¼ì²é¶ÏµãÊÇ·ñÉèÖÃ³É¹¦
+            if (lpBaseAddress == (LPVOID)Breakpoint.VirtualAddress) //å¯èƒ½æ˜¯ä¸ºäº†æ£€æŸ¥æ–­ç‚¹æ˜¯å¦è®¾ç½®æˆåŠŸ
             {
                 //VT_BREAK_POINT vmcallinfo = { 0 };
                 //vmcallinfo.cr3 = Breakpoint.cr3;
@@ -436,7 +436,7 @@ NewReadProcessMemory(
                 //boSuccess = current_vmcall(&vmcallinfo);
                 //if (boSuccess)
                 //{
-                //    //·µ»ØÊä³ö²ÎÊı
+                //    //è¿”å›è¾“å‡ºå‚æ•°
                 //    if (lpBuffer)
                 //    {
                 //        memcpy(lpBuffer, vmcallinfo.buffer, nSize);
@@ -473,7 +473,7 @@ NewReadProcessMemory(
                     if (output.errorCode == 1998)
                     {
                         boSuccess = true;
-                        //·µ»ØÊä³ö²ÎÊı
+                        //è¿”å›è¾“å‡ºå‚æ•°
                         if (lpBuffer)
                         {
                             memcpy(lpBuffer, output.buffer, nSize);
@@ -488,12 +488,12 @@ NewReadProcessMemory(
                     else
                     {
                         boSuccess = false;
-                        ReportSeriousError("¶ÁÈ¡int3¶ÏµãÊ§°Ü!");
+                        ReportSeriousError("è¯»å–int3æ–­ç‚¹å¤±è´¥!");
                     }
                 }
                 else
                 {
-                    ReportSeriousError("IOCTL_READ_SOFTWARE_BREAKPOINT ÇëÇóÊ§°Ü!");
+                    ReportSeriousError("IOCTL_READ_SOFTWARE_BREAKPOINT è¯·æ±‚å¤±è´¥!");
                 }
             }
         }
@@ -515,9 +515,9 @@ NewNtDebugContinue(
     _In_ NTSTATUS ContinueStatus
 )
 {
-    char szBuf[MAX_PATH] = { 0 };
-    sprintf(szBuf, "ring3 ClientId: %p\n", ClientId);
-    OutputDebugStringA(szBuf);
+    wchar_t szBuf[MAX_PATH] = { 0 };
+    swprintf_s(szBuf, _countof(szBuf), L"ring3 å®¢æˆ·ç«¯ IDï¼š%p\n", static_cast<void*>(ClientId));
+    OutputDebugStringW(szBuf);
     return Sys_NtDebugContinue(DebugObjectHandle, ClientId, ContinueStatus);
 }
 
@@ -531,7 +531,7 @@ void Hook_DebugActiveProcess()
     }
     else
     {
-        logger.Log("DebugActiveProcess¿ÕÖ¸Õë");
+        logger.Log("DebugActiveProcessç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -553,7 +553,7 @@ void Hook_NtDebugActiveProcess()
     }
     else
     {
-        logger.Log("NtDebugActiveProcess¿ÕÖ¸Õë");
+        logger.Log("NtDebugActiveProcessç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -575,7 +575,7 @@ void Hook_DbgUiIssueRemoteBreakin()
     }
     else
     {
-        logger.Log("DbgUiIssueRemoteBreakin¿ÕÖ¸Õë");
+        logger.Log("DbgUiIssueRemoteBreakinç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -597,7 +597,7 @@ void Hook_DbgUiDebugActiveProcess()
     }
     else
     {
-        logger.Log("DbgUiDebugActiveProcess¿ÕÖ¸Õë");
+        logger.Log("DbgUiDebugActiveProcessç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -619,7 +619,7 @@ void Hook_NtCreateUserProcess()
     }
     else
     {
-        logger.Log("NtCreateUserProcess¿ÕÖ¸Õë");
+        logger.Log("NtCreateUserProcessç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -641,7 +641,7 @@ void Hook_WaitForDebugEvent()
     }
     else
     {
-        logger.Log("WaitForDebugEvent¿ÕÖ¸Õë");
+        logger.Log("WaitForDebugEventç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -663,7 +663,7 @@ void Hook_ContinueDebugEvent()
     }
     else
     {
-        logger.Log("ContinueDebugEvent¿ÕÖ¸Õë");
+        logger.Log("ContinueDebugEventç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -675,7 +675,7 @@ void UnHook_ContinueDebugEvent()
     }
 }
 
-//Hook OutputDebugStringA/W´¦ÀíÃô¸ĞÈÕÖ¾¼ì²â
+//Hook OutputDebugStringA/Wå¤„ç†æ•æ„Ÿæ—¥å¿—æ£€æµ‹
 void Hook_OutputDebugStringA()
 {
     Sys_OutputDebugStringA = (PFN_OUTPUTDEBUGSTRINGA)OutputDebugStringA;
@@ -686,7 +686,7 @@ void Hook_OutputDebugStringA()
     }
     else
     {
-        logger.Log("OutputDebugStringA¿ÕÖ¸Õë");
+        logger.Log("OutputDebugStringAç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -708,7 +708,7 @@ void Hook_OutputDebugStringW()
     }
     else
     {
-        logger.Log("OutputDebugStringW¿ÕÖ¸Õë");
+        logger.Log("OutputDebugStringWç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -730,7 +730,7 @@ void Hook_SetThreadContext()
     }
     else
     {
-        logger.Log("SetThreadContext¿ÕÖ¸Õë");
+        logger.Log("SetThreadContextç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -752,7 +752,7 @@ void Hook_GetThreadContext()
     }
     else
     {
-        logger.Log("Sys_GetThreadContext¿ÕÖ¸Õë");
+        logger.Log("Sys_GetThreadContextç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -775,7 +775,7 @@ void Hook_VirtualProtectEx()
     }
     else
     {
-        logger.Log("Sys_VirtualProtectEx¿ÕÖ¸Õë");
+        logger.Log("Sys_VirtualProtectExç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -797,7 +797,7 @@ void Hook_WriteProcessMemory()
     }
     else
     {
-        logger.Log("Sys_WriteProcessMemory¿ÕÖ¸Õë");
+        logger.Log("Sys_WriteProcessMemoryç©ºæŒ‡é’ˆ");
     }    
 }
 
@@ -819,7 +819,7 @@ void Hook_ReadProcessMemory()
     }
     else
     {
-        logger.Log("Sys_ReadProcessMemory¿ÕÖ¸Õë");
+        logger.Log("Sys_ReadProcessMemoryç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -841,7 +841,7 @@ void Hook_NtDebugContinue()
     }
     else
     {
-        logger.Log("Sys_NtDebugContinue¿ÕÖ¸Õë");
+        logger.Log("Sys_NtDebugContinueç©ºæŒ‡é’ˆ");
     }
 }
 
@@ -855,11 +855,11 @@ void UnHook_NtDebugContinue()
 
 
 /// <summary>
-/// ²âÊÔÓÃµÄ
+/// æµ‹è¯•ç”¨çš„
 /// </summary>
 void NewLdrInitializeThunk(PCONTEXT ContextRecord, PVOID SystemArgument1)
 {
-    //logger.Log("LdrInitializeThunk Ö´ĞĞÁË ContextRecord: %p   SystemArgument1: %p", ContextRecord, SystemArgument1);
+    //logger.Log("LdrInitializeThunk æ‰§è¡Œäº† ContextRecord: %p   SystemArgument1: %p", ContextRecord, SystemArgument1);
     //logger.Log("rax: %p", ContextRecord->Rax);
     //logger.Log("rbx: %p", ContextRecord->Rbx);
     //logger.Log("rcx: %p", ContextRecord->Rcx);
@@ -880,6 +880,6 @@ void Hook_LdrInitializeThunk()
     }
     else
     {
-        logger.Log("LdrInitializeThunk¿ÕÖ¸Õë");
+        logger.Log("LdrInitializeThunkç©ºæŒ‡é’ˆ");
     }
 }

@@ -1,18 +1,19 @@
 #include "WinMain.h"
 #include "Symbols.h"
 
+
 #define TIMER_PROGRESSBAR 1
 #define TIMER_TEXT 2
 
 const int MAX_DOTS = 3;
 int dotCount = 0;
-std::wstring baseText1(L"ÕıÔÚ³õÊ¼»¯³ÌĞò");
+std::wstring baseText1(L"æ­£åœ¨åˆå§‹åŒ–ç¨‹åº");
 std::wstring modText;
 std::wstring displayText;
-int currentTextIndex = 0; // µ±Ç°»æÖÆµÄÎÄ±¾Ë÷Òı
+int currentTextIndex = 0; // å½“å‰ç»˜åˆ¶çš„æ–‡æœ¬ç´¢å¼•
 
 int nWidth = 0;
-int progress = 0; // ½ø¶ÈÌõµÄµ±Ç°½ø¶È
+int progress = 0; // è¿›åº¦æ¡çš„å½“å‰è¿›åº¦
 int tickcount = 0;
 
 
@@ -21,10 +22,10 @@ std::wstring curdir;
 
 void DrawBackground(HDC hdc)
 {
-	// ¼ÓÔØÍ¼Æ¬
+	// åŠ è½½å›¾ç‰‡
 	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, curdir.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
-	// »ñÈ¡Í¼Æ¬Ô­Ê¼³ß´ç
+	// è·å–å›¾ç‰‡åŸå§‹å°ºå¯¸
 	BITMAP bitmap;
 	GetObject(hBitmap, sizeof(BITMAP), &bitmap);
 	int width = bitmap.bmWidth;
@@ -32,75 +33,75 @@ void DrawBackground(HDC hdc)
 	int x = 0;
 	int y = 0;
 
-	// »æÖÆÍ¼Æ¬
+	// ç»˜åˆ¶å›¾ç‰‡
 	HDC memDC = CreateCompatibleDC(hdc);
 	SelectObject(memDC, hBitmap);
 	BitBlt(hdc, x, y, width, height, memDC, 0, 0, SRCCOPY);
 
-	// ÊÍ·Å×ÊÔ´
+	// é‡Šæ”¾èµ„æº
 	DeleteDC(memDC);
 	DeleteObject(hBitmap);
 }
 
 void DrawProgressBar(HWND hwnd, HDC hdc, PAINTSTRUCT ps)
 {
-	// »æÖÆ½ø¶ÈÌõ
+	// ç»˜åˆ¶è¿›åº¦æ¡
 	RECT rect;
 	GetClientRect(hwnd, &rect);
-	rect.top = rect.bottom - 5; // ½ø¶ÈÌõµÄ¶¥²¿Î»ÖÃ
-	//rect.bottom -= 10; // ½ø¶ÈÌõµÄµ×²¿Î»ÖÃ
-	rect.right = rect.left + progress; // ¸ù¾İµ±Ç°½ø¶Èµ÷Õû¿í¶È
+	rect.top = rect.bottom - 5; // è¿›åº¦æ¡çš„é¡¶éƒ¨ä½ç½®
+	//rect.bottom -= 10; // è¿›åº¦æ¡çš„åº•éƒ¨ä½ç½®
+	rect.right = rect.left + progress; // æ ¹æ®å½“å‰è¿›åº¦è°ƒæ•´å®½åº¦
 
-	// Ìî³ä±³¾°
+	// å¡«å……èƒŒæ™¯
 	//FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
 
-	//FillRect(hdc, &rect, (HBRUSH)(COLOR_HIGHLIGHT + 1)); // Ê¹ÓÃ¸ßÁÁÑÕÉ«Ìî³ä½ø¶ÈÌõ
+	//FillRect(hdc, &rect, (HBRUSH)(COLOR_HIGHLIGHT + 1)); // ä½¿ç”¨é«˜äº®é¢œè‰²å¡«å……è¿›åº¦æ¡
 
 
-	// ´´½¨ÂÌÉ«»­Ë¢
-	HBRUSH hGreenBrush = CreateSolidBrush(RGB(0, 255, 0)); // ´´½¨ÂÌÉ«»­Ë¢
-	FillRect(hdc, &rect, hGreenBrush); // Ê¹ÓÃÂÌÉ«Ìî³ä½ø¶ÈÌõ
+	// åˆ›å»ºç»¿è‰²ç”»åˆ·
+	HBRUSH hGreenBrush = CreateSolidBrush(RGB(0, 255, 0)); // åˆ›å»ºç»¿è‰²ç”»åˆ·
+	FillRect(hdc, &rect, hGreenBrush); // ä½¿ç”¨ç»¿è‰²å¡«å……è¿›åº¦æ¡
 
-	DeleteObject(hGreenBrush); // É¾³ı»­Ë¢
+	DeleteObject(hGreenBrush); // åˆ é™¤ç”»åˆ·
 }
 
 void DrawString(HWND hwnd, HDC hdc)
 {
-	// ÉèÖÃÎÄ±¾ÑÕÉ«ºÍ±³¾°ÑÕÉ«
-	SetTextColor(hdc, RGB(255, 255, 255)); // °×É«
+	// è®¾ç½®æ–‡æœ¬é¢œè‰²å’ŒèƒŒæ™¯é¢œè‰²
+	SetTextColor(hdc, RGB(255, 255, 255)); // ç™½è‰²
 	SetBkMode(hdc, TRANSPARENT);
 
-	// ´´½¨×ÖÌå
+	// åˆ›å»ºå­—ä½“
 	HFONT hFont = CreateFont(
-		20,            // ×ÖÌå¸ß¶È
-		0,             // ×ÖÌå¿í¶È
-		0,             // Ğı×ª½Ç¶È
-		0,             // »ùÏß½Ç¶È
-		FW_NORMAL,     // ×ÖÌå´ÖÏ¸
-		FALSE,         // Ğ±Ìå
-		FALSE,         // ÏÂ»®Ïß
-		FALSE,         // É¾³ıÏß
-		DEFAULT_CHARSET, // ×Ö·û¼¯
-		OUT_DEFAULT_PRECIS, // Íâ²¿¾«¶È
-		CLIP_DEFAULT_PRECIS, // ¼ô²Ã¾«¶È
-		DEFAULT_QUALITY, // ÖÊÁ¿
-		DEFAULT_QUALITY, // ×ÖÌåÖÊÁ¿
-		L"ËÎÌå"      // ×ÖÌåÃû³Æ
+		20,            // å­—ä½“é«˜åº¦
+		0,             // å­—ä½“å®½åº¦
+		0,             // æ—‹è½¬è§’åº¦
+		0,             // åŸºçº¿è§’åº¦
+		FW_NORMAL,     // å­—ä½“ç²—ç»†
+		FALSE,         // æ–œä½“
+		FALSE,         // ä¸‹åˆ’çº¿
+		FALSE,         // åˆ é™¤çº¿
+		DEFAULT_CHARSET, // å­—ç¬¦é›†
+		OUT_DEFAULT_PRECIS, // å¤–éƒ¨ç²¾åº¦
+		CLIP_DEFAULT_PRECIS, // å‰ªè£ç²¾åº¦
+		DEFAULT_QUALITY, // è´¨é‡
+		DEFAULT_QUALITY, // å­—ä½“è´¨é‡
+		L"å®‹ä½“"      // å­—ä½“åç§°
 	);
 
-	// Ñ¡Ôñ×ÖÌåµ½Éè±¸ÉÏÏÂÎÄ
+	// é€‰æ‹©å­—ä½“åˆ°è®¾å¤‡ä¸Šä¸‹æ–‡
 	SelectObject(hdc, hFont);
 
-	// »æÖÆÎÄ×Ö	
+	// ç»˜åˆ¶æ–‡å­—
 	RECT rect;
 	GetClientRect(hwnd, &rect);
 
-	// »ñÈ¡ÎÄ±¾µÄ¿í¶ÈºÍ¸ß¶È
+	// è·å–æ–‡æœ¬çš„å®½åº¦å’Œé«˜åº¦
 	SIZE textSize;
 	GetTextExtentPoint32(hdc, displayText.c_str(), displayText.length(), &textSize);
 
-	// ¼ÆËã»æÖÆÎ»ÖÃ£¬Ê¹ÎÄ±¾ÓÒ¶ÔÆë
-	int x = rect.right - textSize.cx; // ÓÒ²àÎ»ÖÃ
+	// è®¡ç®—ç»˜åˆ¶ä½ç½®ï¼Œä½¿æ–‡æœ¬å³å¯¹é½
+	int x = rect.right - textSize.cx; // å³ä¾§ä½ç½®
 	TextOut(hdc, x, rect.bottom - 50, displayText.c_str(), displayText.length());
 	DeleteObject(hFont);
 }
@@ -124,35 +125,35 @@ void DownloadSymbol()
 }
 
 
-// ¶¨Òå´°¿Ú¹ı³Ì
+// å®šä¹‰çª—å£è¿‡ç¨‹
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
 	case WM_CREATE:
 	{
-		//SetTimer(hwnd, TIMER_PROGRESSBAR, 100, NULL); // Ã¿100ºÁÃë¸üĞÂÒ»´Î
-		SetTimer(hwnd, TIMER_TEXT, 500, NULL); // Ã¿500ºÁÃë¸üĞÂÒ»´Î		
+		//SetTimer(hwnd, TIMER_PROGRESSBAR, 100, NULL); // æ¯100æ¯«ç§’æ›´æ–°ä¸€æ¬¡
+		SetTimer(hwnd, TIMER_TEXT, 500, NULL); // æ¯500æ¯«ç§’æ›´æ–°ä¸€æ¬¡
 		InitThread();
 		break;
 	}
 	case WM_DESTROY:
 	{
-		//KillTimer(hwnd, TIMER_PROGRESSBAR); // ¹Ø±Õ¶¨Ê±Æ÷
-		KillTimer(hwnd, TIMER_TEXT); // ¹Ø±Õ¶¨Ê±Æ÷
+		//KillTimer(hwnd, TIMER_PROGRESSBAR); // å…³é—­å®šæ—¶å™¨
+		KillTimer(hwnd, TIMER_TEXT); // å…³é—­å®šæ—¶å™¨
 		PostQuitMessage(0);
 		break;
 	}
 	case USER_PROGRESS_BAR:
 	{
-		// ¸üĞÂ½ø¶ÈÌõ
+		// æ›´æ–°è¿›åº¦æ¡
 		progress = nWidth / 100 * wParam;
 		if (progress > nWidth)
 		{
-			progress = 0; // ÖØÖÃ½ø¶È
+			progress = 0; // é‡ç½®è¿›åº¦
 		}
-		displayText = L"ÏÂÔØ" + modText + L"·ûºÅ±í(" + std::to_wstring(wParam) + L"%)";
-		InvalidateRect(hwnd, NULL, TRUE); // ÇëÇóÖØ»æ
+		displayText = L"ä¸‹è½½" + modText + L"ç¬¦å·è¡¨(" + std::to_wstring(wParam) + L"%)";
+		InvalidateRect(hwnd, NULL, TRUE); // è¯·æ±‚é‡ç»˜
 		break;
 	}
 	case WM_TIMER:
@@ -161,21 +162,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (progress == nWidth || progress == 0)
 			{
-				//»·ĞÎ¼ÆÊıÆ÷
+				//ç¯å½¢è®¡æ•°å™¨
 				dotCount = (dotCount + 1) % (MAX_DOTS + 1);
 
-				// ÇĞ»»µ½ÏÂÒ»¸öÎÄ±¾
+				// åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªæ–‡æœ¬
 				//if (dotCount == 0) {
-				//	currentTextIndex = (currentTextIndex + 1) % 2; // Ö»ÓĞÁ½¸öÎÄ±¾
+				//	currentTextIndex = (currentTextIndex + 1) % 2; // åªæœ‰ä¸¤ä¸ªæ–‡æœ¬
 				//}
-				// ¸ù¾İµ±Ç°ÎÄ±¾Ë÷ÒıÑ¡ÔñÒªÏÔÊ¾µÄÎÄ±¾
+				// æ ¹æ®å½“å‰æ–‡æœ¬ç´¢å¼•é€‰æ‹©è¦æ˜¾ç¤ºçš„æ–‡æœ¬
 				std::wstring dots(dotCount, L'.');
 				displayText = baseText1 + dots;
 
 				if (progress == nWidth)
 				{
 					tickcount++;
-				}				
+				}
 
 				//if (currentTextIndex == 0) {
 				//	displayText = baseText1 + dots;
@@ -184,26 +185,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				//	displayText = baseText2 + dots;
 				//}
 			}
-		}		
+		}
 		else if (wParam == TIMER_PROGRESSBAR)
 		{
-			//// ¸üĞÂ½ø¶ÈÌõ
+			//// æ›´æ–°è¿›åº¦æ¡
 			//progress += 10;
 			//if (progress > nWidth)
-			//{ 
-			//	progress = 0; // ÖØÖÃ½ø¶È
+			//{
+			//	progress = 0; // é‡ç½®è¿›åº¦
 			//}
 		}
-		InvalidateRect(hwnd, NULL, TRUE); // ÇëÇóÖØ»æ
+		InvalidateRect(hwnd, NULL, TRUE); // è¯·æ±‚é‡ç»˜
 		break;
 	}
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
-		DrawBackground(hdc);  //äÖÈ¾±³¾°
+		DrawBackground(hdc);  //æ¸²æŸ“èƒŒæ™¯
 		DrawString(hwnd, hdc);
-		DrawProgressBar(hwnd, hdc, ps); //äÖÈ¾½ø¶ÈÌõ
+		DrawProgressBar(hwnd, hdc, ps); //æ¸²æŸ“è¿›åº¦æ¡
 		EndPaint(hwnd, &ps);
 		break;
 	}
@@ -219,10 +220,10 @@ int DisplayBrand(
 	_In_           int       nShowCmd
 )
 {
-	// ×¢²á´°¿ÚÀà
+	// æ³¨å†Œçª—å£ç±»
 	const wchar_t CLASS_NAME[] = L"DisplayBrandClass";
 
-	// ×¢²á´°¿ÚÀà
+	// æ³¨å†Œçª—å£ç±»
 	WNDCLASSEX wcex = { 0 };
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -244,25 +245,25 @@ int DisplayBrand(
 	curdir = FileSystem::GetModuleDirectory(NULL);
 	if (curdir.empty())
 	{
-		Common::ReportSeriousError("%s[%d] »ñÈ¡³ÌĞòÄ¿Â¼Ê§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] è·å–ç¨‹åºç›®å½•å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return 0;
 	}
 	curdir += L"res\\mm.pak";
 
-	if (!Common::fileExists(curdir) || 
+	if (!Common::fileExists(curdir) ||
 		(_stricmp(calculateMD5(Common::wideStringToString2(curdir)).c_str(),"5F499EB6E77B203FA96DEB2A121FBA13") != 0))
 	{
-		Common::ReportSeriousError("%s[%d] ×ÊÔ´ÎÄ¼şÒÑËğ»µ! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] èµ„æºæ–‡ä»¶å·²æŸå! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 		return 0;
 	}
 
 
-	// ¼ÓÔØÍ¼Æ¬
+	// åŠ è½½å›¾ç‰‡
 	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, curdir.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
 	DWORD err = GetLastError();
 
-	// »ñÈ¡Í¼Æ¬Ô­Ê¼³ß´ç
+	// è·å–å›¾ç‰‡åŸå§‹å°ºå¯¸
 	BITMAP bitmap;
 	GetObject(hBitmap, sizeof(BITMAP), &bitmap);
 	int originalWidth = bitmap.bmWidth;
@@ -273,45 +274,45 @@ int DisplayBrand(
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-	// Ëõ·Å»ò²Ã¼ôÍ¼Æ¬ÒÔÊÊÓ¦ÆÁÄ»
+	// ç¼©æ”¾æˆ–è£å‰ªå›¾ç‰‡ä»¥é€‚åº”å±å¹•
 	int width, height, x, y;
 	if (originalWidth > screenWidth || originalHeight > screenHeight)
 	{
-		// Í¼Æ¬³ß´ç´óÓÚÆÁÄ»³ß´ç£¬ĞèÒª½øĞĞËõ·Å»ò²Ã¼ô
-		// ¼ÆËãËõ·Å±ÈÀı
+		// å›¾ç‰‡å°ºå¯¸å¤§äºå±å¹•å°ºå¯¸ï¼Œéœ€è¦è¿›è¡Œç¼©æ”¾æˆ–è£å‰ª
+		// è®¡ç®—ç¼©æ”¾æ¯”ä¾‹
 		float scaleWidth = (float)screenWidth / originalWidth;
 		float scaleHeight = (float)screenHeight / originalHeight;
 		float scale = min(scaleWidth, scaleHeight);
 
-		// Ëõ·ÅÍ¼Æ¬³ß´ç
+		// ç¼©æ”¾å›¾ç‰‡å°ºå¯¸
 		width = (int)(originalWidth * scale);
 		height = (int)(originalHeight * scale);
 
-		// ¼ÆËãÆÁÄ»ÖĞĞÄÎ»ÖÃ
+		// è®¡ç®—å±å¹•ä¸­å¿ƒä½ç½®
 		x = (screenWidth - width) / 2;
 		y = (screenHeight - height) / 2;
 	}
 	else
 	{
-		// Í¼Æ¬³ß´çĞ¡ÓÚµÈÓÚÆÁÄ»³ß´ç£¬Ö±½Ó¾ÓÖĞÏÔÊ¾
+		// å›¾ç‰‡å°ºå¯¸å°äºç­‰äºå±å¹•å°ºå¯¸ï¼Œç›´æ¥å±…ä¸­æ˜¾ç¤º
 		width = originalWidth;
 		height = originalHeight;
 		x = (screenWidth - width) / 2;
 		y = (screenHeight - height) / 2;
 	}
 
-	// ´´½¨´°¿Ú
+	// åˆ›å»ºçª—å£
 	HWND hwnd = CreateWindowEx(
-		0,                              // À©Õ¹´°¿ÚÑùÊ½
-		CLASS_NAME,                     // ´°¿ÚÀàÃû
-		L"",                // ´°¿Ú±êÌâ
-		WS_POPUP,                       // ´°¿ÚÑùÊ½
-		x, y,                           // ´°¿ÚÎ»ÖÃ
-		width, height,                       // ´°¿Ú³ß´ç
-		NULL,                           // ¸¸´°¿Ú¾ä±ú
-		NULL,                           // ²Ëµ¥¾ä±ú
-		hInstance,                      // ÊµÀı¾ä±ú
-		NULL                            // ¸½¼ÓÊı¾İÖ¸Õë
+		0,                              // æ‰©å±•çª—å£æ ·å¼
+		CLASS_NAME,                     // çª—å£ç±»å
+		L"",                // çª—å£æ ‡é¢˜
+		WS_POPUP,                       // çª—å£æ ·å¼
+		x, y,                           // çª—å£ä½ç½®
+		width, height,                       // çª—å£å°ºå¯¸
+		NULL,                           // çˆ¶çª—å£å¥æŸ„
+		NULL,                           // èœå•å¥æŸ„
+		hInstance,                      // å®ä¾‹å¥æŸ„
+		NULL                            // é™„åŠ æ•°æ®æŒ‡é’ˆ
 	);
 
 	if (hwnd == NULL)
@@ -323,7 +324,7 @@ int DisplayBrand(
 	ShowWindow(hwnd, nShowCmd);
 	UpdateWindow(hwnd);
 
-	// ÏûÏ¢Ñ­»·
+	// æ¶ˆæ¯å¾ªç¯
 	MSG msg = { 0 };
 
 	while (1)
@@ -387,7 +388,7 @@ PROCESS_INFORMATION _StartProcess_(PSTARTUP_INFO pStartInfo)
 		&pi
 	))
 	{
-		Common::ReportSeriousError("%s[%d] Æô¶¯Ğé»Ãµ÷ÊÔÆ÷Ê§°Ü! (error: %d)", __func__, __LINE__, GetLastError());
+		Common::ReportSeriousError("%s[%d] å¯åŠ¨è™šå¹»è°ƒè¯•å™¨å¤±è´¥! (é”™è¯¯ç ï¼š%d)", __func__, __LINE__, GetLastError());
 	}
 	else
 	{
@@ -420,6 +421,81 @@ void StartProcess()
 	}
 }
 
+// æ–°ç‰ˆç»Ÿä¸€å…¥å£ã€‚æ—§å¯åŠ¨å™¨ä¼šå…ˆéªŒè¯ res\mm.pak å¹¶å¯åŠ¨å·²ç»æ·˜æ±°çš„
+// UnrealDbg.aesï¼›å‘å¸ƒç›®å½•ç²¾ç®€åï¼Œç»§ç»­èµ°é‚£æ¡è·¯å¾„ä¼šæŠŠâ€œå†å²å¯åŠ¨å›¾ä¸å­˜åœ¨â€
+// é”™æŠ¥æˆâ€œèµ„æºæ–‡ä»¶å·²æŸåâ€ã€‚è¿™é‡Œç›´æ¥è½¬äº¤ç»™åŒä¸€é…ç½®çš„åŸç”Ÿ WinUI å‰ç«¯ã€‚
+bool LaunchWinUiFrontend()
+{
+	std::vector<wchar_t> modulePath(32768, L'\0');
+	const DWORD copied = GetModuleFileNameW(nullptr, modulePath.data(), static_cast<DWORD>(modulePath.size()));
+	if (copied == 0 || copied >= modulePath.size())
+	{
+		const DWORD error = copied == 0 ? GetLastError() : ERROR_FILENAME_EXCED_RANGE;
+		const std::wstring message = L"æ— æ³•å®šä½å¯åŠ¨å™¨è‡ªèº«è·¯å¾„ã€‚\r\n\r\né”™è¯¯ç ï¼š" + std::to_wstring(error) +
+			L"\r\nåŸå› ï¼šWindows æœªèƒ½è¿”å›å®Œæ•´çš„å¯åŠ¨å™¨æ–‡ä»¶è·¯å¾„ã€‚\r\n\r\n"
+			L"è§£å†³æ–¹æ¡ˆï¼šè¯·å°†å®Œæ•´å‘å¸ƒç›®å½•é‡æ–°éƒ¨ç½²åˆ°è¾ƒçŸ­è·¯å¾„åå†è¯•ã€‚";
+		MessageBoxW(nullptr, message.c_str(), L"è™šå¹»è°ƒè¯•å™¨å¯åŠ¨å¤±è´¥", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	const std::wstring launcherExecutable(modulePath.data(), copied);
+	const size_t executableSeparator = launcherExecutable.find_last_of(L"\\/");
+	if (executableSeparator == std::wstring::npos)
+	{
+		MessageBoxW(nullptr, L"æ— æ³•ä»å¯åŠ¨å™¨è·¯å¾„è§£æå‘å¸ƒç›®å½•ã€‚è¯·ä»å®Œæ•´çš„ x64 å‘å¸ƒç›®å½•è¿è¡Œç¨‹åºã€‚",
+			L"è™šå¹»è°ƒè¯•å™¨å¯åŠ¨å¤±è´¥", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	const std::wstring launcherDirectory = launcherExecutable.substr(0, executableSeparator);
+	const size_t configurationSeparator = launcherDirectory.find_last_of(L"\\/");
+	if (configurationSeparator == std::wstring::npos)
+	{
+		MessageBoxW(nullptr, L"æ— æ³•ä»å¯åŠ¨å™¨è·¯å¾„è§£ææ„å»ºé…ç½®ã€‚è¯·ä»å®Œæ•´çš„ x64 å‘å¸ƒç›®å½•è¿è¡Œç¨‹åºã€‚",
+			L"è™šå¹»è°ƒè¯•å™¨å¯åŠ¨å¤±è´¥", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	const std::wstring configuration = launcherDirectory.substr(configurationSeparator + 1);
+	const std::wstring x64Directory = launcherDirectory.substr(0, configurationSeparator);
+	const std::wstring frontendPath = x64Directory + L"\\WinUI\\" + configuration + L"\\UnrealDbgNativeWinUI.exe";
+	const DWORD attributes = GetFileAttributesW(frontendPath.c_str());
+	if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+	{
+		const std::wstring message =
+			L"æœªæ‰¾åˆ°åŸç”Ÿ WinUI å‰ç«¯ï¼Œæ— æ³•å¯åŠ¨è™šå¹»è°ƒè¯•å™¨ã€‚\r\n\r\n"
+			L"ç¼ºå¤±æ–‡ä»¶ï¼š\r\n" + frontendPath + L"\r\n\r\n"
+			L"åŸå› ï¼šå½“å‰å‘å¸ƒç›®å½•ä¸å®Œæ•´ï¼Œæˆ–ä»…å¤åˆ¶äº† x64\\Release è€Œæ²¡æœ‰åŒæ—¶å¤åˆ¶ x64\\WinUI\\" + configuration + L"ã€‚\r\n\r\n"
+			L"è§£å†³æ–¹æ¡ˆï¼šè¯·ä¿ç•™å®Œæ•´ x64 ç›®å½•ç»“æ„ï¼Œæˆ–ç›´æ¥è¿è¡Œ x64\\WinUI\\" + configuration +
+			L"\\UnrealDbgNativeWinUI.exeã€‚";
+		MessageBoxW(nullptr, message.c_str(), L"è™šå¹»è°ƒè¯•å™¨å¯åŠ¨å¤±è´¥", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	STARTUPINFOW startup{};
+	startup.cb = sizeof(startup);
+	PROCESS_INFORMATION process{};
+	std::wstring commandLine = L"\"" + frontendPath + L"\"";
+	const size_t workingDirectorySeparator = frontendPath.find_last_of(L"\\/");
+	const std::wstring workingDirectory = frontendPath.substr(0, workingDirectorySeparator);
+	if (!CreateProcessW(frontendPath.c_str(), &commandLine[0], nullptr, nullptr, FALSE, 0, nullptr,
+		workingDirectory.c_str(), &startup, &process))
+	{
+		const DWORD error = GetLastError();
+		const std::wstring message =
+			L"åŸç”Ÿ WinUI å‰ç«¯å¯åŠ¨å¤±è´¥ã€‚\r\n\r\n"
+			L"æ–‡ä»¶ï¼š\r\n" + frontendPath + L"\r\n\r\n"
+			L"é”™è¯¯ç ï¼š" + std::to_wstring(error) + L"\r\n"
+			L"åŸå› ï¼šWindows æ— æ³•åˆ›å»ºå‰ç«¯è¿›ç¨‹ï¼Œå¯èƒ½æ˜¯æ–‡ä»¶è¢«å®‰å…¨è½¯ä»¶æ‹¦æˆªã€è¿è¡Œæ—¶ç»„ä»¶ç¼ºå¤±æˆ–ç›®å½•æƒé™ä¸è¶³ã€‚\r\n\r\n"
+			L"è§£å†³æ–¹æ¡ˆï¼šç¡®è®¤ Microsoft.WindowsAppRuntime.Bootstrap.dll ä½äº WinUI ç›®å½•ï¼Œå®‰è£… Windows App Runtime 1.8 x64ï¼Œ"
+			L"å¹¶ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œï¼›è‹¥ä»å¤±è´¥ï¼Œè¯·æŸ¥çœ‹ WinUI\\" + configuration + L"\\Log\\log.iniã€‚";
+		MessageBoxW(nullptr, message.c_str(), L"è™šå¹»è°ƒè¯•å™¨å¯åŠ¨å¤±è´¥", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	CloseHandle(process.hThread);
+	CloseHandle(process.hProcess);
+	return true;
+}
+
 int CALLBACK WinMain(
 	_In_           HINSTANCE hInstance,
 	_In_opt_       HINSTANCE hPrevInstance,
@@ -427,9 +503,7 @@ int CALLBACK WinMain(
 	_In_           int       nShowCmd
 )
 {
-	if (DisplayBrand(hInstance, hPrevInstance, lpCmdLine, nShowCmd))
-	{
-		StartProcess();
-	}	
-	return 0;
+	// ä¸å†è°ƒç”¨ DisplayBrandï¼šå®ƒå±äºæ—§ Delphi/AES å¯åŠ¨é“¾ï¼Œå¹¶ä¾èµ–å·²ç»
+	// å½’æ¡£çš„ mm.pak å¯åŠ¨å›¾ç‰‡ã€‚é»˜è®¤å…¥å£ç°åœ¨å§‹ç»ˆä½¿ç”¨åŸç”Ÿ WinUI 3 å‰ç«¯ã€‚
+	return LaunchWinUiFrontend() ? 0 : 1;
 }

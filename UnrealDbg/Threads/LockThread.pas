@@ -1,4 +1,4 @@
-unit LockThread;
+ï»¿unit LockThread;
 
 interface
 
@@ -18,7 +18,7 @@ type
   private
     FLock: TRTLCriticalSection;
   public
-    {*********************************Ïß³ÌÀà·½·¨*********************************}
+    {*********************************çº¿ç¨‹ç±»æ–¹æ³•*********************************}
     procedure Lock;
     procedure UnLock;
     constructor Create(bFlag: Boolean);
@@ -68,7 +68,7 @@ begin
         if SameText(ExtractFileName(sName), ModuleName) then begin
           GetModuleInformation(hProcess, Module, @modInfo, SizeOf(MODULEINFO));
           Result := DWORD_PTR(modInfo.lpBaseOfDll);
-//          MessageBox(0,PChar(Result.ToHexString),'Ä£¿é»ùµØÖ·:', MB_SYSTEMMODAL);
+//          MessageBox(0,PChar(Result.ToHexString),'æ¨¡å—åŸºåœ°å€:', MB_SYSTEMMODAL);
           Break;
         end;
       end;
@@ -84,7 +84,7 @@ end;
 constructor TLockThread.Create(bFlag: Boolean);
 begin
   try
-    inherited Create(bFlag);  //False´´½¨Ïß³ÌºóÁ¢¼´Ö´ĞĞ
+    inherited Create(bFlag);  //Falseåˆ›å»ºçº¿ç¨‹åç«‹å³æ‰§è¡Œ
     InitializeCriticalSection(FLock);
     m_MsgQueue := TExtQueue.Create;
     m_handled_GetTickCount := False;
@@ -128,13 +128,13 @@ var
   boRes: BOOL;
 begin
   try
-    m_Open := True;  //±êÊ¶Ïß³ÌÒÑ¾­Ö´ĞĞ
+    m_Open := True;  //æ ‡è¯†çº¿ç¨‹å·²ç»æ‰§è¡Œ
 
     if Form1.m_targetProcessId <> 0 then begin
-      {»ñÈ¡½ø³Ì¾ä±ú}
+      {è·å–è¿›ç¨‹å¥æŸ„}
       processhandle := OpenProcess(PROCESS_ALL_ACCESS, False, Form1.m_targetProcessId);
 
-      //Ëø¶¨Ä¿±êµØÖ·µÄÖµ
+      //é”å®šç›®æ ‡åœ°å€çš„å€¼
       while IsOpen do begin
         if (not g_boEnabled_tl_confrontation_TL) or
           (not g_boHandlerGetTickCountCheck_TL) then begin        
@@ -152,25 +152,25 @@ begin
             if boRes then begin
               if m_handled_GetTickCount = False then begin
                 m_handled_GetTickCount := True;
-                sLog.outInfo(_STR_TL_EXE + ' ÒÑ´¦ÀíGetTickCount¼ì²â');
+                sLog.outInfo(_STR_TL_EXE + ' å·²å¤„ç†GetTickCountæ£€æµ‹');
               end;
             end else begin
-              sLog.outDebug(_STR_TL_EXE + ' error:' + GetLastError.ToString);
+              sLog.outDebug(_STR_TL_EXE + ' é”™è¯¯ç ï¼š' + GetLastError.ToString);
               Sleep(1500);
             end;
           end;
         end;
-        Sleep(50);  //Ëø¶¨¼ä¸ô50ms
+        Sleep(50);  //é”å®šé—´éš”50ms
       end;
       CloseHandle(processhandle);
-//      sLog.outDebug(_STR_TL_EXE + ' ÍË³öËø¶¨Ïß³Ì');
+//      sLog.outDebug(_STR_TL_EXE + ' é€€å‡ºé”å®šçº¿ç¨‹');
     end;
   except on e:Exception do
     sLog.outError('[TLockThread.Execute]===>' + e.Message);
   end;
 end;
 
-//´ÓÏûÏ¢¶ÓÁĞÖĞÈ¡³öÏûÏ¢
+//ä»æ¶ˆæ¯é˜Ÿåˆ—ä¸­å–å‡ºæ¶ˆæ¯
 function TLockThread.GetMsg(pMsgRcd: pTMsgRcd): Boolean;
 var
   TmpMsgRcd: pTMsgRcd;
@@ -199,7 +199,7 @@ begin
   end;
 end;
 
-//½«ÏûÏ¢²åÈëÏûÏ¢¶ÓÁĞ
+//å°†æ¶ˆæ¯æ’å…¥æ¶ˆæ¯é˜Ÿåˆ—
 procedure TLockThread.SendMsg(MsgRcd: TMsgRcd);
 var
   pMsgRcd: pTMsgRcd;
@@ -219,7 +219,7 @@ begin
   end;
 end;
 
-//ÅÉÇ²ÏûÏ¢
+//æ´¾é£æ¶ˆæ¯
 procedure TLockThread.DispatchMsg(MsgRcd: TMsgRcd);
 begin
   try

@@ -12,39 +12,141 @@
 #include <mutex>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
+#include <limits>
+#include <cstdlib>
+#include <cstring>
 #include "Common.h"
 
 namespace Common
 {
 
-	HANDLE hMutex;// ���࿪
+	HANDLE hMutex;// 防多开
 	bool isIntel = false;
 	bool isAMD = false;
-	std::mutex mutex; // ������
+	std::mutex mutex; // 互斥锁
 
-	//stringתwstring
+	namespace
+	{
+		struct ErrorDetails
+		{
+			const wchar_t* reason;
+			const wchar_t* solution;
+		};
+
+		ErrorDetails ExplainWin32Error(const DWORD error)
+		{
+			switch (error)
+			{
+			case ERROR_INVALID_IMAGE_HASH:
+				return { L"Windows 拒绝加载驱动映像：驱动签名无效、测试证书不受信任，或系统未启用测试签名。",
+					L"开发测试版请以管理员身份把 Certificates 目录中的 .cer 导入本地计算机的“受信任的根证书颁发机构”和“受信任的发布者”，确认测试签名设置后重启；正式环境请使用受 Microsoft 信任的正式签名。" };
+			case ERROR_GEN_FAILURE:
+				return { L"系统返回通用失败码 31，真实根因通常在服务退出码、设备状态或驱动日志中。",
+					L"不要只依据 31 判断原因；检查 VT_Driver 服务状态、Log\\log.ini 和 Log\\UnrealDbgDll.log，并以其中更具体的错误码为准。" };
+			case ERROR_ACCESS_DENIED:
+				return { L"访问被拒绝，当前进程权限不足或对象被安全策略保护。",
+					L"以管理员身份运行，检查文件/服务权限及 Windows 安全软件拦截记录。" };
+			case ERROR_FILE_NOT_FOUND:
+				return { L"找不到指定文件，文件可能缺失、改名或部署目录不正确。",
+					L"确认文件路径、文件名和位数匹配，并将依赖文件部署到程序目录后重试。" };
+			case ERROR_PATH_NOT_FOUND:
+				return { L"找不到指定目录或路径中的某一级目录。",
+					L"检查程序、配置和日志目录，创建缺失目录后重试。" };
+			case ERROR_MOD_NOT_FOUND:
+			case ERROR_DLL_NOT_FOUND:
+				return { L"找不到所需 DLL 或其依赖项，可能是文件缺失或 32/64 位不匹配。",
+					L"确认 UnrealDbgDll.dll、D-encryption.dll 及运行库均已部署，且全部与当前进程使用相同位数。" };
+			case ERROR_PROC_NOT_FOUND:
+				return { L"DLL 中不存在调用方要求的导出函数，组件版本不匹配。",
+					L"部署与主程序配套的 DLL，确认导出名称和架构一致。" };
+			case ERROR_INVALID_PARAMETER:
+				return { L"传入参数为空、越界或格式不符合 API 要求。",
+					L"检查输入文件、密钥、缓冲区和长度；修正参数后重试。" };
+			case ERROR_INVALID_DATA:
+				return { L"输入数据、配置或密文格式无效，可能已损坏或版本不匹配。",
+					L"确认文件未被截断，使用匹配的密钥和版本重新生成数据后重试。" };
+			case ERROR_NOT_ENOUGH_MEMORY:
+				return { L"系统或进程无法分配足够内存。",
+					L"关闭无关程序、检查内存占用并重启本程序后重试。" };
+			case ERROR_BUFFER_OVERFLOW:
+			case ERROR_INSUFFICIENT_BUFFER:
+				return { L"输出缓冲区不足，无法容纳完整结果。",
+					L"增大调用方缓冲区，并按接口返回的所需长度重新调用。" };
+			default:
+				return { L"Windows 返回了未在加密模块诊断表中收录的错误。",
+					L"保留错误码、系统原文和触发位置，检查文件、权限、密钥及组件版本，并查看前端日志。" };
+			}
+		}
+
+		std::wstring GetSystemErrorText(const DWORD error)
+		{
+			LPWSTR buffer = nullptr;
+			const DWORD length = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+				FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error, 0, reinterpret_cast<LPWSTR>(&buffer), 0, nullptr);
+			if (length == 0 || buffer == nullptr)
+			{
+				return L"系统未提供错误文本";
+			}
+			std::wstring result(buffer, length);
+			LocalFree(buffer);
+			while (!result.empty() && (result.back() == L'\r' || result.back() == L'\n' || result.back() == L' '))
+			{
+				result.pop_back();
+			}
+			return result.empty() ? L"系统未提供错误文本" : result;
+		}
+
+		bool TryExtractErrorCode(const std::string& text, DWORD& result)
+		{
+			const char* markers[] = { "error:", "error=", "error code:", "error code=", "错误码：", "错误码:" };
+			for (const char* marker : markers)
+			{
+				const std::string::size_type position = text.find(marker);
+				if (position == std::string::npos)
+				{
+					continue;
+				}
+				std::string::size_type number = position + std::strlen(marker);
+				while (number < text.size() && (text[number] == ' ' || text[number] == '\t'))
+				{
+					++number;
+				}
+				char* end = nullptr;
+				const unsigned long parsed = std::strtoul(text.c_str() + number, &end, 10);
+				if (end != text.c_str() + number && parsed <= (std::numeric_limits<DWORD>::max)())
+				{
+					result = static_cast<DWORD>(parsed);
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	//string转wstring
 	std::wstring stringToWideString(const std::string& narrowStr)
 	{
-		// ��ȡ���ַ��ַ����ĳ��ȣ���������ֹ����
+		// 获取宽字符字符串的长度（包括空终止符）
 		int wideStrLength = MultiByteToWideChar(CP_UTF8, 0, narrowStr.c_str(), -1, nullptr, 0);
 
-		// �����ڴ����洢���ַ��ַ���
+		// 分配内存来存储宽字符字符串
 		wchar_t* wideStr = new wchar_t[wideStrLength];
 
-		// ��խ�ַ�ת��Ϊ���ַ�
+		// 将窄字符转换为宽字符
 		MultiByteToWideChar(CP_UTF8, 0, narrowStr.c_str(), -1, wideStr, wideStrLength);
 
-		// ���� std::wstring ����
+		// 创建 std::wstring 对象
 		std::wstring result(wideStr);
 
-		// �ͷ��ڴ�
+		// 释放内存
 		delete[] wideStr;
 
 		return result;
 	}
 
-	//wstringתstring
-	//ע��: ��Windows�½�utf16תutf8��std::string���޷�������ʾ��
+	//wstring转string
+	//注意: 在Windows下将utf16转utf8的std::string是无法正常显示的
 	std::string wideStringToString(const std::wstring& wideStr)
 	{
 		int bufferSize = WideCharToMultiByte(CP_UTF8, 0, wideStr.c_str(), -1, nullptr, 0, nullptr, nullptr);
@@ -53,8 +155,8 @@ namespace Common
 		return str;
 	}
 
-	//wstringת����string
-	//ע��: ����ansi������ʾ���ģ����벻Ҫ���������ݴ�����ʹ��������Ϊ��ͬ��������ش���ҳ����ͬ.
+	//wstring转本地string
+	//注意: 本地ansi可以显示中文，但请不要再网络内容传输中使用它，因为不同计算机本地代码页不相同.
 	std::string wideStringToString2(const std::wstring& wideStr)
 	{
 		int bufferSize = WideCharToMultiByte(CP_ACP, 0, wideStr.c_str(), -1, nullptr, 0, nullptr, nullptr);
@@ -63,46 +165,53 @@ namespace Common
 		return str;
 	}
 
-	//wchar_t*תstring
+	//wchar_t*转string
 	std::string wcharToString(const wchar_t* str)
 	{
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 		return converter.to_bytes(str);
 	}
 
-	//wchar_t*תwstring
+	//wchar_t*转wstring
 	std::wstring wcharToWideString(const wchar_t* wcharStr)
 	{
-		// ʹ�ù��캯���� wchar_t* ת��Ϊ std::wstring
+		// 使用构造函数将 wchar_t* 转换为 std::wstring
 		std::wstring wideStr(wcharStr);
 
 		return wideStr;
 	}
 
-	//char*תwchar_t*
+	//char*转wchar_t*
 	std::wstring ConvertCharToWchar(const char* charStr)
 	{
-		const int charStrLength = strlen(charStr) + 1; // char �ַ����ĳ��ȣ����� null ��ֹ����
+		if (charStr == nullptr)
+		{
+			return L"";
+		}
+		const size_t sourceLength = strlen(charStr);
+		if (sourceLength >= static_cast<size_t>(INT_MAX))
+		{
+			return L"";
+		}
+		const int charStrLength = static_cast<int>(sourceLength + 1); // char 字符串的长度（包括 null 终止符）
 
-		// ���� wchar_t �ַ�������Ļ�������С
+		// 计算 wchar_t 字符串所需的缓冲区大小
 		const int wcharStrSize = MultiByteToWideChar(CP_UTF8, 0, charStr, charStrLength, nullptr, 0);
+		if (wcharStrSize <= 0)
+		{
+			return L"";
+		}
 
-		// ���� wchar_t ������
-		wchar_t* wcharStr = new wchar_t[wcharStrSize];
-
-		// ִ��ת��
-		MultiByteToWideChar(CP_UTF8, 0, charStr, charStrLength, wcharStr, wcharStrSize);
-
-		// �� wchar_t �ַ�����װ�� std::wstring ����
-		std::wstring result(wcharStr);
-
-		// �ͷ��ڴ�
-		delete[] wcharStr;
-
+		std::wstring result(static_cast<size_t>(wcharStrSize), L'\0');
+		if (MultiByteToWideChar(CP_UTF8, 0, charStr, charStrLength, &result[0], wcharStrSize) == 0)
+		{
+			return L"";
+		}
+		result.pop_back(); // 移除 MultiByteToWideChar 写入的 null 终止符
 		return result;
 	}
 
-	//gbkתutf8
+	//gbk转utf8
 	std::string GbkToUTF8(const std::string& gbkString)
 	{
 		int bufferSize = MultiByteToWideChar(CP_ACP, 0, gbkString.c_str(), -1, nullptr, 0);
@@ -116,7 +225,7 @@ namespace Common
 		return utf8String;
 	}
 
-	//gbkתutf8
+	//gbk转utf8
 	//std::string GbkToUTF8(const std::string& gbkString)
 	//{
 	//	int bufferSize = MultiByteToWideChar(CP_ACP, 0, gbkString.c_str(), -1, nullptr, 0);
@@ -130,13 +239,13 @@ namespace Common
 	//	return utf8String;
 	//}
 
-	// �� utf8 ������ַ���ת��Ϊ GBK ����
+	// 将 utf8 编码的字符串转换为 GBK 编码
 	std::string utf8ToGbk(const std::string& utf8String)
 	{
 		int bufferSize = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, nullptr, 0);
 		if (bufferSize == 0)
 		{
-			// ת��ʧ�ܣ����Ը���ʵ��������д�����
+			// 转换失败，可以根据实际情况进行错误处理
 			return "";
 		}
 
@@ -146,7 +255,7 @@ namespace Common
 		bufferSize = WideCharToMultiByte(CP_ACP, 0, wideString.c_str(), -1, nullptr, 0, nullptr, nullptr);
 		if (bufferSize == 0)
 		{
-			// ת��ʧ�ܣ����Ը���ʵ��������д�����
+			// 转换失败，可以根据实际情况进行错误处理
 			return "";
 		}
 
@@ -156,7 +265,7 @@ namespace Common
 		return gbkString;
 	}
 
-	// �� utf8 ������ַ���ת��Ϊ Unicode ����
+	// 将 utf8 编码的字符串转换为 Unicode 编码
 	std::wstring utf8ToUnicode(const std::string& utf8String)
 	{
 		int bufferSize = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, nullptr, 0);
@@ -165,78 +274,78 @@ namespace Common
 		return unicodeString;
 	}
 
-	//���ش���ҳתstd::wstring
+	//本地代码页转std::wstring
 	std::wstring ConvertLocalCodePageToWideString(const std::string& str)
 	{
 		int wideStrLen = MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, nullptr, 0);
 		if (wideStrLen == 0)
 		{
-			// ת��ʧ�ܣ����Ը���ʵ�������������
+			// 转换失败，可以根据实际情况处理错误
 			return L"";
 		}
 
 		std::wstring wideStr(wideStrLen, L'\0');
 		if (MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, &wideStr[0], wideStrLen) == 0)
 		{
-			// ת��ʧ�ܣ����Ը���ʵ�������������
+			// 转换失败，可以根据实际情况处理错误
 			return L"";
 		}
 
-		// ȥ��ĩβ�Ŀ��ַ�
+		// 去掉末尾的空字符
 		wideStr.resize(wideStrLen - 1);
 
 		return wideStr;
 	}
 
-	//���ش���ҳתstd::string
+	//本地代码页转std::string
 	std::string LocalCodePageToUtf8(const std::string& localString)
 	{
 		int wideCharLength = MultiByteToWideChar(CP_ACP, 0, localString.c_str(), -1, nullptr, 0);
 		if (wideCharLength == 0) {
-			// ת��ʧ��
+			// 转换失败
 			return "";
 		}
 
 		std::wstring wideString(wideCharLength, L'\0');
 		if (MultiByteToWideChar(CP_ACP, 0, localString.c_str(), -1, &wideString[0], wideCharLength) == 0) {
-			// ת��ʧ��
+			// 转换失败
 			return "";
 		}
 
 		int utf8Length = WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, nullptr, 0, nullptr, nullptr);
 		if (utf8Length == 0) {
-			// ת��ʧ��
+			// 转换失败
 			return "";
 		}
 
 		std::string utf8String(utf8Length, '\0');
 		if (WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, &utf8String[0], utf8Length, nullptr, nullptr) == 0) {
-			// ת��ʧ��
+			// 转换失败
 			return "";
 		}
 
 		return utf8String;
 	}
 
-	//UnicodeתUtf8
+	//Unicode转Utf8
 	std::string UnicodeToUtf8(const std::wstring& unicodeString)
 	{
 		int utf8Length = WideCharToMultiByte(CP_UTF8, 0, unicodeString.c_str(), -1, nullptr, 0, nullptr, nullptr);
 		if (utf8Length == 0) {
-			// ת��ʧ��
+			// 转换失败
 			return "";
 		}
 
 		std::string utf8String(utf8Length, '\0');
 		if (WideCharToMultiByte(CP_UTF8, 0, unicodeString.c_str(), -1, &utf8String[0], utf8Length, nullptr, nullptr) == 0) {
-			// ת��ʧ��
+			// 转换失败
 			return "";
 		}
 
 		return utf8String;
 	}
 
-	//����16λ����ַ���
+	//生成16位随机字符串
 	std::string generateRandomString()
 	{
 		const std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -244,7 +353,7 @@ namespace Common
 
 		std::random_device rd;
 		std::mt19937 generator(rd());
-		std::uniform_int_distribution<int> distribution(0, characters.length() - 1);
+		std::uniform_int_distribution<int> distribution(0, static_cast<int>(characters.length()) - 1);
 
 		std::string randomString;
 
@@ -255,7 +364,7 @@ namespace Common
 		return randomString;
 	}
 
-	//�ַ�����ȡ
+	//字符串截取
 	std::string truncateString(const std::string& input, int length)
 	{
 		if (length >= input.length())
@@ -268,7 +377,7 @@ namespace Common
 		}
 	}
 
-	//��ȡ�ַ��� ��ʣ���ַ���
+	//截取字符串 和剩余字符串
 	std::tuple<std::string, std::string> truncateString2(const std::string& input, int length)
 	{
 		if (length >= input.length())
@@ -281,7 +390,7 @@ namespace Common
 		}
 	}
 
-	//��stringתСд
+	//将string转小写
 	std::string ToLowerWindows(const std::string& str)
 	{
 		std::string lowerStr(str);
@@ -290,7 +399,7 @@ namespace Common
 		return lowerStr;
 	}
 
-	//��wstringתСд
+	//将wstring转小写
 	std::wstring ToLowerWindows(const std::wstring& str)
 	{
 		std::wstring lowerStr(str);
@@ -299,22 +408,22 @@ namespace Common
 		return lowerStr;
 	}
 
-	//ö�ٽ���
+	//枚举进程
 	std::vector<ProcessInfo> EnumerateProcesses()
 	{
 		std::vector<ProcessInfo> processes;
 
-		// ��ȡϵͳ�����н��̵Ŀ���
+		// 获取系统中所有进程的快照
 		HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		if (hSnapshot == INVALID_HANDLE_VALUE)
 		{
-			// ���ؿ�����
+			// 返回空容器
 			return processes;
 		}
 
 		PROCESSENTRY32W processEntry = { sizeof(PROCESSENTRY32W) };
 
-		// ö�ٽ��̿����еĽ�����Ϣ
+		// 枚举进程快照中的进程信息
 		if (Process32First(hSnapshot, &processEntry))
 		{
 			do
@@ -323,7 +432,7 @@ namespace Common
 				process.processId = processEntry.th32ProcessID;
 				process.processName = processEntry.szExeFile;
 
-				// �򿪽���
+				// 打开进程
 				HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processEntry.th32ProcessID);
 				if (hProcess != nullptr)
 				{
@@ -338,13 +447,13 @@ namespace Common
 			} while (Process32Next(hSnapshot, &processEntry));
 		}
 
-		// �رս��̿��վ��
+		// 关闭进程快照句柄
 		CloseHandle(hSnapshot);
 
 		return processes;
 	}
 
-	//���Ŀ������Ƿ���������
+	//检查目标进程是否正在运行
 	BOOL IsProcessRunning(const std::wstring& processName)
 	{
 		BOOL boRet = FALSE;
@@ -359,7 +468,7 @@ namespace Common
 				do
 				{
 					std::wstring currentProcessName = Common::ToLowerWindows(entry.szExeFile);
-					if (currentProcessName.find(Common::ToLowerWindows(processName)) != std::wstring::npos)  //�����Ӵ�
+					if (currentProcessName.find(Common::ToLowerWindows(processName)) != std::wstring::npos)  //查找子串
 					{
 						boRet = TRUE;
 						break;
@@ -371,7 +480,7 @@ namespace Common
 		return boRet;
 	}
 
-	//���Ҵ�����Ϣ
+	//查找窗口信息
 	BOOL FindWindowInfo(LPCWSTR lpClassName, LPCWSTR titleName)
 	{
 		if (FindWindow(lpClassName, titleName))
@@ -384,39 +493,39 @@ namespace Common
 		}
 	}
 
-	//��ֹ����
+	//终止进程
 	bool TerminateWindowsProcess(DWORD processId)
 	{
 		HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
 		if (hProcess == NULL)
 		{
-			// �����򿪽���ʧ�ܵ����
+			// 处理打开进程失败的情况
 			return false;
 		}
 
-		// ��ֹ����
+		// 终止进程
 		bool result = TerminateProcess(hProcess, 0);
 
-		// �رս��̾��
+		// 关闭进程句柄
 		CloseHandle(hProcess);
 
 		return result;
 	}
 
 
-	//����ģʽ
-	//��ֹ����࿪
+	//单例模式
+	//防止程序多开
 	BOOL SingletonPattern(const wchar_t* mutexName)
 	{
 		BOOL boRet = FALSE;
 
-		// ����������
+		// 创建互斥体
 		hMutex = CreateMutexW(nullptr, TRUE, mutexName);
 
-		// ��黥�����Ƿ��Ѵ���
+		// 检查互斥体是否已存在
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
-			// �رջ����������˳�����
+			// 关闭互斥体句柄并退出程序
 			CloseHandle(hMutex);
 		}
 		else
@@ -426,29 +535,29 @@ namespace Common
 		return boRet;
 	}
 
-	//�˳�����
+	//退出单例
 	void SingletonProgramEnd()
 	{
-		// �رջ�������
+		// 关闭互斥体句柄
 		if (hMutex)
 		{
 			CloseHandle(hMutex);
 		}		
 	}
 
-	//intתwstring
+	//int转wstring
 	std::wstring IntToWString(int value)
 	{
 		return std::to_wstring(value);
 	}
 
-	//wstringתint
+	//wstring转int
 	int WStringToInt(const std::wstring& str)
 	{
 		return std::stoi(str);
 	}
 
-	//ȷ��CPU�ͺ�
+	//确认CPU型号
 	void ConfirmCPUVendor()
 	{
 		std::array<int, 4> cpui;
@@ -516,13 +625,13 @@ namespace Common
 		return bRet;
 	}
 
-	//��ͣ����
+	//暂停进程
 	BOOL SuspendProcess(DWORD dwProcessID)
 	{
 		return xxx_Process(dwProcessID, TRUE);
 	}
 
-	//�ָ�����
+	//恢复进程
 	BOOL ResumeProcess(DWORD dwProcessID)
 	{
 		return xxx_Process(dwProcessID, FALSE);
@@ -530,8 +639,11 @@ namespace Common
 
 	void ReportSeriousError(const char* format, ...)
 	{
-		// �߳�ͬ����ʹ�û����������ٽ���
+		// 线程同步：使用互斥锁保护临界区
 		std::lock_guard<std::mutex> lock(mutex);
+		// 必须在格式化文本和弹窗之前捕获 LastError；后续 CRT/Win32
+		// 调用可能改写线程错误值，导致真正的 577/31 被丢失。
+		const DWORD capturedError = GetLastError();
 
 		va_list args;
 		va_start(args, format);
@@ -545,8 +657,72 @@ namespace Common
 		std::string logMessage = oss.str();
 		if (!logMessage.empty())
 		{
-			MessageBoxA(NULL, logMessage.c_str(), "���ش���:", MB_ICONERROR | MB_SYSTEMMODAL);
-		}		
+		DWORD diagnosticError = capturedError;
+		if (diagnosticError == ERROR_SUCCESS)
+		{
+			DWORD parsedError = ERROR_SUCCESS;
+			if (TryExtractErrorCode(logMessage, parsedError))
+			{
+				diagnosticError = parsedError;
+			}
+		}
+		if (diagnosticError == ERROR_SUCCESS)
+		{
+			diagnosticError = ERROR_UNHANDLED_EXCEPTION;
+		}
+		const ErrorDetails details = ExplainWin32Error(diagnosticError);
+		const std::wstring systemMessage = GetSystemErrorText(diagnosticError);
+
+			UINT codePage = CP_UTF8;
+			int required = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, logMessage.c_str(), -1, nullptr, 0);
+			if (required == 0)
+			{
+				codePage = CP_ACP;
+				required = MultiByteToWideChar(codePage, 0, logMessage.c_str(), -1, nullptr, 0);
+			}
+			std::wstring wideMessage;
+			if (required > 0)
+			{
+				wideMessage.resize(static_cast<size_t>(required));
+				MultiByteToWideChar(codePage, codePage == CP_UTF8 ? MB_ERR_INVALID_CHARS : 0,
+					logMessage.c_str(), -1, &wideMessage[0], required);
+			}
+
+			if (wideMessage.empty())
+			{
+				wideMessage = L"发生未提供文本的严重错误。";
+			}
+			else if (!wideMessage.empty() && wideMessage.back() == L'\0')
+			{
+				wideMessage.pop_back();
+			}
+
+			std::wstring completeMessage = wideMessage + L"\r\n\r\n错误码：" +
+				std::to_wstring(diagnosticError) + L" (0x";
+			wchar_t hexadecimal[16]{};
+			wsprintfW(hexadecimal, L"%08lX", static_cast<unsigned long>(diagnosticError));
+			completeMessage += hexadecimal;
+			completeMessage += L")\r\n系统原文：" + systemMessage +
+				L"\r\n原因：" + details.reason +
+				L"\r\n解决方案：" + details.solution +
+				L"\r\n详细日志：前端 Log\\log.ini、Log\\UnrealDbgDll.log；同时保留本弹窗中的原始模块消息。";
+
+			// 保留严重错误弹窗，同时把同一份 Unicode 文本送回宿主的
+			// PrintLog。这样错误不会只停留在一个乱码/阻塞弹窗里，前端
+			// 日志仍能按错误级别着色并继续显示后续诊断。
+			using PrintLogFn = void(__stdcall*)(wchar_t*);
+			HMODULE host = GetModuleHandleW(nullptr);
+			FARPROC printLog = host == nullptr ? nullptr : GetProcAddress(host, "PrintLog");
+			if (printLog != nullptr)
+			{
+				std::wstring callbackMessage = L"[错误] " + completeMessage;
+				auto callback = reinterpret_cast<PrintLogFn>(printLog);
+				callback(const_cast<wchar_t*>(callbackMessage.c_str()));
+			}
+
+			MessageBoxW(NULL, completeMessage.c_str(), L"严重错误", MB_ICONERROR | MB_SYSTEMMODAL);
+			SetLastError(diagnosticError);
+		}
 	}
 
 	bool fileExists(const std::wstring& path)
@@ -554,7 +730,7 @@ namespace Common
 		HANDLE hFile = CreateFile(
 			path.c_str(),
 			GENERIC_READ,
-			0, // ������
+			0, // 不共享
 			NULL,
 			OPEN_EXISTING,
 			FILE_ATTRIBUTE_NORMAL,
@@ -563,10 +739,10 @@ namespace Common
 
 		if (hFile != INVALID_HANDLE_VALUE) {
 			CloseHandle(hFile);
-			return true; // �ļ�����
+			return true; // 文件存在
 		}
 		else {
-			return false; // �ļ�������
+			return false; // 文件不存在
 		}
 	}
 }

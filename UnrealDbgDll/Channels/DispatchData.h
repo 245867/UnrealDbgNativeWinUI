@@ -3,7 +3,7 @@
 #ifndef _DISPATCH_DATA_H
 #define _DISPATCH_DATA_H
 
-//ÅÉÇ²Êı¾İµ½Çı¶¯
+//æ´¾é£æ•°æ®åˆ°é©±åŠ¨
 BOOL DispatchDataToDriver(DWORD dwIoControlCode,
     PUSER_DATA userData,
     PVOID lpOutBuffer,
@@ -17,7 +17,7 @@ BOOL SendUserDataToDriver(DWORD dwIoControlCode,
     DWORD nOutBufferSize,
     LPDWORD lpBytesReturned);
 
-//»ñÈ¡Çı¶¯²ãÊı¾İ
+//è·å–é©±åŠ¨å±‚æ•°æ®
 ULONG GetDriverData(DWORD dwIoControlCode, PVOID pBuf);
 
 

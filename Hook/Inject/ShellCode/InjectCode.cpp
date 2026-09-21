@@ -15,7 +15,7 @@ const DWORD ins_len = 20;
 BYTE originalInstructions[ins_len] = { 0 };
 
 
-//Õª³ı¹³×Ó
+//æ‘˜é™¤é’©å­
 void RemoveHook(DWORD dwPid)
 {
 	try
@@ -29,25 +29,25 @@ void RemoveHook(DWORD dwPid)
 			BYTE InstructionsBuf[ins_len] = { 0 };
 
 			VirtualProtect((LPVOID)LdrInitializeThunk, ins_len, PAGE_EXECUTE_READWRITE, &dwOldProtect);
-			memcpy(InstructionsBuf, LdrInitializeThunk, ins_len);  //½«×ÔÉíÄÚ´æÀïµÄÃ»ÓĞ±»ĞŞ¸ÄµÄ¿½Ò»·İÏÂÀ´
+			memcpy(InstructionsBuf, LdrInitializeThunk, ins_len);  //å°†è‡ªèº«å†…å­˜é‡Œçš„æ²¡æœ‰è¢«ä¿®æ”¹çš„æ‹·ä¸€ä»½ä¸‹æ¥
 
-			//±¸·İÄ¿±ê½ø³ÌµÄÄÚÈİ
+			//å¤‡ä»½ç›®æ ‡è¿›ç¨‹çš„å†…å®¹
 			if (!ReadProcessMemory(hProcess, LdrInitializeThunk, originalInstructions, sizeof(originalInstructions), &Size))
 			{
-				throw std::runtime_error("RemoveHook ¿½±´Ê§°Ü");
+				throw std::runtime_error("RemoveHook æ‹·è´å¤±è´¥");
 			}
-			//Õª³ı¹³×Ó
+			//æ‘˜é™¤é’©å­
 			if (!WriteProcessMemory(hProcess, LdrInitializeThunk, InstructionsBuf, sizeof(InstructionsBuf), &Size))
 			{
-				throw std::runtime_error("RemoveHook Ğ´ÈëÊı¾İÊ§°Ü");
+				throw std::runtime_error("RemoveHook å†™å…¥æ•°æ®å¤±è´¥");
 			}
 			VirtualProtect((LPVOID)LdrInitializeThunk, ins_len, dwOldProtect, &dwOldProtect);
-			// ¹Ø±Õ½ø³Ì¾ä±ú
+			// å…³é—­è¿›ç¨‹å¥æŸ„
 			CloseHandle(hProcess);
 		}
 		else
 		{
-			logger.Log("´ò¿ª½ø³ÌÊ§°Ü error: %d",GetLastError());
+			logger.Log("æ‰“å¼€è¿›ç¨‹å¤±è´¥ï¼ˆé”™è¯¯ç ï¼š%dï¼‰",GetLastError());
 		}
 	}
 	catch (const std::exception& e)
@@ -56,7 +56,7 @@ void RemoveHook(DWORD dwPid)
 	}
 }
 
-//»Ö¸´¹³×Ó
+//æ¢å¤é’©å­
 void RestoreHook(DWORD dwPid)
 {
 	try
@@ -67,17 +67,17 @@ void RestoreHook(DWORD dwPid)
 			LdrInitializeThunk = (PFN_LDRINITIALIZETHUNK)GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "LdrInitializeThunk");
 			SIZE_T Size = 0;
 
-			//»Ö¸´¹³×Ó
+			//æ¢å¤é’©å­
 			if (!WriteProcessMemory(hProcess, LdrInitializeThunk, originalInstructions, sizeof(originalInstructions), &Size))
 			{
-				throw std::runtime_error("RestoreHook Ğ´ÈëÊı¾İÊ§°Ü");
+				throw std::runtime_error("RestoreHook å†™å…¥æ•°æ®å¤±è´¥");
 			}
-			// ¹Ø±Õ½ø³Ì¾ä±ú
+			// å…³é—­è¿›ç¨‹å¥æŸ„
 			CloseHandle(hProcess);
 		}
 		else
 		{
-			logger.Log("´ò¿ª½ø³ÌÊ§°Ü error: %d", GetLastError());
+			logger.Log("æ‰“å¼€è¿›ç¨‹å¤±è´¥ï¼ˆé”™è¯¯ç ï¼š%dï¼‰", GetLastError());
 		}
 	}
 	catch (const std::exception& e)
@@ -87,7 +87,7 @@ void RestoreHook(DWORD dwPid)
 }
 
 
-//Õª³ı¹³×Ó
+//æ‘˜é™¤é’©å­
 void RemoveKiUserApcDispatcherHook(DWORD dwPid)
 {
 	try
@@ -101,25 +101,25 @@ void RemoveKiUserApcDispatcherHook(DWORD dwPid)
 			BYTE InstructionsBuf[ins_len] = { 0 };
 
 			VirtualProtect((LPVOID)KiUserApcDispatcher, ins_len, PAGE_EXECUTE_READWRITE, &dwOldProtect);
-			memcpy(InstructionsBuf, KiUserApcDispatcher, ins_len);  //½«×ÔÉíÄÚ´æÀïµÄÃ»ÓĞ±»ĞŞ¸ÄµÄ¿½Ò»·İÏÂÀ´
+			memcpy(InstructionsBuf, KiUserApcDispatcher, ins_len);  //å°†è‡ªèº«å†…å­˜é‡Œçš„æ²¡æœ‰è¢«ä¿®æ”¹çš„æ‹·ä¸€ä»½ä¸‹æ¥
 
-			//±¸·İÄ¿±ê½ø³ÌµÄÄÚÈİ
+			//å¤‡ä»½ç›®æ ‡è¿›ç¨‹çš„å†…å®¹
 			if (!ReadProcessMemory(hProcess, KiUserApcDispatcher, originalInstructions, sizeof(originalInstructions), &Size))
 			{
-				throw std::runtime_error("RemoveHook ¿½±´Ê§°Ü");
+				throw std::runtime_error("RemoveHook æ‹·è´å¤±è´¥");
 			}
-			//Õª³ı¹³×Ó
+			//æ‘˜é™¤é’©å­
 			if (!WriteProcessMemory(hProcess, KiUserApcDispatcher, InstructionsBuf, sizeof(InstructionsBuf), &Size))
 			{
-				throw std::runtime_error("RemoveHook Ğ´ÈëÊı¾İÊ§°Ü");
+				throw std::runtime_error("RemoveHook å†™å…¥æ•°æ®å¤±è´¥");
 			}
 			VirtualProtect((LPVOID)KiUserApcDispatcher, ins_len, dwOldProtect, &dwOldProtect);
-			// ¹Ø±Õ½ø³Ì¾ä±ú
+			// å…³é—­è¿›ç¨‹å¥æŸ„
 			CloseHandle(hProcess);
 		}
 		else
 		{
-			logger.Log("´ò¿ª½ø³ÌÊ§°Ü error: %d", GetLastError());
+			logger.Log("æ‰“å¼€è¿›ç¨‹å¤±è´¥ï¼ˆé”™è¯¯ç ï¼š%dï¼‰", GetLastError());
 		}
 	}
 	catch (const std::exception& e)
@@ -128,7 +128,7 @@ void RemoveKiUserApcDispatcherHook(DWORD dwPid)
 	}
 }
 
-//»Ö¸´¹³×Ó
+//æ¢å¤é’©å­
 void RestoreKiUserApcDispatcherHook(DWORD dwPid)
 {
 	try
@@ -139,17 +139,17 @@ void RestoreKiUserApcDispatcherHook(DWORD dwPid)
 			KiUserApcDispatcher = (PFN_LDRINITIALIZETHUNK)GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "KiUserApcDispatcher");
 			SIZE_T Size = 0;
 
-			//»Ö¸´¹³×Ó
+			//æ¢å¤é’©å­
 			if (!WriteProcessMemory(hProcess, KiUserApcDispatcher, originalInstructions, sizeof(originalInstructions), &Size))
 			{
-				throw std::runtime_error("RestoreHook Ğ´ÈëÊı¾İÊ§°Ü");
+				throw std::runtime_error("RestoreHook å†™å…¥æ•°æ®å¤±è´¥");
 			}
-			// ¹Ø±Õ½ø³Ì¾ä±ú
+			// å…³é—­è¿›ç¨‹å¥æŸ„
 			CloseHandle(hProcess);
 		}
 		else
 		{
-			logger.Log("´ò¿ª½ø³ÌÊ§°Ü error: %d", GetLastError());
+			logger.Log("æ‰“å¼€è¿›ç¨‹å¤±è´¥ï¼ˆé”™è¯¯ç ï¼š%dï¼‰", GetLastError());
 		}
 	}
 	catch (const std::exception& e)
@@ -202,7 +202,7 @@ BOOL InjectCode(HANDLE hProcess)
 			//else
 			//{
 			//	error = GetLastError();
-			//	outDebug((TCHAR*)_T("Æô¶¯Ô¶³ÌÏß³ÌÊ§°Ü£¡(error:%d)"), error);
+			//	outDebug((TCHAR*)_T("å¯åŠ¨è¿œç¨‹çº¿ç¨‹å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 			//}
 
 		//	remoteThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)DbgBreakPoint, NULL, 0, NULL);
@@ -214,33 +214,33 @@ BOOL InjectCode(HANDLE hProcess)
 		//	else
 		//	{
 		//		error = GetLastError();
-		//		outDebug((TCHAR*)_T("Æô¶¯Ô¶³ÌÏß³ÌÊ§°Ü£¡(error:%d)"), error);
+		//		outDebug((TCHAR*)_T("å¯åŠ¨è¿œç¨‹çº¿ç¨‹å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 		//	}
 		//}
 		//else
 		//{
 		//	error = GetLastError();
-		//	outDebug((TCHAR*)_T("·ÖÅäÔ¶½ø³ÌÄÚ´æÊ§°Ü£¡(error:%d)"), error);
+		//	outDebug((TCHAR*)_T("åˆ†é…è¿œè¿›ç¨‹å†…å­˜å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 		//}
 
 		//remoteThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)DbgBreakPoint, NULL, 0, NULL);
 		remoteThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)((BYTE*)DbgUserBreakPoint + 0x10), NULL, 0, NULL);
 		if (remoteThread)
 		{
-			logger.Log("Æô¶¯Ô¶³ÌÏß³ÌDbgBreakPoint³É¹¦£¡");
+			logger.Log("å¯åŠ¨è¿œç¨‹çº¿ç¨‹DbgBreakPointæˆåŠŸï¼");
 			CloseHandle(remoteThread);
 			boRet = TRUE;
 		}
 		else
 		{
 			error = GetLastError();
-			outDebug((TCHAR*)_T("Æô¶¯Ô¶³ÌÏß³ÌDbgBreakPointÊ§°Ü£¡(error:%d)"), error);
+			outDebug((TCHAR*)_T("å¯åŠ¨è¿œç¨‹çº¿ç¨‹DbgBreakPointå¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 		}
 	}
 	else
 	{
 		error = GetLastError();
-		outDebug((TCHAR*)_T("´ò¿ª½ø³Ì¾ä±úÊ§°Ü£¡(error:%d)"), error);
+		outDebug((TCHAR*)_T("æ‰“å¼€è¿›ç¨‹å¥æŸ„å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
 	}
 	return boRet;
 }

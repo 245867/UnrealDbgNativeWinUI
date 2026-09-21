@@ -1,5 +1,5 @@
-{
-  ×¢Òâ: RAD Studio 11 ±àÒë64Î»³ÌĞòÊ±£¬Èç¹û½«ÏîÄ¿ÃûÃüÃûÎªÖĞÎÄÔòÎŞ·¨½øĞĞµ÷ÊÔ¡£
+ï»¿{
+  è¯´æ˜ï¼šRAD Studio 11 ç¼–è¯‘ 64 ä½ç¨‹åºæ—¶ï¼Œè¯·ä½¿ç”¨ä¸ç›®æ ‡å¹³å°åŒ¹é…çš„é…ç½®ï¼Œå¦åˆ™å¯èƒ½æ— æ³•æ­£å¸¸è°ƒè¯•ã€‚
 }
 
 unit Main;
@@ -107,13 +107,13 @@ var
   g_DebuggerList: TGList;
 
 const
-  _STR_KEY = '9dd14d00f5dd71bd';  {Ğé»Ãµ÷ÊÔÆ÷¾­16Î»md5¼ÆËãµÃµ½}
+  _STR_KEY = '9dd14d00f5dd71bd';  {ç”¨äºæˆæƒæ ¡éªŒçš„ 16 ä½ MD5 å¯†é’¥}
   _STR_COPYRIGHT = 'copyright.db';
   _STR_TL_EXE = '[TL.exe]';
   _STR_DEBUGGER_INI = 'DebuggerList.ini';
   _STR_CONFIG_INI = 'Config.ini';
   _STR_STARTUP_INFO_INI = 'StartupInfo.ini';
-  crScope = 1;  //DelphiµÄ¹â±ê×´Ì¬¶¼ÊÇ¸ºÊı£¬ËùÒÔ¶¨ÒåÕıÊı¾Í¿ÉÒÔ±ÜÃâÓëÏµÍ³µÄ¹â±ê³åÍ»
+  crScope = 1;  //Delphi çš„å…³é”®çŠ¶æ€æ ‡å¿—ï¼›ç”±æˆæƒæµç¨‹è®¾ç½®ï¼Œç”¨äºé¿å…é‡å¤åˆå§‹åŒ–
 
 implementation
 
@@ -122,7 +122,7 @@ uses Log, UnrealDbgDll, Grobal, LockThread, HandlerTLDetection, EventHandlerThre
 
 {$R *.dfm}
 
-//µ¼³öº¯Êı¹©Íâ²¿Ä£¿éµ÷ÓÃ
+//å‘å¤–éƒ¨æ¨¡å—å¯¼å‡ºæ—¥å¿—å‡½æ•°
 procedure PrintLog(lpData: Pointer); stdcall;
 begin
   try
@@ -169,7 +169,7 @@ var
   ntoskrnl, OSText: string;
 begin
   try
-    OSText := GetWMIOperatingSystem('Caption') + GetWMIOperatingSystem('Version') + '  ' + GetWMIProcessor('AddressWidth') + 'Î»²Ù×÷ÏµÍ³';
+    OSText := GetWMIOperatingSystem('Caption') + GetWMIOperatingSystem('Version') + '  ' + GetWMIProcessor('AddressWidth') + 'ä½æ“ä½œç³»ç»Ÿ';
     Label_SystemName.Caption := Label_SystemName.Caption + '  ' + OSText;
 
     FillChar(WinDir[0],Length(WinDir) * 2,#0);
@@ -207,35 +207,35 @@ begin
     DC := GetWindowDC(Handle);
     if DC <> 0 then begin
       try
-        WndWidth := GetSystemMetrics(SM_CXBORDER); // ´°¿Ú±ß¿òµÄ¿í¶È£¨ÒÔÏñËØÎªµ¥Î»£©
-        WndHeight := GetSystemMetrics(SM_CYBORDER); // ´°¿Ú±ß¿òµÄ¸ß¶È£¨ÒÔÏñËØÎªµ¥Î»£©
+        WndWidth := GetSystemMetrics(SM_CXBORDER); //çª—å£è¾¹æ¡†å®½åº¦ï¼Œå•ä½ä¸ºåƒç´ 
+        WndHeight := GetSystemMetrics(SM_CYBORDER); //çª—å£è¾¹æ¡†é«˜åº¦ï¼Œå•ä½ä¸ºåƒç´ 
 
         Rgn := CreateRectRgn(0, 0, 0, 0);
-        Pen := CreatePen(PS_INSIDEFRAME, 3 * WndWidth, RGB(0, 0, 0));  //´´½¨»­±Ê
+        Pen := CreatePen(PS_INSIDEFRAME, 3 * WndWidth, RGB(0, 0, 0));  //åˆ›å»ºè¾¹æ¡†ç”»ç¬”
         original_pen := SelectObject(DC, Pen);
-        original_brush := SelectObject(DC, GetStockObject(NULL_BRUSH)); // Ñ¡ÔñÒ»¸ö¿ÕĞÄ»­Ë¢ NULL_BRUSH
+        original_brush := SelectObject(DC, GetStockObject(NULL_BRUSH)); //é€‰æ‹©é€æ˜ç”»åˆ·
         SetROP2(DC, R2_NOT);
         if GetWindowRgn(Handle,Rgn) <> 0 then begin
           SysColor := GetSysColor(COLOR_WINDOWFRAME);
-          Brush := CreateHatchBrush(HS_DIAGCROSS, SysColor); //45 ¶È½»²æÓ°Ïß
+          Brush := CreateHatchBrush(HS_DIAGCROSS, SysColor); //45 åº¦å¯¹è§’çº¿é˜´å½±
           FrameRgn(DC, Rgn, Brush, 3 * WndWidth, 3 * WndHeight);
           DeleteObject(Brush);
         end else begin
-          frameWidth := GetSystemMetrics(SM_CXFRAME);        // SM_CXFRAME ±ß¿òµÄ¿í¶È£¨ÒÔÏñËØÎªµ¥Î»£©
-          frameHeight := GetSystemMetrics(SM_CYFRAME);       // SM_CYFRAME ±ß¿òµÄ¸ß¶È£¨ÒÔÏñËØÎªµ¥Î»£©
-          screen_Width := GetSystemMetrics(SM_CXSCREEN);       // SM_CXSCREEN Ö÷ÏÔÊ¾Æ÷µÄÆÁÄ»¿í¶È£¨ÒÔÏñËØÎªµ¥Î»£©
-          screen_height := GetSystemMetrics(SM_CYSCREEN);      // SM_CYSCREEN Ö÷ÏÔÊ¾Æ÷µÄÆÁÄ»¸ß¶È£¨ÒÔÏñËØÎªµ¥Î»£©
-          GetWindowRect(Handle, Rect);               // »ñÈ¡´°¿Ú³ß´ç
+          frameWidth := GetSystemMetrics(SM_CXFRAME);        // SM_CXFRAME è¾¹æ¡†å®½åº¦ï¼Œå•ä½ä¸ºåƒç´ 
+          frameHeight := GetSystemMetrics(SM_CYFRAME);       // SM_CYFRAME è¾¹æ¡†é«˜åº¦ï¼Œå•ä½ä¸ºåƒç´ 
+          screen_Width := GetSystemMetrics(SM_CXSCREEN);       // SM_CXSCREEN ä¸»æ˜¾ç¤ºå™¨å±å¹•å®½åº¦
+          screen_height := GetSystemMetrics(SM_CYSCREEN);      // SM_CYSCREEN ä¸»æ˜¾ç¤ºå™¨å±å¹•é«˜åº¦
+          GetWindowRect(Handle, Rect);               // è·å–çª—å£å°ºå¯¸
 
-          //¼ì²é´°¿ÚÊÇ·ñ×î´ó»¯
+          //æ£€æŸ¥çª—å£æ˜¯å¦æœ€å¤§åŒ–
           if IsZoomed(Handle) then begin
             Rectangle(DC, frameWidth, frameHeight, frameWidth + screen_Width, screen_height + frameHeight);
           end else begin
-            Rectangle(DC, 0, 0, Rect.right - Rect.left, Rect.bottom - Rect.top);// »æÖÆ¾ØĞÎ±ß¿ò Ê¹ÓÃµ±Ç°±Ê¹´ÀÕ¾ØĞÎÂÖÀª£¬Ê¹ÓÃµ±Ç°»­Ë¢Ìî³ä¾ØĞÎ¡£
+            Rectangle(DC, 0, 0, Rect.right - Rect.left, Rect.bottom - Rect.top);//ç»˜åˆ¶çŸ©å½¢è¾¹æ¡†
           end;
         end;
-        SelectObject(DC, original_brush);          // »¹Ô­»­Ë¢
-        SelectObject(DC, original_pen);            // »¹Ô­»­±Ê
+        SelectObject(DC, original_brush);          //è¿˜åŸç”»åˆ·
+        SelectObject(DC, original_pen);            //è¿˜åŸç”»ç¬”
         DeleteObject(Pen);
         DeleteObject(Rgn);
 
@@ -246,7 +246,7 @@ begin
   end;
 end;
 
-//ÇåÀí±ß¿ò
+//æ¸…ç†çª—å£è¾¹æ¡†
 procedure CleanBorder(Handle: HWND);
 begin
   HighlightWindowBorder(Handle);
@@ -258,7 +258,7 @@ var
   ResourceStream: TResourceStream;
 begin
   if (ssLeft in Shift) then begin
-    // ´Ó×ÊÔ´¼ÓÔØµÚÒ»¸öÍ¼Æ¬
+    //ä»èµ„æºä¸­åŠ è½½ä¸€å¼ å›¾ç‰‡
     ResourceStream := TResourceStream.Create(HInstance, 'Empty', RT_RCDATA);
     try
       Image1.Picture.Graphic.LoadFromStream(ResourceStream);
@@ -277,12 +277,12 @@ var
   SelfProcessId: DWORD;
   targetProcessId: DWORD;
 begin
-  // ¼ì²éÊó±ê×ó¼üÊÇ·ñ±»°´ÏÂ
+  //æ£€æŸ¥é¼ æ ‡å·¦é”®æ˜¯å¦æŒ‰ä¸‹
   if (ssLeft in Shift) then begin
 
-    // »ñÈ¡Êó±êµ±Ç°Î»ÖÃ
+    //è·å–å½“å‰é¼ æ ‡ä½ç½®
     if GetCursorPos(Point) then begin
-      // ¸ù¾İ×ø±ê»ñÈ¡´°¿Ú¾ä±ú
+      //æ ¹æ®é¼ æ ‡ä½ç½®è·å–çª—å£å¥æŸ„
       Handle := WindowFromPoint(Point);
       if (Handle <> 0) and (Handle <> lastHandle) then begin
         GetWindowThreadProcessId(Application.Handle,@SelfProcessId);
@@ -308,7 +308,7 @@ var
 begin
   try
     if Button = mbLeft then begin
-      // ÇĞ»»Í¼Æ¬
+      //åˆ‡æ¢å›¾ç‰‡
       if Assigned(Image1.Picture.Graphic) then
       begin
         ResourceStream := TResourceStream.Create(HInstance, 'Original', RT_RCDATA);
@@ -324,8 +324,8 @@ begin
 
       if m_SelectedProcessId <> 0 then begin
         if g_boEnabled_tl_confrontation_TL then begin
-          sText := 'pid: ' + m_SelectedProcessId.ToString + ' ÊÇTLµÄ½ø³ÌÂğ£¿';
-          btn := MessageBox(0,PChar(sText),'Ñ¡ÔñÄ¿±ê½ø³Ì:', MB_YESNO or MB_SYSTEMMODAL);
+          sText := 'pid: ' + m_SelectedProcessId.ToString + ' æ˜¯TLçš„è¿›ç¨‹å—ï¼Ÿ';
+          btn := MessageBoxW(0,PChar(sText),'é€‰æ‹©ç›®æ ‡è¿›ç¨‹:', MB_YESNO or MB_SYSTEMMODAL);
           if btn = IDYES then begin
             m_targetProcessId := m_SelectedProcessId;
             sLog.outInfo(_STR_TL_EXE + ' pid: ' + m_targetProcessId.ToString);
@@ -341,7 +341,7 @@ begin
   end;
 end;
 
-//Æô¶¯TL¶Ô¿¹
+//å¯ç”¨ TL å¯¹æŠ—
 procedure TForm1.Enabled_TL_Confrontation;
 var
   base: DWORD_PTR;
@@ -349,9 +349,9 @@ begin
   if m_targetProcessId <> 0 then begin
     if g_boEnabled_tl_confrontation_TL then begin
       if g_boHandlerGetTickCountCheck_TL then begin
-        sLog.outDebug(_STR_TL_EXE + ' ÕıÔÚ´¦ÀíGetTickCount¼ì²â...');
+        sLog.outDebug(_STR_TL_EXE + ' æ­£åœ¨å¤„ç†GetTickCountæ£€æµ‹...');
 
-        //ÅĞ¶ÏÖ®Ç°ÊÇ·ñÒÑ¾­´´½¨
+        //åˆ¤æ–­ä¹‹å‰æ˜¯å¦å·²ç»åˆ›å»ºçº¿ç¨‹
         if Assigned(g_LockThread) then begin
           g_LockThread.Stop;
           g_LockThread.WaitFor;
@@ -359,11 +359,11 @@ begin
           g_LockThread := nil;
         end;
         base := GetProcessModuleBase(m_targetProcessId,'TL.exe');
-        Handler_TLDetection(base); //´¦ÀíTLµÄ¼ì²â
+          Handler_TLDetection(base); //å¤„ç† TL æ£€æµ‹
       end;
 
       if g_boBlockResumeThread_TL then begin
-        sLog.outDebug(_STR_TL_EXE + ' ×èÖ¹ÓÎÏ·»Ö¸´Ïß³Ì');
+        sLog.outDebug(_STR_TL_EXE + ' é˜»æ­¢æ¸¸æˆæ¢å¤çº¿ç¨‹');
         Unreal_TL_BlockGameResumeThread(m_targetProcessId);
       end;
     end;
@@ -378,10 +378,10 @@ begin
       g_boStartService := True;
       EnterVTDebuggingMode.Enabled := False;
       if not Unreal_Initialize($9dd14d00f5dd71bd) then begin
-        sLog.outError('Éè±¸Î´ÄÜ³É¹¦ÔËĞĞ!');
+        sLog.outError('è®¾å¤‡æœªèƒ½æˆåŠŸè¿è¡Œ!');
       end;
     end else begin
-      sLog.outError('Î´Í¨¹ıÊÚÈ¨ÈÏÖ¤!');
+      sLog.outError('æœªé€šè¿‡æˆæƒè®¤è¯!');
     end;
   except on e:Exception do
     sLog.outError('[TForm1.EnterVTDebuggingModeClick]===>' + e.Message);
@@ -395,7 +395,7 @@ var
 begin
   try
     if g_boStartService then begin
-      btn := Application.MessageBox('ÄúÈ·¶¨Òª¹Ø±Õ³ÌĞò´°¿ÚÂğ£¿Ö»ÓĞÖØÆôµçÄÔ²ÅÄÜÍêÈ«ÍË³öVTµ÷ÊÔÄ£Ê½!', '¾¯¸æ:', MB_YESNO or MB_ICONWARNING or MB_SYSTEMMODAL);
+      btn := Application.MessageBox('æ‚¨ç¡®å®šè¦å…³é—­ç¨‹åºçª—å£å—ï¼Ÿåªæœ‰é‡å¯ç”µè„‘æ‰èƒ½å®Œå…¨é€€å‡ºVTè°ƒè¯•æ¨¡å¼!', 'è­¦å‘Š:', MB_YESNO or MB_ICONWARNING or MB_SYSTEMMODAL);
       if btn = ID_YES then begin
         CanClose := True;
       end else begin
@@ -419,34 +419,50 @@ var
   json: TJSONObject;
 begin
   try
-    m_Caption := 'Ğé»Ãµ÷ÊÔÆ÷   by: Bug¹¤³ÌÊ¦   QQÈº:740336586';
-    m_Log1 := 'Ğé»Ãµ÷ÊÔÆ÷ QQÈº:740336586';
+    sLog.outInfo('=== åŠ è½½ç‰ˆæƒä¿¡æ¯ ===');
+    m_Caption := 'é»˜è®¤ç‰ˆæƒ   by: Bugæä¾›   QQç¾¤:740336586';
+    m_Log1 := 'é»˜è®¤ç‰ˆæƒ QQç¾¤:740336586';
 
     sPath := ExtractFilePath(Application.ExeName);
+    sLog.outDebug('åº”ç”¨ç›®å½•: ' + sPath);
     if sPath <> '' then begin
       sFileName := sPath + _STR_COPYRIGHT;
+      sLog.outDebug('ç‰ˆæƒæ–‡ä»¶è·¯å¾„: ' + sFileName);
       if FileExists(sFileName) then begin
-        //·µ»ØµÄÊÇ×Ö½ÚÊı£¬°üº¬½áÎ²¿Õ×Ö·û
+        sLog.outDebug('ç‰ˆæƒæ–‡ä»¶å­˜åœ¨ï¼Œå¼€å§‹è§£å¯†');
         decryptedDataLen := D_encryption_DecryptDataFromFile(sFileName,_STR_KEY,nil);
         if decryptedDataLen > 0 then begin
+          sLog.outInfo('ç‰ˆæƒæ–‡ä»¶è§£å¯†æˆåŠŸï¼Œé•¿åº¦: ' + IntToStr(decryptedDataLen));
           PlainTextLen := (decryptedDataLen div 2) + 1;
-          SetLength(PlainText,PlainTextLen); //³¤¶ÈÊÇ×Ö·û¸öÊı
+          SetLength(PlainText,PlainTextLen);
           FillChar(PlainText[0],Length(PlainText) * SizeOf(Char),#0);
           decryptedDataLen := D_encryption_DecryptDataFromFile(sFileName,_STR_KEY,@PlainText[0]);
           jsonStr := string(PChar(@PlainText[0]));
-          json := json.ParseJSONValue(jsonStr) as TJSONObject;     //½âÎöjson
-          m_Caption := json.Values['Ğé»Ãµ÷ÊÔÆ÷±êÌâ'].AsType<string>;
-          m_Log1 := json.Values['QQÈºÈÕÖ¾'].AsType<string>;
-          json.Free;
+          sLog.outDebug('JSONæ•°æ®: ' + jsonStr);
+          json := json.ParseJSONValue(jsonStr) as TJSONObject;
+          if Assigned(json) then begin
+            m_Caption := json.Values['ç‰ˆæƒæ¥æº'].AsType<string>;
+            m_Log1 := json.Values['QQç¾¤æ—¥å¿—'].AsType<string>;
+            sLog.outInfo('ç‰ˆæƒæ ‡é¢˜: ' + m_Caption);
+            sLog.outInfo('æ—¥å¿—å‰ç¼€: ' + m_Log1);
+            json.Free;
+          end else begin
+            sLog.outError('JSONè§£æå¤±è´¥');
+          end;
           SetLength(PlainText,0);
+        end else begin
+          sLog.outError('ç‰ˆæƒæ–‡ä»¶è§£å¯†å¤±è´¥ï¼Œè§£å¯†é•¿åº¦: ' + IntToStr(decryptedDataLen));
         end;
+      end else begin
+        sLog.outDebug('ç‰ˆæƒæ–‡ä»¶ä¸å­˜åœ¨ï¼Œä½¿ç”¨é»˜è®¤å€¼');
       end;
+    end else begin
+      sLog.outError('æ— æ³•è·å–åº”ç”¨ç›®å½•');
     end;
   except on e:Exception do begin
-    MessageBox(0,'»ñÈ¡°æÈ¨ĞÅÏ¢Ê§°Ü!','´íÎó:',MB_ICONERROR);
-    ExitProcess(0);
+    sLog.outError('åŠ è½½ç‰ˆæƒä¿¡æ¯å¤±è´¥: ' + e.Message);
   end;
-  end;
+  sLog.outInfo('=== ç‰ˆæƒä¿¡æ¯åŠ è½½ç»“æŸ ===');
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -456,48 +472,68 @@ begin
   Application.OnIdle := AppOnIdle;
 
 
+  // æ·»åŠ è¯¦ç»†æ—¥å¿—å¼€å§‹
+  sLog.outInfo('=== UnrealDbg å¯åŠ¨æ—¥å¿—å¼€å§‹ ===');
+  sLog.outDebug('å¼€å§‹åˆå§‹åŒ–ç³»ç»Ÿ');
+
   LoadCopyright;
   Caption := m_Caption;
 
-  sLog.outDebug('¸ĞĞ»£¡Î¢ÓêÎÊº£ÌÄ£¬½çÃæ²Î¿¼µÄHvmDbg£¡');
-  sLog.outDebug('Ê¹ÓÃ±¾Èí¼ş£¬¶ÔÄúÔì³ÉµÄÖ±½Ó»òÕß¼ä½ÓµÄËğÊ§£¬ÓÉÄú×ÔĞĞ³Ğµ££¡');
-  sLog.outDebug('by: Bug¹¤³ÌÊ¦');
-  sLog.outDebug(m_Log1);
-  sLog.outDebug('Ö§³ÖWin10-Win11');
-  sLog.outDebug('µ÷ÊÔÆ÷Ô´Âë¿É³öÊÛ£¬ÎÒÃÇÊÇ¹¤¾ß·şÎñ£¬Ô´ÂëÌá¹©ÉÌ£¡');
+  sLog.outDebug('åŠ è½½ç‰ˆæƒä¿¡æ¯å®Œæˆ');
+  sLog.outDebug('ç•Œé¢æ ‡é¢˜è®¾ç½®å®Œæˆ');
+
+  sLog.outDebug('å¼€å§‹è·å–ç³»ç»Ÿä¿¡æ¯');
   GetWindowsNTVer;
+  sLog.outDebug('ç³»ç»Ÿä¿¡æ¯è·å–å®Œæˆ');
 
   Screen.Cursors[crScope] := LoadCursor(HInstance,'Cursor_1');
+  sLog.outDebug('é¼ æ ‡å…‰æ ‡åŠ è½½å®Œæˆ');
 
   g_boStartService := False;
   g_boLoginSuccess := False;
+  sLog.outDebug('å…¨å±€å˜é‡åˆå§‹åŒ–å®Œæˆ');
 
   VMProtectBeginVirtualization('VMP');
   g_Authentication := TAuthentication.Create;
+  sLog.outDebug('è®¤è¯å¯¹è±¡åˆ›å»ºå®Œæˆ');
+
   if g_Authentication.cdkeyLogin then begin
-    {½ø³ÌÌáÈ¨}
+    sLog.outDebug('æˆæƒæ£€æŸ¥é€šè¿‡ï¼Œå¼€å§‹åŠ è½½è°ƒè¯•å™¨åˆ—è¡¨');
+    //åŠ è½½ç‰ˆæƒä¿¡æ¯
     SetPrivilege;
     g_DebuggerList := TGList.Create;
     g_EventHandlerThread := TEventHandlerThread.Create(False);
     LoadDebuggerList;
+    sLog.outDebug('è°ƒè¯•å™¨åˆ—è¡¨åŠ è½½å®Œæˆ');
     LoadCheckBoxState;
+    sLog.outDebug('å‹¾é€‰çŠ¶æ€åŠ è½½å®Œæˆ');
+  end else begin
+    sLog.outError('æˆæƒæ£€æŸ¥å¤±è´¥ï¼ç¨‹åºå°†é€€å‡º');
+    MessageBoxW(0,'æˆæƒæ£€æŸ¥å¤±è´¥!','é”™è¯¯:',MB_ICONERROR);
+    ExitProcess(0);
   end;
   VMProtectEnd;
+  sLog.outInfo('=== UnrealDbg å¯åŠ¨å®Œæˆ ===');
 end;
 
-//ÊÍ·Å×ÊÔ´Ö®Ç°£¬Ò»¶¨ÒªÏÈÊÍ·ÅÏß³Ì
+//é‡Šæ”¾èµ„æºå‰å¿…é¡»å…ˆåœæ­¢çº¿ç¨‹
 procedure TForm1.FormDestroy(Sender: TObject);
 var
   I: Integer;
 begin
+  sLog.outInfo('=== UnrealDbg å…³é—­æ—¥å¿— ===');
+  sLog.outDebug('å¼€å§‹é‡Šæ”¾èµ„æº');
+
   if g_boLoginSuccess then begin
     if g_LockThread <> nil then begin
+      sLog.outDebug('åœæ­¢å¹¶é‡Šæ”¾LockThread');
       g_LockThread.Stop;
       g_LockThread.WaitFor;
       g_LockThread.Free;
     end;
 
     if g_EventHandlerThread <> nil then begin
+      sLog.outDebug('åœæ­¢å¹¶é‡Šæ”¾EventHandlerThread');
       g_EventHandlerThread.Stop;
       g_EventHandlerThread.WaitFor;
       g_EventHandlerThread.Free;
@@ -509,6 +545,8 @@ begin
   end;
 
   g_Authentication.Free;
+  sLog.outDebug('è®¤è¯å¯¹è±¡é‡Šæ”¾å®Œæˆ');
+  sLog.outInfo('=== UnrealDbg å®Œå…¨å…³é—­ ===');
 end;
 
 procedure TForm1.AppOnIdle(Sender: TObject; var Done: Boolean);
@@ -545,8 +583,8 @@ begin
         pTemp := g_DebuggerList.Items[I];
         if Assigned(pTemp) then begin
           item := DbgListView.Items.Add;
-          item.Caption := IntToStr(DbgListView.Items.Count);  //ĞòºÅ
-          item.SubItems.Add(pTemp.filename);      //ÎÄ¼şÃû
+          item.Caption := IntToStr(DbgListView.Items.Count);  //åºå·
+          item.SubItems.Add(pTemp.filename);      //æ–‡ä»¶å
           item.SubItems.Add(pTemp.filePath);      //Ä¿Â¼
         end;
       end;
@@ -558,7 +596,7 @@ begin
   end;
 end;
 
-//¼ì²âÊÇ·ñÒÑ¾­´æÔÚÏàÍ¬ÅäÖÃ
+//æ£€æŸ¥æ˜¯å¦å·²ç»å­˜åœ¨ç›¸åŒçš„è°ƒè¯•å™¨
 function DebuggerItemExists(filename, filePath: string): Boolean;
 var
   I: Integer;
@@ -603,9 +641,9 @@ begin
       sPath := sPath + _STR_DEBUGGER_INI;
       if FileExists(sPath) then begin
         Config := TIniFile.Create(sPath);
-        ItemCount := Config.ReadString('ÅäÖÃ','Count','0').ToInteger;
+        ItemCount := Config.ReadString('é…ç½®','Count','0').ToInteger;
         for I := 0 to ItemCount - 1 do begin
-          sText := Config.ReadString('ÅäÖÃ','Debugger' + I.ToString,'');
+          sText := Config.ReadString('é…ç½®','Debugger' + I.ToString,'');
           if sText <> '' then begin
             sText := GetValidStr3(sText,filename,['&']);
             sText := GetValidStr3(sText,filePath,['&']);
@@ -652,11 +690,11 @@ begin
       Config := TIniFile.Create(sPath);
       g_DebuggerList.Lock;
       try
-        Config.WriteString('ÅäÖÃ','Count',g_DebuggerList.Count.ToString);
+        Config.WriteString('é…ç½®','Count',g_DebuggerList.Count.ToString);
         for I := 0 to g_DebuggerList.Count - 1 do begin
           pTemp := g_DebuggerList.Items[I];
           if Assigned(pTemp) then begin
-            Config.WriteString('ÅäÖÃ','Debugger' + I.ToString,pTemp.filename + '&' + pTemp.filePath);
+            Config.WriteString('é…ç½®','Debugger' + I.ToString,pTemp.filename + '&' + pTemp.filePath);
           end;
         end;
       finally
@@ -721,7 +759,7 @@ begin
   end;
 end;
 
-//´´½¨ÎÄ¼ş¸±±¾
+//å¤åˆ¶æ–‡ä»¶è¦†ç›–
 function CreateCopyFile(fileName: string; filePath: string): string;
 var
   iniFile: TIniFile;
@@ -737,10 +775,10 @@ begin
 
       iniFile := TIniFile.Create(sPath);
       if FileExists(sPath) then begin
-        //È¡³öÔ­ÎÄ¼şÃû
+        //å–å¾—åŸæ–‡ä»¶å
         sName := iniFile.ReadString(fileName,'fileName','');
         sName := sfixedPath + sName;
-        DeleteFile(sName);  //É¾³ı¾ÉÎÄ¼ş
+        DeleteFile(sName);  //åˆ é™¤ç›®æ ‡æ–‡ä»¶
       end;
 
       PrefixName := GenerateRandomString(8);
@@ -839,7 +877,7 @@ begin
         fileName := item.SubItems.Strings[0];
         filePath := item.SubItems.Strings[1];
         if (fileName <> '') and (filePath <> '') then begin
-          if Application.MessageBox('ÊÇ·ñÈ·ÈÏÒÆ³ıÑ¡ÖĞµÄÏî£¿', 'È·ÈÏĞÅÏ¢', MB_YESNO + MB_ICONQUESTION) = IDYES then begin
+          if Application.MessageBox('æ˜¯å¦ç¡®å®šç§»é™¤é€‰ä¸­çš„é¡¹ï¼Ÿ', 'ç¡®è®¤ä¿¡æ¯', MB_YESNO + MB_ICONQUESTION) = IDYES then begin
             g_DebuggerList.Lock;
             try
               for I := g_DebuggerList.Count - 1 downto 0 do begin
@@ -874,11 +912,11 @@ var
   pTemp: PTDebugger;
 begin
   try
-    OpenDialog1.Title := 'ÇëÑ¡Ôñµ÷ÊÔÆ÷';
+    OpenDialog1.Title := 'è¯·é€‰æ‹©è°ƒè¯•å™¨';
     OpenDialog1.FileName := '';
     OpenDialog1.Execute;
-    filename := ExtractFileName(OpenDialog1.FileName);  //ÌáÈ¡ÎÄ¼şÃû
-    filePath := OpenDialog1.FileName;  //ÌáÈ¡ÎÄ¼şÂ·¾¶
+    filename := ExtractFileName(OpenDialog1.FileName);  //è·å–æ–‡ä»¶å
+    filePath := OpenDialog1.FileName;  //è·å–æ–‡ä»¶è·¯å¾„
 
     if (filename <> '') and (filePath <> '') then begin
       if not DebuggerItemExists(filename,filePath) then begin
@@ -896,7 +934,7 @@ begin
         SaveDebuggerList;
         RefDebuggerListView;
       end else begin
-        Application.MessageBox('¸ÃÊäÈëÏîÒÑ¾­´æÔÚÓÚÁĞ±íÖĞ..', '¾¯¸æ:', MB_ICONWARNING);
+        Application.MessageBox('è¯¥è°ƒè¯•å™¨å·²ç»åœ¨åˆ—è¡¨ä¸­..', 'è­¦å‘Š:', MB_ICONWARNING);
       end;
     end;
   except on e:Exception do

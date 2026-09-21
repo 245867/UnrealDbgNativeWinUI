@@ -24,10 +24,10 @@ NewWaitForDebugEvent(
         bRet = Sys_WaitForDebugEvent(lpDebugEvent, dwMilliseconds);
         if (bRet)
         {
-            //´¦Àí·Ç¸½¼Óµ÷ÊÔµÄÇé¿ö
+            //å¤„ç†éé™„åŠ è°ƒè¯•çš„æƒ…å†µ
             if (g_process_info.isCreate)
             {
-                logger.Log("%s[%d] g_process_info.isCreate£º %d", __func__, __LINE__, g_process_info.isCreate);
+                logger.Log("%s[%d] è¿›ç¨‹åˆ›å»ºçŠ¶æ€ isCreate=%d", __func__, __LINE__, g_process_info.isCreate);
                 switch (lpDebugEvent->dwDebugEventCode)
                 {
                 case LOAD_DLL_DEBUG_EVENT:
@@ -37,7 +37,7 @@ NewWaitForDebugEvent(
                         assert(BaseThreadInitThunk);
                         if (BaseThreadInitThunk)
                         {
-                            //ÉèÖÃint3ÖĞ¶Ï
+                            //è®¾ç½®int3ä¸­æ–­
                             UCHAR chBuffer[3] = { 0x90,0xCC,0xEB };
                             PVOID BreakPointAddr = (PVOID)((ULONG_PTR)BaseThreadInitThunk + 4);
                             bFlag = VirtualProtectEx(g_process_info.ProcessHandle, BreakPointAddr, sizeof(chBuffer), PAGE_EXECUTE_READWRITE, &dwOldProtect);
@@ -47,11 +47,11 @@ NewWaitForDebugEvent(
                                 if (!bFlag)
                                 {
                                     error = GetLastError();
-                                    outDebug((TCHAR*)_T("[LOAD_DLL_DEBUG_EVENT] ÉèÖÃ¶ÏµãÊ§°Ü£¡(error:%d)"), error);
+                                    outDebug((TCHAR*)_T("[åŠ è½½ DLL è°ƒè¯•äº‹ä»¶] è®¾ç½®æ–­ç‚¹å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                                 }
                                 else
                                 {
-                                    //outDebug((TCHAR*)_T("ÉèÖÃint3ÖĞ¶Ï³É¹¦£¡"));
+                                    //outDebug((TCHAR*)_T("è®¾ç½®int3ä¸­æ–­æˆåŠŸï¼"));
                                     g_SetDbgBreakPoint.boBaseThreadInitThunk = TRUE;
                                 }
                                 VirtualProtectEx(g_process_info.ProcessHandle, BreakPointAddr, sizeof(chBuffer), dwOldProtect, &dwOldProtect);
@@ -59,13 +59,13 @@ NewWaitForDebugEvent(
                             else
                             {
                                 error = GetLastError();
-                                outDebug((TCHAR*)_T("[LOAD_DLL_DEBUG_EVENT] ĞŞ¸ÄÄÚ´æÊôĞÔÊ§°Ü£¡(error:%d)"), error);
+                                outDebug((TCHAR*)_T("[åŠ è½½ DLL è°ƒè¯•äº‹ä»¶] ä¿®æ”¹å†…å­˜å±æ€§å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                             }
                         }
                         else
                         {
                             error = GetLastError();
-                            outDebug((TCHAR*)_T("[LOAD_DLL_DEBUG_EVENT] BaseThreadInitThunk¿ÕÖ¸Õë£¡(error:%d)"), error);
+                            outDebug((TCHAR*)_T("[åŠ è½½ DLL è°ƒè¯•äº‹ä»¶] BaseThreadInitThunk ç©ºæŒ‡é’ˆï¼(é”™è¯¯ç :%d)"), error);
                         }
                     }
                     break;
@@ -83,7 +83,7 @@ NewWaitForDebugEvent(
             }
             else
             {
-                //´¦Àí¸½¼ÓµÄÇé¿ö
+                //å¤„ç†é™„åŠ çš„æƒ…å†µ
                 if (lpDebugEvent->dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
                 {
                     if ((lpDebugEvent->u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_SINGLE_STEP) ||
@@ -92,7 +92,7 @@ NewWaitForDebugEvent(
                         HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, false, lpDebugEvent->dwThreadId);
                         if (hThread)
                         {
-                            //µ÷ÓÃÔ­º¯Êı
+                            //è°ƒç”¨åŸå‡½æ•°
                             CONTEXT Context = { 0 };
                             Context.ContextFlags = CONTEXT_ALL | CONTEXT_EXTENDED_REGISTERS;
                             BOOL boSuccess = Sys_GetThreadContext(hThread, &Context);
@@ -100,7 +100,7 @@ NewWaitForDebugEvent(
                             {
                                 Dr6 dr6;
                                 dr6.flags = Context.Dr6;
-                                if (dr6.BS)  //µ¥²½Ö´ĞĞ
+                                if (dr6.BS)  //å•æ­¥æ‰§è¡Œ
                                 {
                                     InterlockedExchange(&g_debug_condition_detected, 2);
                                 }
@@ -111,7 +111,7 @@ NewWaitForDebugEvent(
                             }
                             else
                             {
-                                logger.Log("»ñÈ¡ContextÊ§°Ü! (error: %d)", GetLastError());
+                                logger.Log("è·å–çº¿ç¨‹ä¸Šä¸‹æ–‡å¤±è´¥ï¼ˆé”™è¯¯ç ï¼š%dï¼‰", GetLastError());
                             }
                             CloseHandle(hThread);                            
                         }
@@ -122,7 +122,7 @@ NewWaitForDebugEvent(
     }
     else
     {
-        outDebug((TCHAR*)_T("WaitForDebugEvent²ÎÊıÎŞĞ§£¡"));
+        outDebug((TCHAR*)_T("WaitForDebugEventå‚æ•°æ— æ•ˆï¼"));
     }
     return bRet;
 }
@@ -139,10 +139,10 @@ NewContinueDebugEvent(
     DWORD dwOldProtect;
     DWORD error = 0;
 
-    //´¦Àí·Ç¸½¼Óµ÷ÊÔµÄÇé¿ö
+    //å¤„ç†éé™„åŠ è°ƒè¯•çš„æƒ…å†µ
     if (g_process_info.isCreate)
     {
-        logger.Log("%s[%d] g_process_info.isCreate£º %d", __func__, __LINE__, g_process_info.isCreate);
+        logger.Log("%s[%d] è¿›ç¨‹åˆ›å»ºçŠ¶æ€ isCreate=%d", __func__, __LINE__, g_process_info.isCreate);
         if (dwContinueStatus == DBG_CONTINUE)
         {
             if (g_first_breakpoint)
@@ -166,7 +166,7 @@ NewContinueDebugEvent(
                                 if (!bFlag)
                                 {
                                     error = GetLastError();
-                                    outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] ÒÆ³ı¶ÏµãÊ§°Ü£¡(error:%d)"), error);
+                                    outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] ç§»é™¤æ–­ç‚¹å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                                 }
                             }
                             VirtualProtectEx(g_process_info.ProcessHandle, BreakPointAddr, sizeof(chOldBytes), dwOldProtect, &dwOldProtect);
@@ -174,19 +174,19 @@ NewContinueDebugEvent(
                         else
                         {
                             error = GetLastError();
-                            outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] ¼ì²éÄÚ´æÊ±Ê§°Ü£¡(error:%d)"), error);
+                            outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] æ£€æŸ¥å†…å­˜æ—¶å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                         }
                     }
                     else
                     {
                         error = GetLastError();
-                        outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] ĞŞ¸ÄÄÚ´æÊôĞÔÊ§°Ü£¡(error:%d)"), error);
+                        outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] ä¿®æ”¹å†…å­˜å±æ€§å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                     }
                 }
                 else
                 {
                     error = GetLastError();
-                    outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] BaseThreadInitThunk¿ÕÖ¸Õë£¡(error:%d)"), error);
+                    outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] BaseThreadInitThunk ç©ºæŒ‡é’ˆï¼(é”™è¯¯ç :%d)"), error);
                 }
             }
         }
@@ -213,7 +213,7 @@ NewWaitForDebugEvent(
         bRet = Sys_WaitForDebugEvent(lpDebugEvent, dwMilliseconds);
         if (bRet)
         {
-            //´¦Àí·Ç¸½¼Óµ÷ÊÔµÄÇé¿ö
+            //å¤„ç†éé™„åŠ è°ƒè¯•çš„æƒ…å†µ
             if (g_process_info.isCreate)
             {
                 //Debug event
@@ -226,7 +226,7 @@ NewWaitForDebugEvent(
                         assert(BaseThreadInitThunk);
                         if (BaseThreadInitThunk)
                         {
-                            //ÉèÖÃint3ÖĞ¶Ï
+                            //è®¾ç½®int3ä¸­æ–­
                             UCHAR chBuffer[2] = { 0x90,0xCC };
                             bFlag = VirtualProtectEx(g_process_info.ProcessHandle, BaseThreadInitThunk, sizeof(chBuffer), PAGE_EXECUTE_READWRITE, &dwOldProtect);
                             if (bFlag)
@@ -235,11 +235,11 @@ NewWaitForDebugEvent(
                                 if (!bFlag)
                                 {
                                     error = GetLastError();
-                                    outDebug((TCHAR*)_T("[LOAD_DLL_DEBUG_EVENT] ÉèÖÃ¶ÏµãÊ§°Ü£¡(error:%d)"), error);
+                                    outDebug((TCHAR*)_T("[åŠ è½½ DLL è°ƒè¯•äº‹ä»¶] è®¾ç½®æ–­ç‚¹å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                                 }
                                 else
                                 {
-                                    //outDebug((TCHAR*)_T("ÉèÖÃint3ÖĞ¶Ï³É¹¦£¡"));
+                                    //outDebug((TCHAR*)_T("è®¾ç½®int3ä¸­æ–­æˆåŠŸï¼"));
                                     g_SetDbgBreakPoint.boBaseThreadInitThunk = TRUE;
                                 }
                                 VirtualProtectEx(g_process_info.ProcessHandle, BaseThreadInitThunk, sizeof(chBuffer), dwOldProtect, &dwOldProtect);
@@ -247,13 +247,13 @@ NewWaitForDebugEvent(
                             else
                             {
                                 error = GetLastError();
-                                outDebug((TCHAR*)_T("[LOAD_DLL_DEBUG_EVENT] ĞŞ¸ÄÄÚ´æÊôĞÔÊ§°Ü£¡(error:%d)"), error);
+                                outDebug((TCHAR*)_T("[åŠ è½½ DLL è°ƒè¯•äº‹ä»¶] ä¿®æ”¹å†…å­˜å±æ€§å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                             }
                         }
                         else
                         {
                             error = GetLastError();
-                            outDebug((TCHAR*)_T("[LOAD_DLL_DEBUG_EVENT] BaseThreadInitThunk¿ÕÖ¸Õë£¡(error:%d)"), error);
+                            outDebug((TCHAR*)_T("[åŠ è½½ DLL è°ƒè¯•äº‹ä»¶] BaseThreadInitThunk ç©ºæŒ‡é’ˆï¼(é”™è¯¯ç :%d)"), error);
                         }
                     }
                     break;
@@ -271,7 +271,7 @@ NewWaitForDebugEvent(
             }
             else
             {
-                //´¦Àí¸½¼ÓµÄÇé¿ö
+                //å¤„ç†é™„åŠ çš„æƒ…å†µ
                 if (lpDebugEvent->dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
                 {
                     if (lpDebugEvent->u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_SINGLE_STEP)
@@ -279,7 +279,7 @@ NewWaitForDebugEvent(
                         HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, false, lpDebugEvent->dwThreadId);
                         if (hThread)
                         {
-                            //µ÷ÓÃÔ­º¯Êı
+                            //è°ƒç”¨åŸå‡½æ•°
                             CONTEXT Context = { 0 };
                             Context.ContextFlags = CONTEXT_ALL | CONTEXT_EXTENDED_REGISTERS;
                             BOOL boSuccess = Sys_GetThreadContext(hThread, &Context);
@@ -287,7 +287,7 @@ NewWaitForDebugEvent(
                             {
                                 Dr6 dr6;
                                 dr6.flags = Context.Dr6;
-                                if (dr6.BS)  //µ¥²½Ö´ĞĞ
+                                if (dr6.BS)  //å•æ­¥æ‰§è¡Œ
                                 {
                                     InterlockedExchange(&g_debug_condition_detected, 2);
                                 }
@@ -305,7 +305,7 @@ NewWaitForDebugEvent(
     }
     else
     {
-        outDebug((TCHAR*)_T("WaitForDebugEvent²ÎÊıÎŞĞ§£¡"));
+        outDebug((TCHAR*)_T("WaitForDebugEventå‚æ•°æ— æ•ˆï¼"));
     }
     return bRet;
 }
@@ -322,7 +322,7 @@ NewContinueDebugEvent(
     DWORD dwOldProtect;
     DWORD error = 0;
 
-    //´¦Àí·Ç¸½¼Óµ÷ÊÔµÄÇé¿ö
+    //å¤„ç†éé™„åŠ è°ƒè¯•çš„æƒ…å†µ
     if (g_process_info.isCreate)
     {
         if (dwContinueStatus == DBG_CONTINUE)
@@ -347,7 +347,7 @@ NewContinueDebugEvent(
                                 if (!bFlag)
                                 {
                                     error = GetLastError();
-                                    outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] ÒÆ³ı¶ÏµãÊ§°Ü£¡(error:%d)"), error);
+                                    outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] ç§»é™¤æ–­ç‚¹å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                                 }
                             }
                             VirtualProtectEx(g_process_info.ProcessHandle, BaseThreadInitThunk, sizeof(chOldBytes), dwOldProtect, &dwOldProtect);
@@ -355,19 +355,19 @@ NewContinueDebugEvent(
                         else
                         {
                             error = GetLastError();
-                            outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] ¼ì²éÄÚ´æÊ±Ê§°Ü£¡(error:%d)"), error);
+                                outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] æ£€æŸ¥å†…å­˜æ—¶å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                         }
                     }
                     else
                     {
                         error = GetLastError();
-                        outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] ĞŞ¸ÄÄÚ´æÊôĞÔÊ§°Ü£¡(error:%d)"), error);
+                            outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] ä¿®æ”¹å†…å­˜å±æ€§å¤±è´¥ï¼(é”™è¯¯ç :%d)"), error);
                     }
                 }
                 else
                 {
                     error = GetLastError();
-                    outDebug((TCHAR*)_T("[EXCEPTION_DEBUG_EVENT] BaseThreadInitThunk¿ÕÖ¸Õë£¡(error:%d)"), error);
+                        outDebug((TCHAR*)_T("[å¼‚å¸¸è°ƒè¯•äº‹ä»¶] BaseThreadInitThunk ç©ºæŒ‡é’ˆï¼(é”™è¯¯ç :%d)"), error);
                 }
             }
         }

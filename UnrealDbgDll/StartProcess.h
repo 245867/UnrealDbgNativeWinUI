@@ -2,7 +2,7 @@
 
 #ifndef _START_PROCESS_H
 
-//启动信息
+//鍚姩淇℃伅
 typedef struct _STARTUP_INFO
 {
 	TCHAR szExe[256];
@@ -11,10 +11,10 @@ typedef struct _STARTUP_INFO
 
 BOOL StartProcess(TCHAR* szExe, TCHAR* sPath);
 
-//根据光标位置获取进程pid
+//鏍规嵁鍏夋爣浣嶇疆鑾峰彇杩涚▼pid
 DWORD GetProcessId_ByCursor();
 
-//下发调试器信息给驱动
+//涓嬪彂璋冭瘯鍣ㄤ俊鎭粰椹卞姩
 BOOL SendDebuggerDataToDriver(DWORD dwProcessId);
 
 

@@ -7,15 +7,15 @@ void ApcCallRemoteFunc(HANDLE hProcess)
 {
 	if (!_ApcCallRemoteFunc(hProcess))
 	{
-		logger.Log("APCע���߳�ʧ��");
+		logger.Log("APC注入线程失败");
 	}
 	else
 	{
-		logger.Log("APCע��ɹ�");
+		logger.Log("APC注入成功");
 	}
 }
 
-//ͨ������ע��apc�̵߳�Ŀ�����
+//通过驱动注入apc线程到目标进程
 BOOL _ApcCallRemoteFunc(HANDLE hProcess)
 {
 	BOOL bRet;

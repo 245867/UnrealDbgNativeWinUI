@@ -117,7 +117,7 @@ public:
 
 bool DownloadSymbol_internal(const std::wstring& szModulePath, const std::wstring& path, std::wstring* pdb_path_out, bool Redownload);
 
-// »Øµ÷º¯Êý
+// å›žè°ƒå‡½æ•°
 HRESULT OnProgress(
 	unsigned long ulProgress,
 	unsigned long ulProgressMax,

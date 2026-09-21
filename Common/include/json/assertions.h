@@ -23,7 +23,7 @@
 #define JSON_ASSERT(condition)                                                 \
   do {                                                                         \
     if (!(condition)) {                                                        \
-      Json::throwLogicError("assert json failed");                             \
+      Json::throwLogicError("JSON 断言失败；原因：内部条件不满足；解决方案：检查调用参数和 JSON 数据结构"); \
     }                                                                          \
   } while (0)
 

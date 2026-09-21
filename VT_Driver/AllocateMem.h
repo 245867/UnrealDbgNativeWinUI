@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _ALLOCATEMEM_H
 #define _ALLOCATEMEM_H
@@ -36,7 +36,7 @@ inline void free_pool(void* pool_address)
     ExFreePoolWithTag(pool_address, VMM_TAG);
 }
 
-//ÊÍ·ÅÁ¬ÐøÄÚ´æ
+//é‡Šæ”¾è¿žç»­å†…å­˜
 inline void free_contignous_memory(void* memory_address)
 {
     MmFreeContiguousMemory(memory_address);

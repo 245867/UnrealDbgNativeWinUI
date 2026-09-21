@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _VMM_H
 #define _VMM_H
@@ -14,10 +14,10 @@ bool vmm_init();
 /// </summary>
 void free_vmm_context();
 
-//´´½¨hostÒ³±í
+//åˆ›å»ºhosté¡µè¡¨
 void create_host_page_tables();
 
-//·ÖÅävcpu½á¹¹ÄÚ´æ
+//åˆ†é…vcpuç»“æ„å†…å­˜
 bool init_vcpu(__vcpu* vcpu);
 
 #endif // !_VMM_H

@@ -1,4 +1,4 @@
-#include "../Driver.h"
+ï»¿#include "../Driver.h"
 #include "../ntos/inc/mmtypes.h"
 #include "../ntos/inc/ntdbg.h"
 #include "../ntos/inc/ketypes.h"
@@ -43,7 +43,7 @@ VOID TraceBreakpoint(_EPROCESS* Process, PVOID BaseAddress, PVOID Buffer)
 	}	
 }
 
-//Ó³ÉäĞéÄâµØÖ·
+//æ˜ å°„è™šæ‹Ÿåœ°å€
 PVOID MDLMapVirtualAddress(IN PVOID VirtualAddress, IN SIZE_T BufferSize, OUT MDL_MAP &map_table)
 {
 	PMDL mdl = NULL;
@@ -66,15 +66,15 @@ PVOID MDLMapVirtualAddress(IN PVOID VirtualAddress, IN SIZE_T BufferSize, OUT MD
 		mdl = IoAllocateMdl(VirtualAddress, tosize, FALSE, FALSE, NULL);
 		if (mdl)
 		{
-			//Ëø×¡ÎïÀíÒ³£¬²»ÈÃËü±»½»»»µ½´ÅÅÌÉÏ.
+			//é”ä½ç‰©ç†é¡µï¼Œä¸è®©å®ƒè¢«äº¤æ¢åˆ°ç£ç›˜ä¸Š.
 			MmProbeAndLockPages(mdl, KernelMode, IoReadAccess);
 			lockpage = TRUE;
 
-			//½« MDL ÃèÊöµÄÎïÀíÒ³ÃæÓ³Éäµ½ĞéÄâÄÚ´æ
+			//å°† MDL æè¿°çš„ç‰©ç†é¡µé¢æ˜ å°„åˆ°è™šæ‹Ÿå†…å­˜
 			MappedAddress = MmMapLockedPagesSpecifyCache(mdl, KernelMode, MmCached, NULL, FALSE, HighPagePriority);
 			if (MappedAddress == NULL)
 			{
-				//Ê§°ÜÔò½øĞĞÉ¨Î²¹¤×÷
+				//å¤±è´¥åˆ™è¿›è¡Œæ‰«å°¾å·¥ä½œ
 				MmUnlockPages(mdl);
 				IoFreeMdl(mdl);			
 				map_table = { 0 };
@@ -118,7 +118,7 @@ VOID UnMDLMapVirtualAddress(MDL_MAP map_table)
 	}
 }
 
-NTSTATUS SetBreakpoint(HANDLE ProcessHandle, _EPROCESS* Process, PVOID BaseAddress /*Ä¿±êµØÖ·*/, PVOID Buffer, SIZE_T BufferSize)
+NTSTATUS SetBreakpoint(HANDLE ProcessHandle, _EPROCESS* Process, PVOID BaseAddress /*ç›®æ ‡åœ°å€*/, PVOID Buffer, SIZE_T BufferSize)
 {
 	NTSTATUS Status = STATUS_SUCCESS;
 	KAPC_STATE ApcState;
@@ -130,23 +130,23 @@ NTSTATUS SetBreakpoint(HANDLE ProcessHandle, _EPROCESS* Process, PVOID BaseAddre
 	size_t ptr_Pcb = (size_t)Process + eprocess_offset::Pcb;
 	RtlCopyMemory(tmpBuffer, Buffer, BufferSize);
 	KiStackAttachProcess((_KPROCESS*)ptr_Pcb, FALSE, &ApcState);
-	//Í¨¹ıvt½»»»4KBÎïÀíÒ³
-	//ÉèÖÃ»ò»Ö¸´¶Ïµã
+	//é€šè¿‡vtäº¤æ¢4KBç‰©ç†é¡µ
+	//è®¾ç½®æˆ–æ¢å¤æ–­ç‚¹
 	__try
 	{
 		//DbgBreakPoint();
 		SIZE_T RegionSize = BufferSize;
 		ULONG flOldProtect;
 		PVOID loc_BaseAddress = BaseAddress;
-		//½«Ò³ÊôĞÔ¸ÄÎªĞ´¿½±´  ´Ó¶øÔÚĞ´ÈëÖµÊ±·ÖÅäĞÂµÄÎïÀíÒ³
+		//å°†é¡µå±æ€§æ”¹ä¸ºå†™æ‹·è´  ä»è€Œåœ¨å†™å…¥å€¼æ—¶åˆ†é…æ–°çš„ç‰©ç†é¡µ
 		//KPROCESSOR_MODE Old_PreviousMode = KeSetPreviousMode(KernelMode);
 		Status = ZwProtectVirtualMemory(NtCurrentProcess(), &loc_BaseAddress, &RegionSize, PAGE_EXECUTE_WRITECOPY, &flOldProtect);
 		if (NT_SUCCESS(Status))
 		{
-			//´¥·¢Ğ´¿½±´·ÖÅäĞÂµÄÎïÀíÒ³
+			//è§¦å‘å†™æ‹·è´åˆ†é…æ–°çš„ç‰©ç†é¡µ
 			RtlCopyMemory(BaseAddress, BaseAddress, BufferSize);
 
-			//Í¨¹ımdl½«ĞÂ·ÖÅäµÄÎïÀíÒ³ÃæÓ³Éäµ½ĞéÄâÄÚ´æ
+			//é€šè¿‡mdlå°†æ–°åˆ†é…çš„ç‰©ç†é¡µé¢æ˜ å°„åˆ°è™šæ‹Ÿå†…å­˜
 			MappedAddress = MDLMapVirtualAddress(BaseAddress, BufferSize, map_table);
 			if (MappedAddress)
 			{
@@ -213,22 +213,22 @@ NTSTATUS RemoveBreakpoint(HANDLE ProcessHandle, _EPROCESS* Process, PVOID BaseAd
 	size_t ptr_Pcb = (size_t)Process + eprocess_offset::Pcb;
 	RtlCopyMemory(tmpBuffer, Buffer, BufferSize);
 	KiStackAttachProcess((_KPROCESS*)ptr_Pcb, FALSE, &ApcState);
-	//Í¨¹ıvt½»»»4KBÎïÀíÒ³
-	//ÉèÖÃ»ò»Ö¸´¶Ïµã
+	//é€šè¿‡vtäº¤æ¢4KBç‰©ç†é¡µ
+	//è®¾ç½®æˆ–æ¢å¤æ–­ç‚¹
 	__try
 	{
 		//DbgBreakPoint();
 		SIZE_T RegionSize = BufferSize;
 		ULONG flOldProtect;
 		PVOID loc_BaseAddress = BaseAddress;
-		//½«Ò³ÊôĞÔ¸ÄÎªĞ´¿½±´  ´Ó¶øÔÚĞ´ÈëÖµÊ±·ÖÅäĞÂµÄÎïÀíÒ³
+		//å°†é¡µå±æ€§æ”¹ä¸ºå†™æ‹·è´  ä»è€Œåœ¨å†™å…¥å€¼æ—¶åˆ†é…æ–°çš„ç‰©ç†é¡µ
 		//Status = NtProtectVirtualMemory(NtCurrentProcess(), &loc_BaseAddress, &RegionSize, PAGE_EXECUTE_WRITECOPY, &flOldProtect);
 		//if (NT_SUCCESS(Status))
 		{
-			//´¥·¢Ğ´¿½±´·ÖÅäĞÂµÄÎïÀíÒ³
+			//è§¦å‘å†™æ‹·è´åˆ†é…æ–°çš„ç‰©ç†é¡µ
 			//RtlCopyMemory(BaseAddress, BaseAddress, BufferSize);
 
-			//Í¨¹ımdl½«ĞÂ·ÖÅäµÄÎïÀíÒ³ÃæÓ³Éäµ½ĞéÄâÄÚ´æ
+			//é€šè¿‡mdlå°†æ–°åˆ†é…çš„ç‰©ç†é¡µé¢æ˜ å°„åˆ°è™šæ‹Ÿå†…å­˜
 			MappedAddress = MDLMapVirtualAddress(BaseAddress, BufferSize, map_table);
 			if (MappedAddress)
 			{
@@ -250,7 +250,7 @@ NTSTATUS RemoveBreakpoint(HANDLE ProcessHandle, _EPROCESS* Process, PVOID BaseAd
 	return STATUS_SUCCESS;
 }
 
-//¼ì²é¶ÏµãÊÇ·ñÒÑ´æÔÚ
+//æ£€æŸ¥æ–­ç‚¹æ˜¯å¦å·²å­˜åœ¨
 BOOLEAN exist_breakpoint(_EPROCESS* Process, PVOID BaseAddress)
 {
 	PLIST_ENTRY ListHead, NextEntry;
@@ -287,7 +287,7 @@ BOOLEAN exist_breakpoint(_EPROCESS* Process, PVOID BaseAddress)
 
 NTSTATUS NtWriteVirtualMemory(_In_ HANDLE ProcessHandle, 
 	_In_opt_ PVOID BaseAddress, //target_addr
-	_In_ PVOID Buffer,   //µ±Ç°½ø³Ì×Ô¼ºµÄ»º³åÇø
+	_In_ PVOID Buffer,   //å½“å‰è¿›ç¨‹è‡ªå·±çš„ç¼“å†²åŒº
 	_In_ SIZE_T BufferSize, 
 	_Out_opt_ PSIZE_T NumberOfBytesWritten)
 {
@@ -312,7 +312,7 @@ NTSTATUS NtWriteVirtualMemory(_In_ HANDLE ProcessHandle,
 	{
 		if (BufferSize == 1)
 		{
-			//ÉèÖÃint3¶Ïµã
+			//è®¾ç½®int3æ–­ç‚¹
 			if (Buffer && (*(UCHAR*)Buffer == 0xCC))
 			{
 				/* Reference the process */
@@ -341,7 +341,7 @@ NTSTATUS NtWriteVirtualMemory(_In_ HANDLE ProcessHandle,
 				return STATUS_UNSUCCESSFUL;
 			}
 
-			//ÒÆ³ıint3¶Ïµã
+			//ç§»é™¤int3æ–­ç‚¹
 			if (Buffer)
 			{
 				/* Reference the process */
@@ -378,7 +378,7 @@ NTSTATUS NtWriteVirtualMemory(_In_ HANDLE ProcessHandle,
 	return Original_NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesWritten);
 }
 
-NTSTATUS GetBreakpoint(_EPROCESS* Process, PVOID BaseAddress/*Òª¶ÁÈ¡µÄÄ¿±êµØÖ·*/, PVOID Buffer /*Êä³ö»º³åÇø*/, SIZE_T BufferSize)
+NTSTATUS GetBreakpoint(_EPROCESS* Process, PVOID BaseAddress/*è¦è¯»å–çš„ç›®æ ‡åœ°å€*/, PVOID Buffer /*è¾“å‡ºç¼“å†²åŒº*/, SIZE_T BufferSize)
 {
 	KAPC_STATE ApcState;
 	BYTE tmpBuffer[256] = { 0 };
@@ -391,11 +391,11 @@ NTSTATUS GetBreakpoint(_EPROCESS* Process, PVOID BaseAddress/*Òª¶ÁÈ¡µÄÄ¿±êµØÖ·*/
 	KiStackAttachProcess((_KPROCESS*)ptr_Pcb, FALSE, &ApcState);
 	__try
 	{
-		//½« MDL ÃèÊöµÄÎïÀíÒ³ÃæÓ³Éäµ½ĞéÄâÄÚ´æ
+		//å°† MDL æè¿°çš„ç‰©ç†é¡µé¢æ˜ å°„åˆ°è™šæ‹Ÿå†…å­˜
 		MappedAddress = MDLMapVirtualAddress(BaseAddress, BufferSize, map_table);
 		if (MappedAddress)
 		{
-			//¶ÁÈ¡EPTÄÚ´æ
+			//è¯»å–EPTå†…å­˜
 			if (hvgt::get_hide_software_breakpoint(BaseAddress, &tmpBuffer, BufferSize))
 			{
 				boFound = TRUE;
@@ -417,9 +417,9 @@ NTSTATUS GetBreakpoint(_EPROCESS* Process, PVOID BaseAddress/*Òª¶ÁÈ¡µÄÄ¿±êµØÖ·*/
 	return STATUS_UNSUCCESSFUL;
 }
 
-NTSTATUS MyReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
-	_In_opt_ PVOID BaseAddress, //Òª¶ÁÈ¡µÄÄ¿±êµØÖ·
-	_Out_opt_ PVOID Buffer,  //Êä³ö»º³åÇø
+NTSTATUS MyReadVirtualMemory(_In_ HANDLE ProcessHandle,  //è¦è¯»å–çš„ç›®æ ‡è¿›ç¨‹
+	_In_opt_ PVOID BaseAddress, //è¦è¯»å–çš„ç›®æ ‡åœ°å€
+	_Out_opt_ PVOID Buffer,  //è¾“å‡ºç¼“å†²åŒº
 	_In_ SIZE_T BufferSize,
 	_Out_opt_ PSIZE_T NumberOfBytesRead)
 {
@@ -445,11 +445,11 @@ NTSTATUS MyReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
 			KiStackAttachProcess((_KPROCESS*)ptr_Pcb, FALSE, &ApcState);
 			__try
 			{
-				//½« MDL ÃèÊöµÄÎïÀíÒ³ÃæÓ³Éäµ½ĞéÄâÄÚ´æ
+				//å°† MDL æè¿°çš„ç‰©ç†é¡µé¢æ˜ å°„åˆ°è™šæ‹Ÿå†…å­˜
 				MappedAddress = MDLMapVirtualAddress(BaseAddress, BufferSize, map_table);
 				if (MappedAddress)
 				{
-					//ÏÈ¿½±´µ½ÏµÍ³µÄÁÙÊ±»º³åÇø
+					//å…ˆæ‹·è´åˆ°ç³»ç»Ÿçš„ä¸´æ—¶ç¼“å†²åŒº
 					RtlCopyMemory(tmpBuffer, MappedAddress, BufferSize);
 					UnMDLMapVirtualAddress(map_table);
 				}
@@ -475,9 +475,9 @@ NTSTATUS MyReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
 	return STATUS_UNSUCCESSFUL;
 }
 
-NTSTATUS EptReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
-	_In_opt_ PVOID BaseAddress, //Òª¶ÁÈ¡µÄÄ¿±êµØÖ·
-	_Out_opt_ PVOID Buffer,  //Êä³ö»º³åÇø
+NTSTATUS EptReadVirtualMemory(_In_ HANDLE ProcessHandle,  //è¦è¯»å–çš„ç›®æ ‡è¿›ç¨‹
+	_In_opt_ PVOID BaseAddress, //è¦è¯»å–çš„ç›®æ ‡åœ°å€
+	_Out_opt_ PVOID Buffer,  //è¾“å‡ºç¼“å†²åŒº
 	_In_ SIZE_T BufferSize,
 	_Out_opt_ PSIZE_T NumberOfBytesRead)
 {
@@ -501,7 +501,7 @@ NTSTATUS EptReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
 			KiStackAttachProcess((_KPROCESS*)ptr_Pcb, FALSE, &ApcState);
 			__try
 			{
-				//¶ÁÈ¡EPTÄÚ´æ
+				//è¯»å–EPTå†…å­˜
 				if (hvgt::read_ept_fake_page_memory(BaseAddress, tmpBuffer, BufferSize))
 				{
 					boFound = TRUE;
@@ -523,9 +523,9 @@ NTSTATUS EptReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
 	return STATUS_UNSUCCESSFUL;
 }
 
-NTSTATUS NtReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
-	_In_opt_ PVOID BaseAddress, //Òª¶ÁÈ¡µÄÄ¿±êµØÖ·
-	_Out_opt_ PVOID Buffer,  //Êä³ö»º³åÇø
+NTSTATUS NtReadVirtualMemory(_In_ HANDLE ProcessHandle,  //è¦è¯»å–çš„ç›®æ ‡è¿›ç¨‹
+	_In_opt_ PVOID BaseAddress, //è¦è¯»å–çš„ç›®æ ‡åœ°å€
+	_Out_opt_ PVOID Buffer,  //è¾“å‡ºç¼“å†²åŒº
 	_In_ SIZE_T BufferSize,
 	_Out_opt_ PSIZE_T NumberOfBytesRead)
 {
@@ -547,7 +547,7 @@ NTSTATUS NtReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
 		}
 	}
 
-	//¼ì²éÊÇ·ñÊÇ°×Ãûµ¥½ø³Ì
+	//æ£€æŸ¥æ˜¯å¦æ˜¯ç™½åå•è¿›ç¨‹
 	//Status = IsWhiteListProcess(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesRead);
 
 	//if (NT_SUCCESS(Status))
@@ -556,7 +556,7 @@ NTSTATUS NtReadVirtualMemory(_In_ HANDLE ProcessHandle,  //Òª¶ÁÈ¡µÄÄ¿±ê½ø³Ì
 		{
 			if (Buffer)
 			{
-				//¶ÁCC¶Ïµã
+				//è¯»CCæ–­ç‚¹
 				//if (BufferSize == 1)
 				//{
 				//	/* Reference the process */

@@ -12,8 +12,8 @@
 //    }
 //}
 
-//½«Ïß³ÌÔËĞĞÔÚÖ¸¶¨cpuºËÉÏ
-//CPUºËÊı´Ó0¿ªÊ¼
+//å°†çº¿ç¨‹è¿è¡Œåœ¨æŒ‡å®šcpuæ ¸ä¸Š
+//CPUæ ¸æ•°ä»0å¼€å§‹
 void RunOnCPU(HANDLE hThread, int CpuNo)
 {
     try
@@ -23,12 +23,12 @@ void RunOnCPU(HANDLE hThread, int CpuNo)
             DWORD_PTR previous_mask = SetThreadAffinityMask(hThread, 1 << CpuNo);
             if (!previous_mask)
             {
-                throw std::runtime_error("ÉèÖÃÏß³ÌÇ×ºÍĞÔÊ§°Ü");
+                throw std::runtime_error("è®¾ç½®çº¿ç¨‹äº²å’Œæ€§å¤±è´¥");
             }
         }
         else
         {
-            throw std::runtime_error("ÉèÖÃ½ø³ÌÇ×ºÍĞÔÊ§°Ü");
+            throw std::runtime_error("è®¾ç½®è¿›ç¨‹äº²å’Œæ€§å¤±è´¥");
         }
     }
     catch (const std::exception& e)
@@ -42,7 +42,7 @@ bool vmcall_internal(PVOID vmcallinfo)
     unsigned long ecode = 0;
     bool boSuccess = false;
     __try {
-        //Èô·ÇvmxÄ£Ê½Ôò¸ÃÖ¸Áî»á´¥·¢#UDÒì³£
+        //è‹¥évmxæ¨¡å¼åˆ™è¯¥æŒ‡ä»¤ä¼šè§¦å‘#UDå¼‚å¸¸
 #ifdef _WIN64
         boSuccess = __vm_call(((PVMCALLINFO)vmcallinfo)->command, (unsigned __int64)vmcallinfo, 0, 0);
 #else
@@ -51,12 +51,12 @@ bool vmcall_internal(PVOID vmcallinfo)
 
     }
     __except (ecode = GetExceptionCode(), 1) {
-        logger.Log("Ö´ĞĞvmcallÊ±Óöµ½ÁË´íÎó (error: 0x%x)", ecode);
+        logger.Log("æ‰§è¡Œ vmcall æ—¶å‘ç”Ÿé”™è¯¯ï¼ˆé”™è¯¯ç ï¼š0x%xï¼‰", ecode);
     }
     return boSuccess;
 }
 
-//»á¹ã²¥¸øËùÓĞÂß¼­´¦ÀíÆ÷
+//ä¼šå¹¿æ’­ç»™æ‰€æœ‰é€»è¾‘å¤„ç†å™¨
 bool vmcall(PVOID vmcallinfo)
 {
     bool boSuccess = false;
@@ -65,7 +65,7 @@ bool vmcall(PVOID vmcallinfo)
     GetSystemInfo(&SysInfo);
     for (int i = 0; i < SysInfo.dwNumberOfProcessors; i++)
     {
-        //½«µ±Ç°Ïß³ÌÔËĞĞÔÚÖ¸¶¨µÄ´¦ÀíÆ÷ÉÏ
+        //å°†å½“å‰çº¿ç¨‹è¿è¡Œåœ¨æŒ‡å®šçš„å¤„ç†å™¨ä¸Š
         RunOnCPU(GetCurrentThread(), i);
         if (vmcall_internal(vmcallinfo))
         {            
@@ -75,7 +75,7 @@ bool vmcall(PVOID vmcallinfo)
     return status == SysInfo.dwNumberOfProcessors;
 }
 
-//±éÀúÂß¼­´¦ÀíÆ÷ÕÒµ½·µ»ØÊÂ¼ş³É¹¦µÄÄÇ¸ö
+//éå†é€»è¾‘å¤„ç†å™¨æ‰¾åˆ°è¿”å›äº‹ä»¶æˆåŠŸçš„é‚£ä¸ª
 bool vmcall2(PVOID vmcallinfo)
 {
     bool boSuccess = false;
@@ -83,7 +83,7 @@ bool vmcall2(PVOID vmcallinfo)
     GetSystemInfo(&SysInfo);
     for (int i = 0; i < SysInfo.dwNumberOfProcessors; i++)
     {
-        //½«µ±Ç°Ïß³ÌÔËĞĞÔÚÖ¸¶¨µÄ´¦ÀíÆ÷ÉÏ
+        //å°†å½“å‰çº¿ç¨‹è¿è¡Œåœ¨æŒ‡å®šçš„å¤„ç†å™¨ä¸Š
         RunOnCPU(GetCurrentThread(), i);
         if (vmcall_internal(vmcallinfo))
         {
@@ -95,7 +95,7 @@ bool vmcall2(PVOID vmcallinfo)
 }
 
 
-//Ö»»áÏòµ±Ç°Âß¼­´¦ÀíÆ÷·¢ËÍÇëÇó
+//åªä¼šå‘å½“å‰é€»è¾‘å¤„ç†å™¨å‘é€è¯·æ±‚
 bool current_vmcall(PVOID vmcallinfo)
 {
     return vmcall_internal(vmcallinfo);

@@ -1,4 +1,4 @@
-#include "Driver.h"
+ï»¿#include "Driver.h"
 #include "poolmanager.h"
 #include "Globals.h"
 #include "mtrr.h"
@@ -9,7 +9,7 @@
 namespace hv
 {
 	// create an interrupt gate that points to the supplied interrupt handler
-	// ´´½¨Ò»¸öÖ¸ÏòÌá¹©µÄÖĞ¶Ï´¦Àí³ÌĞòµÄÖĞ¶ÏÃÅ
+	// åˆ›å»ºä¸€ä¸ªæŒ‡å‘æä¾›çš„ä¸­æ–­å¤„ç†ç¨‹åºçš„ä¸­æ–­é—¨
 	static segment_descriptor_interrupt_gate_64 create_interrupt_gate(void* const handler) {
 		segment_descriptor_interrupt_gate_64 gate;
 
@@ -31,7 +31,7 @@ namespace hv
 	}
 
 	// initialize the host IDT and populate every descriptor
-	// ³õÊ¼»¯Ö÷»úIDT²¢Ìî³äÃ¿¸öÃèÊö·û
+	// åˆå§‹åŒ–ä¸»æœºIDTå¹¶å¡«å……æ¯ä¸ªæè¿°ç¬¦
 	void prepare_host_idt(segment_descriptor_interrupt_gate_64* const idt) {
 		memset(idt, 0, HOST_IDT_DESCRIPTOR_COUNT * sizeof(idt[0]));
 		idt[0] = create_interrupt_gate(interrupt_handler_0);
@@ -63,7 +63,7 @@ namespace hv
 		{			
 		case nmi:  // host NMIs
 		{
-			//Ö»ÓĞÔÚ¡°NMI exiting¡±ÒÔ¼°¡°virtual-NMIs¡±¶¼Îª 1 Ê±£¬¡°NMI-window exiting¡±²ÅÄÜ±»ÖÃÎ»¡£
+			//åªæœ‰åœ¨â€œNMI exitingâ€ä»¥åŠâ€œvirtual-NMIsâ€éƒ½ä¸º 1 æ—¶ï¼Œâ€œNMI-window exitingâ€æ‰èƒ½è¢«ç½®ä½ã€‚
 			auto ctrl = read_ctrl_proc_based();
 			ctrl.nmi_window_exiting = 1;
 			write_ctrl_proc_based(ctrl);

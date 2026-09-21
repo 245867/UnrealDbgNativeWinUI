@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _MY_LIST_H
 #define _MY_LIST_H
@@ -11,7 +11,7 @@ typedef struct _MY_LIST
 } MY_LIST;
 
 VOID InitFunctionEventList();
-//³õÊ¼»¯»¥³âËøºÍÁÐ±í
+//åˆå§‹åŒ–äº’æ–¥é”å’Œåˆ—è¡¨
 VOID InitializeList(MY_LIST* list, PFAST_MUTEX FastMutex);
 VOID InsertNode(MY_LIST* list, LIST_ENTRY* entry);
 VOID RemoveNode(MY_LIST* list, LIST_ENTRY* entry);
@@ -21,10 +21,10 @@ ULONG GetListCount(MY_LIST* list);
 class CMyList
 {
 private:
-	DWORD m_FCount;  //¼ÇÂ¼ÔªËØ¸öÊý
-	DWORD m_FCapacity;  //×î´óÈÝÁ¿
+	DWORD m_FCount;  //è®°å½•å…ƒç´ ä¸ªæ•°
+	DWORD m_FCapacity;  //æœ€å¤§å®¹é‡
 	FAST_MUTEX m_FLock;
-	PVOID* m_FList;  //µ×²ãÊý×é´æ´¢Çø
+	PVOID* m_FList;  //åº•å±‚æ•°ç»„å­˜å‚¨åŒº
 
 public:
 	CMyList()
@@ -60,7 +60,7 @@ public:
 		return m_FCount;
 	}
 
-	//È¡³öÔªËØ
+	//å–å‡ºå…ƒç´ 
 	PVOID Get(DWORD dwIndex)
 	{
 		if (dwIndex >= m_FCount)
@@ -73,7 +73,7 @@ public:
 		}
 	}
 
-	//É¾³ýÔªËØ
+	//åˆ é™¤å…ƒç´ 
 	VOID Delete(DWORD dwIndex)
 	{
 		if (dwIndex < m_FCount)
@@ -83,7 +83,7 @@ public:
 		}
 	}
 
-	//Ìí¼ÓÔªËØ
+	//æ·»åŠ å…ƒç´ 
 	DWORD Add(PVOID Item)
 	{
 		if (m_FCount < m_FCapacity)
@@ -92,7 +92,7 @@ public:
 		}
 		else
 		{
-			//Èç¹ûÔªËØ¸öÊý´óÓÚ»º³åÇøÔòÍ¨¹ýint3´¥·¢À¶ÆÁ
+			//å¦‚æžœå…ƒç´ ä¸ªæ•°å¤§äºŽç¼“å†²åŒºåˆ™é€šè¿‡int3è§¦å‘è“å±
 			DbgBreakPoint();
 		}
 		return m_FCount;

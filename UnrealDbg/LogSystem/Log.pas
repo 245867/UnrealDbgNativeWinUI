@@ -1,4 +1,4 @@
-unit Log;
+ï»¿unit Log;
 
 interface
 
@@ -75,9 +75,8 @@ begin
   inherited;
   InitializeCriticalSection(FLock);
   LogMsgRcdList := TList.Create;
-//  FTimer := TTimer.Create(nil);
-//  FTimer.Interval := 500;
-//  FTimer.OnTimer := TimerEvent;
+  // åœ¨æ„é€ æ—¶å†™å…¥å¯åŠ¨æ—¥å¿—
+  WriteLogFile('TLog åˆ›å»ºä¸­...', DEBUG_TYPE);
 end;
 
 destructor TLog.Destroy;
@@ -128,13 +127,13 @@ begin
   if sText <> '' then begin
     case LogType of
       DEBUG_TYPE: begin
-        Exit;
+        sText := DateTimeToStr(Now) + ' [è°ƒè¯•]: ' + sText;
       end;
       INFO_TYPE: begin
-        sText := DateTimeToStr(Now) + ' [INFORMATION]: ' + sText;
+        sText := DateTimeToStr(Now) + ' [ä¿¡æ¯]: ' + sText;
       end;
       ERROR_TYPE: begin
-        sText := DateTimeToStr(Now) + ' [Error]: ' + sText;
+        sText := DateTimeToStr(Now) + ' [é”™è¯¯]: ' + sText;
       end;
     end;
 
@@ -142,7 +141,7 @@ begin
     if not DirectoryExists(sLogDir) then
       ForceDirectories(sLogDir);
 
-    sLogFile := sLogDir + '\Log.txt';
+    sLogFile := sLogDir + '\log.ini';
     try
       AssignFile(F, sLogFile);
       if not FileExists(sLogFile) then
@@ -165,40 +164,41 @@ begin
 
   case Color of
     BLACK:
-      FRichEditLog.SelAttributes.Color := clBlack;                 //ºÚÉ«
+      FRichEditLog.SelAttributes.Color := clBlack;                 //é»‘è‰²
     RED:
-      FRichEditLog.SelAttributes.Color := clRed;                   //ºìÉ«
+      FRichEditLog.SelAttributes.Color := clRed;                   //çº¢è‰²
     GREEN:
-      FRichEditLog.SelAttributes.Color := clLime;                  //ÂÌÉ«
+      FRichEditLog.SelAttributes.Color := clLime;                  //äº®ç»¿è‰²
     BROWN:
-      FRichEditLog.SelAttributes.Color := clWebSaddleBrown;        //×ØÉ«
+      FRichEditLog.SelAttributes.Color := clWebSaddleBrown;        //é©¬éæ£•è‰²
     BLUE:
-      FRichEditLog.SelAttributes.Color := clWebDeepskyBlue;        //À¶É«
+      FRichEditLog.SelAttributes.Color := clWebDeepskyBlue;        //æ·±å¤©è“è‰²
     MAGENTA:
-      FRichEditLog.SelAttributes.Color := clWebMagenta;            //Æ·ºì
+      FRichEditLog.SelAttributes.Color := clWebMagenta;            //å“çº¢è‰²
     CYAN:
-      FRichEditLog.SelAttributes.Color := clWebCyan;               //ÇàÉ«
+      FRichEditLog.SelAttributes.Color := clWebCyan;               //é’è‰²
     GREY:
-      FRichEditLog.SelAttributes.Color := clWebLightgrey;          //»ÒÉ«
+      FRichEditLog.SelAttributes.Color := clWebLightgrey;          //æµ…ç°è‰²
     YELLOW:
-      FRichEditLog.SelAttributes.Color := clYellow;                //»ÆÉ«
+      FRichEditLog.SelAttributes.Color := clYellow;                //é»„è‰²
     LRED:
-      FRichEditLog.SelAttributes.Color := clWebDarkRed;            //ºìÉ«¼ÓÉî
+      FRichEditLog.SelAttributes.Color := clWebDarkRed;            //æ·±çº¢è‰²é”™è¯¯
     LGREEN:
-      FRichEditLog.SelAttributes.Color := clWebLightGreen;         //ÂÌÉ«¼ÓÉî
+      FRichEditLog.SelAttributes.Color := clWebLightGreen;         //æµ…ç»¿è‰²æˆåŠŸ
     LBLUE:
-      FRichEditLog.SelAttributes.Color := clWebLightBlue;          //À¶É«¼ÓÉî
+      FRichEditLog.SelAttributes.Color := clWebLightBlue;          //æµ…è“è‰²è°ƒè¯•
     LMAGENTA:
-      FRichEditLog.SelAttributes.Color := clWebDarkMagenta;        //Æ·ºì¼ÓÉî
+      FRichEditLog.SelAttributes.Color := clWebDarkMagenta;        //æ·±å“çº¢è‰²è­¦å‘Š
     LCYAN:
-      FRichEditLog.SelAttributes.Color := clWebLightCyan;          //ÇàÉ«¼ÓÉî
+      FRichEditLog.SelAttributes.Color := clWebLightCyan;          //æµ…é’è‰²ä¿¡æ¯
     WHITE:
-      FRichEditLog.SelAttributes.Color := clWhite;                 //Ã×É«
+      FRichEditLog.SelAttributes.Color := clWhite;                 //ç™½è‰²
   end;
 end;
 
 procedure TLog.LogPrint(sText: string; LogType: Word; Color: TMyColor);
 begin
+  WriteLogFile(sText, LogType);  // å…ˆå†™æ—¥å¿—æ–‡ä»¶ï¼Œä¸ä¾èµ–ç•Œé¢
   Lock;
   try
     if (sText <> '') and (Assigned(FRichEditLog)) then begin
@@ -207,10 +207,8 @@ begin
         FRichEditLog.Lines.Add(DateTimeToStr(Now) + ' ' + sText);
         RichEditClear(200);
       except
-
       end;
-      SendMessage(FRichEditLog.Handle, WM_VSCROLL, SB_BOTTOM, 0); //ÏòÉÏ¹ö¶¯
-      WriteLogFile(sText,LogType);
+      SendMessage(FRichEditLog.Handle, WM_VSCROLL, SB_BOTTOM, 0);
     end;
   finally
     UnLock;
@@ -222,9 +220,6 @@ var
   sFormat: string;
   LogMsgRcd: PTLogMsgRcd;
 begin
-  if not Assigned(FRichEditLog) then
-    Exit;
-
   sFormat := sText;
   if sFormat = '' then
     Exit;

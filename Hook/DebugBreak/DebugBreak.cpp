@@ -12,10 +12,10 @@ NewSetThreadContext(
     _In_ CONTEXT* lpContext
 )
 {
-    //CEÔÚÊ×´Î¸½¼ÓÊ±»á½«drxÄÚµÄÖµÇå¿Õ£¬ÕâÖÖÉè¼Æ»áµ¼ÖÂÓĞÓ²¼ş¶ÏµãÕ¼¿ÓµÄ³ÌĞò¼ì²âµ½
+    //CEåœ¨é¦–æ¬¡é™„åŠ æ—¶ä¼šå°†drxå†…çš„å€¼æ¸…ç©ºï¼Œè¿™ç§è®¾è®¡ä¼šå¯¼è‡´æœ‰ç¡¬ä»¶æ–­ç‚¹å å‘çš„ç¨‹åºæ£€æµ‹åˆ°
     if (lpContext->Dr0)
-    {        
-        //ÎÒÃÇ¿ÉÒÔÍ¨¹ı½âÎödr7À´»ñµÃÓÃ»§µÄÒâÍ¼£¬±ÈÈç¼àÊÓ¶Á£¬¼àÊÓĞ´£¬¼àÊÓÖ´ĞĞ¡£
+    {
+        //æˆ‘ä»¬å¯ä»¥é€šè¿‡è§£ædr7æ¥è·å¾—ç”¨æˆ·çš„æ„å›¾ï¼Œæ¯”å¦‚ç›‘è§†è¯»ï¼Œç›‘è§†å†™ï¼Œç›‘è§†æ‰§è¡Œã€‚
         //logger.Log("lpContext->Dr0: %p", lpContext->Dr0);
 
         //Vol3B[18.2 DEBUG REGISTERS]
@@ -38,14 +38,14 @@ NewSetThreadContext(
                 size_t Reserved_2 : 1; //bit12
                 size_t GD : 1; //bit13
                 size_t Reserved_3 : 2; //bit15:14
-                size_t RW_0 : 2; //bit17:16  dr0µÄ¶Á¡¢Ğ´¡¢Ö´ĞĞ¿ØÖÆÎ»
-                size_t LEN_0 : 2; //bit19:18 dr0µÄ¶Ïµã¼àÊÓµÄ³¤¶È
+                size_t RW_0 : 2; //bit17:16  dr0çš„è¯»ã€å†™ã€æ‰§è¡Œæ§åˆ¶ä½
+                size_t LEN_0 : 2; //bit19:18 dr0çš„æ–­ç‚¹ç›‘è§†çš„é•¿åº¦
             };
         }Dr7;
 
         Dr7.flags = lpContext->Dr7;
 
-        int length = 1;  //ÖÁÉÙÉèÖÃ1×Ö½Ú
+        int length = 1;  //è‡³å°‘è®¾ç½®1å­—èŠ‚
         switch (Dr7.LEN_0)
         {
         case BYTE_1:
@@ -71,80 +71,80 @@ NewSetThreadContext(
         }
 
         char szBuf[MAX_PATH] = { 0 };
-        sprintf(szBuf, "[MyDebug] ÉèÖÃÓ²¼ş¶Ïµã  ¶Ïµã³¤¶È: %d\n", length);
+        sprintf(szBuf, "[è°ƒè¯•] è®¾ç½®ç¡¬ä»¶æ–­ç‚¹ï¼›æ–­ç‚¹é•¿åº¦ï¼š%d\n", length);
         OutputDebugStringA(szBuf);
 
         switch (Dr7.RW_0)
         {
         case WATCH_WRITE:
         {
-            AddBreakpoint((PVOID)lpContext->Dr0, VMCALL_WATCH_WRITES, length); //¼àÊÓĞ´
+            AddBreakpoint((PVOID)lpContext->Dr0, VMCALL_WATCH_WRITES, length); //ç›‘è§†å†™
             break;
         }
         case WATCH_READWRITE:
         {
-            AddBreakpoint((PVOID)lpContext->Dr0, VMCALL_WATCH_READS, length); //¼àÊÓ¶ÁĞ´
+            AddBreakpoint((PVOID)lpContext->Dr0, VMCALL_WATCH_READS, length); //ç›‘è§†è¯»å†™
             break;
         }
         default:
         {
-            char szBuf[MAX_PATH] = { 0 };
-            sprintf(szBuf, "[MyDebug] Î´ÖªÒâÍ¼ dr7: %p\n", Dr7.flags);
-            OutputDebugStringA(szBuf);
+            wchar_t szBuf[MAX_PATH] = { 0 };
+            swprintf_s(szBuf, _countof(szBuf), L"[è°ƒè¯•] æœªçŸ¥çš„ DR7 æ„å›¾: 0x%llX\n", static_cast<unsigned long long>(Dr7.flags));
+            OutputDebugStringW(szBuf);
             break;
         }
         //case WATCH_EXECUTION_ONLY:
         //{
-        //    AddBreakpoint((PVOID)lpContext->Dr0, VMCALL_WATCH_EXECUTES, length); //¼àÊÓÖ´ĞĞ
+        //    AddBreakpoint((PVOID)lpContext->Dr0, VMCALL_WATCH_EXECUTES, length); //ç›‘è§†æ‰§è¡Œ
         //    break;
         //}
-        }    
+        }
     }
     else
     {
-        //²»ÔÚĞèÒªdr0
+        //ä¸åœ¨éœ€è¦dr0
         RemoveBreakpoint();
     }
 
     //if (lpContext->Dr1 || lpContext->Dr2 || lpContext->Dr3)
     //{
-    //    ReportSeriousError("ÉèÖÃ¶Ïµã¹ı¶à£¬Ä¿Ç°½öÖ§³ÖÒ»¸ödebugreg¶Ïµã");
+    //    ReportSeriousError("è®¾ç½®æ–­ç‚¹è¿‡å¤šï¼Œç›®å‰ä»…æ”¯æŒä¸€ä¸ªdebugregæ–­ç‚¹");
     //}
 
 
-    //¿ÉÄÜÊÇÎªÁËÇåÀídr6
+    //å¯èƒ½æ˜¯ä¸ºäº†æ¸…ç†dr6
     if (lpContext->Dr6 == 0)
     {
         InterlockedExchange(&g_debug_condition_detected, 0);
     }
 
 
-    //µ÷ÓÃÔ­º¯Êı
+    //è°ƒç”¨åŸå‡½æ•°
     CONTEXT Context = { 0 };
     Context.ContextFlags = CONTEXT_ALL | CONTEXT_EXTENDED_REGISTERS;
     BOOL boSuccess = Sys_GetThreadContext(hThread, &Context);
 
     if (boSuccess)
     {
-        Context.EFlags = lpContext->EFlags;  //½«µ÷ÊÔÆ÷µÄÉèÖÃÉÏÈ¥£¬ÕâÑù¾ÍÄÜ±£Ö¤TF±êÖ¾Î»±»ÉèÖÃ
+        Context.EFlags = lpContext->EFlags;  //å°†è°ƒè¯•å™¨çš„è®¾ç½®ä¸Šå»ï¼Œè¿™æ ·å°±èƒ½ä¿è¯TFæ ‡å¿—ä½è¢«è®¾ç½®
 #ifdef _WIN64
-        Context.Rip = lpContext->Rip;  //ĞèÒªÉèÖÃrip£¬ÕâÓÃÓÚµ÷Õûint3
+        Context.Rip = lpContext->Rip;  //éœ€è¦è®¾ç½®ripï¼Œè¿™ç”¨äºè°ƒæ•´int3
 #else
         Context.Eip = lpContext->Eip;
 #endif
         Context.ContextFlags = lpContext->ContextFlags;
-        //Context.Dr7 = 0xF0401;          
-        Sys_SetThreadContext(hThread, &Context);  //µ÷ÓÃÏµÍ³º¯Êı   
+        //Context.Dr7 = 0xF0401;
+        Sys_SetThreadContext(hThread, &Context);  //è°ƒç”¨ç³»ç»Ÿå‡½æ•°
     }
     return TRUE;
 }
 
-//Ìí¼Ó¶Ïµã
+//æ·»åŠ æ–­ç‚¹
 //bool AddBreakpoint(_In_ CONST CONTEXT* lpContext, unsigned __int64 command)
 //{
 //    bool boSuccess = false;
 //
-//    // ±éÀú DR0 ÖÁ DR3 ¼Ä´æÆ÷    
+//    // éå† DR0 è‡³ DR3 å¯„å­˜å™¨
 //    BreakpointList.Lock();
 //    for (int i = 0; i < 4; ++i)
 //    {
@@ -168,12 +168,12 @@ NewSetThreadContext(
 //            break;
 //        }
 //
-//        // ¼ì²éµØÖ·ÊÇ·ñÓĞĞ§ÇÒ²»ÔÚ¶ÏµãÁĞ±íÖĞ
+//        // æ£€æŸ¥åœ°å€æ˜¯å¦æœ‰æ•ˆä¸”ä¸åœ¨æ–­ç‚¹åˆ—è¡¨ä¸­
 //        if (setAddress && std::find_if(BreakpointList.begin(), BreakpointList.end(), [setAddress](auto& bp) {
 //            return bp.Address == (ULONG64)setAddress;
-//        }) == BreakpointList.end()/*±éÀúµ½Ä©Î²ËµÃ÷²»´æÔÚ*/)
+//        }) == BreakpointList.end()/*éå†åˆ°æœ«å°¾è¯´æ˜ä¸å­˜åœ¨*/)
 //        {
-//            logger.Log("Ìí¼Ó¶Ïµã: %p", setAddress);
+//            logger.Log("æ·»åŠ æ–­ç‚¹: %p", setAddress);
 //            if (BreakpointList.size() < 4)
 //            {
 //                // Add the breakpoint
@@ -185,10 +185,10 @@ NewSetThreadContext(
 //                boSuccess = SetBreakpoint(setAddress, command);
 //                if (!boSuccess)
 //                {
-//                    ReportSeriousError("ÉèÖÃ¶ÏµãÊ§°Ü");
+//                    ReportSeriousError("è®¾ç½®æ–­ç‚¹å¤±è´¥");
 //                }
 //            }
-//            break; // Ã¿´Îµ÷ÓÃ½öÌí¼ÓÒ»¸ö¶Ïµã
+//            break; // æ¯æ¬¡è°ƒç”¨ä»…æ·»åŠ ä¸€ä¸ªæ–­ç‚¹
 //        }
 //    }
 //    BreakpointList.UnLock();
@@ -202,7 +202,7 @@ bool RemoveBreakpoint()
 
     BreakpointList.Lock();
 
-    //for (const auto& Breakpoint : BreakpointList)  //Èç¹ûÁĞ±íÎª0£¬ËüÒ²»á×Ô¶¯Ìø¹ı£¬²»»á½øforÑ­»·Àï
+    //for (const auto& Breakpoint : BreakpointList)  //å¦‚æœåˆ—è¡¨ä¸º0ï¼Œå®ƒä¹Ÿä¼šè‡ªåŠ¨è·³è¿‡ï¼Œä¸ä¼šè¿›forå¾ªç¯é‡Œ
     //{
     //    if (Breakpoint.Address)
     //    {
@@ -214,7 +214,7 @@ bool RemoveBreakpoint()
     //        vmcallinfo.LoopUserMode = (unsigned __int64)DbgUserBreakPoint;
     //        vmcallinfo.watchid = Breakpoint.watchid;
 
-    //        logger.Log("ÒªÒÆ³ıµÄ¼àÊÓid: %d", Breakpoint.watchid);
+    //        logger.Log("è¦ç§»é™¤çš„ç›‘è§†id: %d", Breakpoint.watchid);
 
     //        SYSTEM_INFO SysInfo = { 0 };
     //        GetSystemInfo(&SysInfo);
@@ -222,7 +222,7 @@ bool RemoveBreakpoint()
     //        boSuccess = current_vmcall(&vmcallinfo);
     //        if (!boSuccess)
     //        {
-    //            ReportSeriousError("ÒÆ³ı¶ÏµãÊ§°Ü");
+    //            ReportSeriousError("ç§»é™¤æ–­ç‚¹å¤±è´¥");
     //        }
     //    }
     //}
@@ -243,17 +243,17 @@ bool RemoveBreakpoint()
             {
                 if (output == 1998)
                 {
-                    boSuccess = true;                    
-                    logger.Log("ÒÆ³ıµÄ¼àÊÓid: %d", Breakpoint.watchid);
+                    boSuccess = true;
+                    logger.Log("ç§»é™¤çš„ç›‘è§†id: %d", Breakpoint.watchid);
                 }
                 else
                 {
-                    ReportSeriousError("ÒÆ³ıÓ²¼ş¶ÏµãÊ§°Ü");
+                    ReportSeriousError("ç§»é™¤ç¡¬ä»¶æ–­ç‚¹å¤±è´¥");
                 }
             }
             else
             {
-                logger.Log("IOCTL_DEL_BREAKPOINT Ê§°Ü!");
+                logger.Log("IOCTL_DEL_BREAKPOINT å¤±è´¥!");
             }
         }
     }
@@ -265,36 +265,36 @@ bool RemoveBreakpoint()
     return boSuccess;
 }
 
-//Ìí¼Ó¶Ïµã
+//æ·»åŠ æ–­ç‚¹
 bool AddBreakpoint(PVOID setAddress, unsigned __int64 command, int length)
 {
-    bool boSuccess = false;  
+    bool boSuccess = false;
 
-    // ¼ì²éµØÖ·ÊÇ·ñÓĞĞ§ÇÒ²»ÔÚ¶ÏµãÁĞ±íÖĞ
+    // æ£€æŸ¥åœ°å€æ˜¯å¦æœ‰æ•ˆä¸”ä¸åœ¨æ–­ç‚¹åˆ—è¡¨ä¸­
     if (setAddress && std::find_if(BreakpointList.begin(), BreakpointList.end(), [setAddress](auto& bp) {
         return bp.Address == (ULONG64)setAddress;
-    }) == BreakpointList.end()/*±éÀúµ½Ä©Î²ËµÃ÷²»´æÔÚ*/)
+    }) == BreakpointList.end()/*éå†åˆ°æœ«å°¾è¯´æ˜ä¸å­˜åœ¨*/)
     {
-        logger.Log("Ìí¼Ó¶Ïµã: %p", setAddress);
+        logger.Log("æ·»åŠ æ–­ç‚¹: %p", setAddress);
         if (BreakpointList.size() < BREAKPOINT_COUNT)
         {
             // Apply the breakpoint
             boSuccess = SetBreakpoint(setAddress, command, length);
             if (!boSuccess)
             {
-                ReportSeriousError("ÉèÖÃÓ²¼ş¶ÏµãÊ§°Ü");
+                ReportSeriousError("è®¾ç½®ç¡¬ä»¶æ–­ç‚¹å¤±è´¥");
             }
         }
         else
         {
-            ReportSeriousError("ÉèÖÃ¶Ïµã¹ı¶à£¬Ä¿Ç°½öÖ§³ÖÒ»¸ödebugreg¶Ïµã");
+            ReportSeriousError("è®¾ç½®æ–­ç‚¹è¿‡å¤šï¼Œç›®å‰ä»…æ”¯æŒä¸€ä¸ªdebugregæ–­ç‚¹");
         }
     }
     else
     {
-        char szBuf[MAX_PATH] = { 0 };
-        sprintf(szBuf, "[MyDebug] ¶ÏµãÒÑ¾­´æÔÚ: %p\n", setAddress);
-        OutputDebugStringA(szBuf);
+        wchar_t szBuf[MAX_PATH] = { 0 };
+        swprintf_s(szBuf, _countof(szBuf), L"[è°ƒè¯•] æ–­ç‚¹å·²ç»å­˜åœ¨: 0x%llX\n", static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(setAddress)));
+        OutputDebugStringW(szBuf);
     }
 
     return boSuccess;
@@ -307,7 +307,7 @@ bool SetBreakpoint(PVOID lpBaseAddress, unsigned __int64 command, int length)
 
     if (!g_target_cr3 || !g_target_pid)
     {
-        logger.Log("[%s] cr3 »ò pidÎª¿Õ", __func__);
+        logger.Log("[%s] cr3 æˆ– pidä¸ºç©º", __func__);
         return false;
     }
 
@@ -328,17 +328,17 @@ bool SetBreakpoint(PVOID lpBaseAddress, unsigned __int64 command, int length)
 
     BREAKPOINT_RECORD output = { 0 };
     if (SendUserDataToDriver(IOCTL_SET_HARDWARE_BREAKPOINT,
-        &Breakpoint, 
+        &Breakpoint,
         sizeof(BREAKPOINT_RECORD),
         &output,
         sizeof(BREAKPOINT_RECORD),
         &BytesReturned))
     {
-        logger.Log("·µ»ØµÄ¼àÊÓid: %d", output.watchid);
+        logger.Log("è¿”å›çš„ç›‘è§†id: %d", output.watchid);
         if (output.watchid != -1)
         {
             boSuccess = true;
-            logger.Log("SetBreakpoint ³É¹¦!");            
+            logger.Log("è®¾ç½®æ–­ç‚¹æˆåŠŸï¼");
 
             for (auto& Breakpoint : BreakpointList)
             {
@@ -353,12 +353,12 @@ bool SetBreakpoint(PVOID lpBaseAddress, unsigned __int64 command, int length)
         }
         else
         {
-            logger.Log("SetBreakpoint Ê§°Ü!");
+        logger.Log("è®¾ç½®æ–­ç‚¹å¤±è´¥ï¼");
         }
     }
     else
     {
-        logger.Log("IOCTL_SET_BREAKPOINT ÇëÇóÊ§°Ü!");
+        logger.Log("IOCTL_SET_BREAKPOINT è¯·æ±‚å¤±è´¥ï¼");
     }
 
 
@@ -367,7 +367,7 @@ bool SetBreakpoint(PVOID lpBaseAddress, unsigned __int64 command, int length)
 
     //if (!g_target_cr3)
     //{
-    //    logger.Log("[%s] g_target_cr3 ¿ÕÖ¸Õë", __func__);
+    //    logger.Log("[%s] g_target_cr3 ç©ºæŒ‡é’ˆ", __func__);
     //    return false;
     //}
     //VT_BREAK_POINT vmcallinfo = { 0 };
@@ -383,7 +383,7 @@ bool SetBreakpoint(PVOID lpBaseAddress, unsigned __int64 command, int length)
     //boSuccess = current_vmcall(&vmcallinfo);
     //if (boSuccess)
     //{
-    //    logger.Log("·µ»ØµÄ¼àÊÓid: %d", vmcallinfo.watchid);
+    //    logger.Log("è¿”å›çš„ç›‘è§†id: %d", vmcallinfo.watchid);
     //    // Add the breakpoint
     //    BREAKPOINT_RECORD Breakpoint = { 0 };
     //    Breakpoint.Address = vmcallinfo.VirtualAddress;
@@ -396,7 +396,7 @@ bool SetBreakpoint(PVOID lpBaseAddress, unsigned __int64 command, int length)
     //}
     //else
     //{
-    //    logger.Log("current_vmcall Ê§°Ü!  errorCode:%d", vmcallinfo.errorCode);
+    //    logger.Log("current_vmcall å¤±è´¥!  errorCode:%d", vmcallinfo.errorCode);
     //}
     return boSuccess;
 }
@@ -406,10 +406,10 @@ BOOL WINAPI NewGetThreadContext(
     _Inout_ LPCONTEXT lpContext
 )
 {
-    //µ÷ÓÃÔ­º¯Êı
+    //è°ƒç”¨åŸå‡½æ•°
     BOOL boSuccess = Sys_GetThreadContext(hThread, lpContext);
 
-    //´ÓÎÒÃÇ×Ô¼ºµÄ¶ÏµãÁĞ±í¸ø¶Ïµã
+    //ä»æˆ‘ä»¬è‡ªå·±çš„æ–­ç‚¹åˆ—è¡¨ç»™æ–­ç‚¹
     if (boSuccess)
     {
         int i = 0;
@@ -423,7 +423,7 @@ BOOL WINAPI NewGetThreadContext(
         lpContext->Dr6 = 0;
 
         BreakpointList.Lock();
-        for (const auto& Breakpoint : BreakpointList)  //¼´Ê¹Èç¹ûÁĞ±íÎª0£¬ËüÒ²»á×Ô¶¯Ìø¹ı£¬²»»á½øforÑ­»·Àï
+        for (const auto& Breakpoint : BreakpointList)  //å³ä½¿å¦‚æœåˆ—è¡¨ä¸º0ï¼Œå®ƒä¹Ÿä¼šè‡ªåŠ¨è·³è¿‡ï¼Œä¸ä¼šè¿›forå¾ªç¯é‡Œ
         {
             if (Breakpoint.Address)
             {
@@ -431,19 +431,19 @@ BOOL WINAPI NewGetThreadContext(
                 {
                 case 0:
                 {
-                    //Ö»ÒªÓĞ#DBÊÂ¼ş¹ıÀ´£¬ÎÒÃÇ¾ÍÕâÑùÉèÖÃ
-                    //ÒòÎªÎÒÃÇÒÑ¾­½«Ä¿±ê³ÌĞòµÄ#DB½øĞĞÁË¹ıÂË
-                    //Ö»ÓĞvtÅ×µÄ#DBÒì³£»á±»·¢ËÍ¸øµ÷ÊÔÆ÷
+                    //åªè¦æœ‰#DBäº‹ä»¶è¿‡æ¥ï¼Œæˆ‘ä»¬å°±è¿™æ ·è®¾ç½®
+                    //å› ä¸ºæˆ‘ä»¬å·²ç»å°†ç›®æ ‡ç¨‹åºçš„#DBè¿›è¡Œäº†è¿‡æ»¤
+                    //åªæœ‰vtæŠ›çš„#DBå¼‚å¸¸ä¼šè¢«å‘é€ç»™è°ƒè¯•å™¨
                     lpContext->Dr0 = Breakpoint.Address;
 
-                    //ÅĞ¶Ï´¥·¢Ô­Òò
+                    //åˆ¤æ–­è§¦å‘åŸå› 
                     if (g_debug_condition_detected == 1)  //debugreg
                     {
                         lpContext->Dr6 = 1 << 0;
                     }
-                    else if (g_debug_condition_detected == 2)  //µ¥²½Ö´ĞĞ
+                    else if (g_debug_condition_detected == 2)  //å•æ­¥æ‰§è¡Œ
                     {
-                        lpContext->Dr6 = 1 << 14; //ÉèÖÃbsÎ»
+                        lpContext->Dr6 = 1 << 14; //è®¾ç½®bsä½
                         logger.Log("lpContext->Dr6: %p", lpContext->Dr6);
                     }
                     break;
@@ -465,21 +465,21 @@ BOOL WINAPI NewGetThreadContext(
                 }
                 default:
                 {
-                    ReportSeriousError("±éÀú¶ÏµãÊıÁ¿¹ı¶à£¡");
+                    ReportSeriousError("éå†æ–­ç‚¹æ•°é‡è¿‡å¤šï¼");
                     break;
                 }
                 }
                 i++;
             }
         }
-        BreakpointList.UnLock();      
+        BreakpointList.UnLock();
 
         //if (BreakpointList.size() > 0)
         //{
         //    DWORD dwThreadId = GetThreadId(hThread);
         //    if (dwThreadId == 0)
         //    {
-        //        ReportSeriousError("ÎŞ·¨»ñÈ¡Ïß³Ìid£¡");
+        //        ReportSeriousError("æ— æ³•è·å–çº¿ç¨‹idï¼");
         //        return boSuccess;
         //    }
 
