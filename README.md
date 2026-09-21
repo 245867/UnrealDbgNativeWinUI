@@ -49,7 +49,7 @@ Contributions to UnrealDbg are welcome! If you have any ideas for improvements o
 
 ## License ℹ️
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/Code4sanz/UnrealDbg/releases) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## 目录结构
 

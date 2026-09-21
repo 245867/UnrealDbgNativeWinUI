@@ -47,7 +47,7 @@
 | Python 脚本 | `.py` | 辅助工具脚本 |
 | 图标资源 | `.ico` | 程序图标 |
 | 文本文件 | `.txt` | 配置说明、注意事项 |
-| 许可证 | `LICENSE` | MIT 许可证 + Phnt 许可证 |
+| 许可证 | `LICENSE` | GPLv3 主许可证 + Phnt/ia32-doc 第三方许可证 |
 | Git 配置 | `.gitignore` `.gitattributes` | 版本控制配置 |
 
 ### 2.2 应该发布但当前未被 Git 跟踪（需 `git add`）
