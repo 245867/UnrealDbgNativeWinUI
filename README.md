@@ -518,9 +518,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests\windows\Collect-Driver
 <p><strong>遇到问题？欢迎加群交流 —— 版本更新与问题答疑第一时间同步</strong></p>
 
 <p>
-<a href="https://qm.qq.com/q/89nIPLRrCU" title="易语言 + AI - 吹牛逼"><img src="https://img.shields.io/badge/%E7%82%B9%E5%87%BB%E5%8A%A0%E5%85%A5-QQ%E7%BE%A4_607124662-12B7F5?style=for-the-badge&logo=qq&logoColor=white" alt="点击加入 QQ 群 607124662" height="40"></a>
+<a href="https://qm.qq.com/q/89nIPLRrCU" title="易语言 + AI - 吹牛逼（群号 607124662）"><img src="https://img.shields.io/badge/%E7%82%B9%E5%87%BB%E5%8A%A0%E5%85%A5-QQ%E7%BE%A4_607124662-12B7F5?style=for-the-badge&logo=qq&logoColor=white&labelColor=0A8FCC" alt="点击加入 QQ 群 607124662"></a>
 &nbsp;&nbsp;
-<a href="https://qm.qq.com/q/Fv9KjpGCEq" title="易语言 · jadeView 前端 UI"><img src="https://img.shields.io/badge/%E7%82%B9%E5%87%BB%E5%8A%A0%E5%85%A5-QQ%E7%BE%A4_1103426302-8B5CF6?style=for-the-badge&logo=qq&logoColor=white" alt="点击加入 QQ 群 1103426302" height="40"></a>
+<a href="https://qm.qq.com/q/Fv9KjpGCEq" title="易语言 · jadeView 前端 UI（群号 1103426302）"><img src="https://img.shields.io/badge/%E7%82%B9%E5%87%BB%E5%8A%A0%E5%85%A5-QQ%E7%BE%A4_1103426302-8B5CF6?style=for-the-badge&logo=qq&logoColor=white&labelColor=6D3FD4" alt="点击加入 QQ 群 1103426302"></a>
 </p>
 
 <p>
