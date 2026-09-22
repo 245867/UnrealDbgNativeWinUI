@@ -31,6 +31,7 @@
 - [十二、参与贡献](#十二参与贡献)
 - [十三、许可证](#十三许可证)
 - [十四、致谢](#十四致谢)
+- [十五、交流与社区](#十五交流与社区)
 
 ---
 
@@ -507,6 +508,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests\windows\Collect-Driver
 - 感谢 [ia32-doc](https://github.com/wbenny/ia32-doc) 提供的 Intel 指令集与 VMX 结构定义；
 - 感谢 [Phnt](https://github.com/winsiderss/phnt) 提供的 NT 内核接口定义；
 - 感谢所有为本项目提交 Issue 与 Pull Request 的贡献者。
+
+---
+
+## 十五、交流与社区
+
+<div align="center">
+
+[![易语言 + AI 交流群](https://img.shields.io/badge/QQ群-607124662-12B7F5.svg)](https://qm.qq.com/q/89nIPLRrCU)
+[![jadeView 前端 UI 交流群](https://img.shields.io/badge/QQ群-1103426302-8B5CF6.svg)](https://qm.qq.com/q/Fv9KjpGCEq)
+
+**易语言 + AI - 吹牛逼** ｜ **易语言 · jadeView 前端 UI**
+
+点击上方徽章即可加群
+
+</div>
 
 ---
 
